@@ -1,10 +1,11 @@
 <script>
+    import config from '../../config.json';
     /**
 * @type {any[]}
 */  
-    
+    let api = config.api;
     let data = (async()=>{
-        const response = await fetch('http://127.0.0.1:3000/api/teams');
+        const response = await fetch(`${api}api/teams`);
         return await response.json();
     })();
 </script>

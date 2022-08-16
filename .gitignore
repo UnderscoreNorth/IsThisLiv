@@ -4,3 +4,4 @@ express/package-lock.json
 svelte/package-lock.json
 svelte/.svelte-kit/
 svelte/node_modules/
+svelte/src/config.json
