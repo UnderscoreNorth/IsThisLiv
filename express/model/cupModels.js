@@ -46,7 +46,7 @@ class model {
     }
     static cup = async(req, res, next) =>{
         let result = {};
-        let cupID = req.url.split('-')[0].substring(1);
+        let cupID = req.params.cupID.split('-')[0];
         let teams = [];
         let cupMeta = await DB.query("SELECT * FROM CupDB WHERE iID=?",[cupID]);
         let totalGoals = 0;
@@ -136,8 +136,12 @@ class model {
                 attendance:row.iAttendence,
                 home:row.sHomeTeam,
                 away:row.sAwayTeam,
+                winner:row.sWinningTeam,
                 homeg: goals[0],
-                awayg: goals[1]
+                awayg: goals[1],
+                id:row.iID,
+                official:row.bVoided,
+                roundOrder:row.iOrder
             });
         }
         for(let i in matches){

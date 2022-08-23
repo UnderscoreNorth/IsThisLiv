@@ -8,6 +8,8 @@
 </svelte:head>
 <script>
     import { page } from '$app/stores';
+    import MdPerson from 'svelte-icons/md/MdPerson.svelte';
+    import UserModal from '$lib/userModal.svelte';
 
     const links = [
         ['/','IsThisLiv'],
@@ -17,10 +19,14 @@
         ['/records','Records'],
         ['/misc','Misc Stats'],
         ['/ff','Fantasy Football'],
-        ['/info','Info'],
     ]
-    function toggle(){
+    let loginFlag = false;
+    let loggedIn = false;
+    function toggleDarkMode(){
         localStorage.setItem('theme',document.documentElement.classList.toggle('dark-mode') ? '1' : '0');
+    }
+    function toggleLogin(){
+        loginFlag = !loginFlag;
     }
 </script>
 
@@ -38,9 +44,16 @@
                     : '')}'>
         {link[1]}</a>
     {/each}
-    <button on:click={toggle}>Dark Mode</button>
+    <div id='rightNav' style='float:right'>
+        <icon on:click={toggleLogin}><MdPerson /></icon>
+        <button on:click={toggleDarkMode}>Dark Mode</button>
+        
+    </div>
 </nav>
-<div style='padding:1rem'>
+{#if loginFlag}
+    <UserModal/>
+{/if}
+<div style='height:calc(100% - 2.5rem)'>
     <slot>
 
     </slot>
@@ -49,6 +62,10 @@
     :global(html){
         font-family:"Helvetica";
         background-color: #f6f6f6;
+        height:100%;
+    }
+    :global(body > div){
+        height:100%;
     }
     :global(html.dark-mode){
         background-color: #151f27;
@@ -57,9 +74,10 @@
     :global(body){
         margin:0;
         position:relative;
+        height:100%;
     }
     :global(td){
-        padding:0 10px;
+        padding:0 0.5rem;
         text-align:right;
     }
     :global(a){
@@ -75,7 +93,7 @@
         color:white;
     }
     :global(.c-1){
-        background:#d8e4ef;
+        background:#dde2e7;
     }
     :global(html.dark-mode .c-1){
         background:#3a4050;
@@ -86,7 +104,20 @@
     :global(html.dark-mode .c-2){
         background:#5d6477;
     }
-
+    :global(vertNav){
+        display:flex;
+        position:sticky;
+        top:3.5rem;
+        height:calc(100% - 2rem);
+        flex-direction:column;
+        padding:1rem;
+    }
+    :global(.status-win){
+        background:#ddffdd;
+    }
+    :global(.status-win > a){
+        color:black!important;
+    }
     nav{
         background:#2E51A2;
         font-size:15px;
@@ -94,13 +125,10 @@
         color:white;
         line-height: 2.5rem;
         padding-left:1.25rem;
-        position:sticky;
-        top:0;
-        z-index:10;
     }
     nav a, nav button{
         color:white;
-        padding:0 10px;
+        padding:0 0.5rem;
         text-decoration: none;
         min-height: 2.5rem;
         display:inline-block;
@@ -108,13 +136,23 @@
     nav button{
         background:none;
         border:none;
-        float:right;
         cursor:pointer;
     }
-    nav a:hover, nav button:hover{
+    nav icon{
+        height:2rem;
+        width:2rem;
+        display:block;
+        cursor:pointer;
+        border-radius:0.25rem;
+        padding:0.25rem;
+    }
+    nav a:hover, nav button:hover, nav icon:hover{
         background:#3a4050;
         border-radius:0;
 
+    }
+    #rightNav *{
+        float:right;
     }
     nav .selected{
         background:white;

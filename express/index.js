@@ -1,17 +1,16 @@
 import express from 'express';
 import cors from 'cors';
-import teamRoutes from './route/teamRoutes.js';
-import cupRoutes from './route/cupRoutes.js';
+import routes from './route/routes.js';
 const app = express();
 const port = 3000;
 
 app.use(cors());
 app.use(express.json());
 app.use('/',middleware)
-app.use('/api/teams', teamRoutes);
-app.use('/api/cups', cupRoutes);
+app.use('/api/', routes);
 
 function middleware(req,res,next){
+  console.log(req.url);
   req.staticUrl = 'build/' + req.url.replace(/\//g,"__") + '.json';
   next();
 }

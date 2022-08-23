@@ -2,36 +2,41 @@
     import config from '../../../config.json';
     import { page } from '$app/stores';
     import {teamLink} from '$lib/helper';
+    import MatchEdit from '$lib/matchEdit.svelte';
+    import MatchDisplay from '$lib/matchDisplay.svelte';
+    import Brackets from '$lib/brackets.svelte';
     let api = config.api;
+    let matchID = 0;
     let data = (async()=>{
         const response = await fetch(`${api}api` + $page.url.pathname);
         return await response.json();
     })();
+    function editMatch(ID){
+        matchID = ID;
+    }
 </script>
 {#await data}
     Loading...
 {:then data} 
     <container>
-        <div class='c-1' style='margin:-1rem 1rem -1rem -1rem;padding:1rem'>
-            <navBar>
-                <a href='#Nav'>Top</a>
-                <a href='#Teams'>Competitors</a>
-                {#if data.matches.groups}
-                <a href='#Groups'>Group Stage</a>
-                {#each data.matches.groups as group}
-                    <a style='padding-left:1rem' href='#{group.name}'>{group.name}</a>
-                {/each}
-                {/if}
-                {#if data.matches.kos}
-                <a href='#Knockouts'>Knockout Stage</a>
-                {#each data.matches.kos as group}
-                    <a style='padding-left:1rem' href='#{group.name}'>{group.name}</a>
-                {/each}
-                {/if}
-                <a href='#Stats'>Statistics</a>
-                <a href='#Stats'>Fantasy Football</a>
-            </navBar>
-        </div>
+        <vertNav class='c-1'>
+            <a href='#Nav'>Top</a>
+            <a href='#Teams'>Competitors</a>
+            {#if data.matches.groups}
+            <a href='#Groups'>Group Stage</a>
+            {#each data.matches.groups as group}
+                <a style='padding-left:1rem' href='#{group.name}'>{group.name}</a>
+            {/each}
+            {/if}
+            {#if data.matches.kos}
+            <a href='#Knockouts'>Knockout Stage</a>
+            {#each data.matches.kos as group}
+                <a style='padding-left:1rem' href='#{group.name}'>{group.name}</a>
+            {/each}
+            {/if}
+            <a href='#Stats'>Statistics</a>
+            <a href='#Stats'>Fantasy Football</a>
+        </vertNav>
         <contents>
             <h1>{data.cupName}</h1>
             <statContainer class='c-1'>
@@ -71,11 +76,7 @@
                             </groupTable>
                             {#each group.matches as match}
                                 <match>
-                                    <leftInfo>{match.date}<br>{match.time}</leftInfo>
-                                    <homeInfo>{@html teamLink(match.home)}</homeInfo>
-                                    <scoreInfo>{match.homeg}–{match.awayg}</scoreInfo>
-                                    <awayInfo>{@html teamLink(match.away)}</awayInfo>
-                                    <rightInfo>{match.stadium}<br>Attendance: {match.attendance}</rightInfo>
+                                    <MatchDisplay editMatch={editMatch} match={match}/>
                                 </match>
                             {/each}
                         </div>
@@ -84,22 +85,22 @@
             {/if}
             {#if data.matches.kos}
                 <h2 id='Knockouts'>Knockout Stage</h2>
+                <Brackets data={data}></Brackets>
                 <div style='padding:0 2rem'>
                     {#each data.matches.kos as group}
                         <div class='kos'>
                             <h3 id={group.name}>{group.name}</h3>
                             {#each group.matches as match}
                                 <match>
-                                    <leftInfo>{match.date}<br>{match.time}</leftInfo>
-                                    <homeInfo>{@html teamLink(match.home)}</homeInfo>
-                                    <scoreInfo>{match.homeg}–{match.awayg}</scoreInfo>
-                                    <awayInfo>{@html teamLink(match.away)}</awayInfo>
-                                    <rightInfo>{match.stadium}<br>Attendance: {match.attendance}</rightInfo>
+                                    <MatchDisplay editMatch={editMatch} match={match}/>
                                 </match>
                             {/each}
                         </div>
                     {/each}
                 </div>
+            {/if}
+            {#if matchID > 0}
+                <MatchEdit bind:matchID={matchID}/>
             {/if}
         </contents>
     </container>
@@ -110,14 +111,13 @@
         display:grid;
         grid-template-columns:10rem 1fr;
         position:relative;
+        height:100%;
     }
-    navBar{
-        display:flex;
-        flex-direction: row;
-        position:sticky;
-        top:3.5rem;
-        height:100px;
-        flex-direction:column;
+    contents{
+        height:calc(100% - 2rem);
+        overflow-y:scroll;
+        padding:1rem;
+        width:calc(100% - 2rem);
     }
     statContainer{
         margin:1rem;
@@ -128,7 +128,7 @@
         border:solid 1px #a2a9b1;
         display:grid;
         grid-template-columns: repeat(8,1fr);
-        width:calc(100% - 2rem);
+        width:calc(100% - 3rem);
     }
     groupTable{
         display:table;
@@ -175,15 +175,5 @@
     }
     h2{
         border-bottom:solid 1px grey;
-    }
-    leftInfo,homeInfo{
-        text-align:right;
-    }
-    rightInfo,awayInfo{
-        text-align:left;
-    }
-    scoreInfo{
-        text-align: center;
-        font-weight: bold;
     }
 </style>

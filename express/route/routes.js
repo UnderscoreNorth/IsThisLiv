@@ -1,0 +1,12 @@
+import express from 'express';
+import cupModels from '../model/cupModels.js';
+import teamModels from '../model/teamModels.js';
+import sqlModels from '../model/sqlModels.js';
+import repeatGroups from '../model/misc/repeatGroups.js';
+const router = express.Router();
+router.use('/cups/:cupID', cupModels.cup);
+router.use('/cups', cupModels.main);
+router.use('/teams', teamModels.main);
+router.use('/sql/matchDisplay/:matchID', sqlModels.matchDisplay);
+router.use('/misc/repeat_groups',repeatGroups.main);
+export {router as default};
