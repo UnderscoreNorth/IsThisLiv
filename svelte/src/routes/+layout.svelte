@@ -118,6 +118,9 @@
     :global(.status-win > a){
         color:black!important;
     }
+    :global(.p-1){
+        padding:1rem;
+    }
     nav{
         background:#2E51A2;
         font-size:15px;

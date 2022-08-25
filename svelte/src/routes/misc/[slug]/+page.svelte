@@ -1,28 +1,42 @@
 <script>
     import config from '../../../config.json';
     import { page } from '$app/stores';
+    import { afterNavigate } from '$app/navigation';
     let api = config.api;
-    let data = (async()=>{
-        const response = await fetch(`${api}api` + $page.url.pathname);
-        return await response.json();
-    })();
-    
+    let firstLoad = true;
+    let data = fetch(`${api}api` + $page.url.pathname).then((result)=>{
+        firstLoad = false;
+        return result.json();
+    });
+    afterNavigate(()=>{
+        if(!firstLoad){
+            data = fetch(`${api}api` + $page.url.pathname).then((result)=>{
+                return result.json();
+            });
+        }
+    })
 </script>
-{#await data}
-    Loading...
-{:then data} 
-    <container>
+<container>
+    {#await data}
+        <h2>Loading...</h2>
+    {:then data} 
+        {#if data.date}
+            <div id='pageModifiedTime'>Last updated - {data.date}</div>
+        {/if}
         {@html data.html}
-    </container>
-{:catch data}
-    Something failed
-{/await}
-
+    {:catch}
+        <h2>Error</h2>
+        Thank you, spaghetti code
+    {/await}
+</container>
 <style>
     container{
         display:block;
         padding:1rem;
         height:calc(100% - 2rem);
         overflow-y:scroll;
+    }
+    #pageModifiedTime{
+        float:right;
     }
 </style>

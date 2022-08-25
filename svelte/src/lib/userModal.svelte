@@ -3,7 +3,7 @@
     <input placeholder='Password' type='password'>
     <button disabled>Login Disabled</button>
 </modal>
-<STYLE>
+<style>
     modal{
         position:absolute;
         right:0rem;
@@ -20,4 +20,4 @@
     button{
         width:100%;
     }
-</STYLE>
+</style>

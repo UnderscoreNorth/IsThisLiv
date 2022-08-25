@@ -1,4 +1,7 @@
 <script>
+    /**
+     * @param {number} matchID
+     */
     export let matchID;
     let api = config.api;
     import config from '../config.json';
@@ -15,6 +18,10 @@
         const response = await fetch(`${api}api/sql/matchDisplay/` + matchID);
         return await response.json();
     })();
+    /**
+     * 
+     * @param {object} data
+     */
     function getData(data){
         console.log(data);
     }

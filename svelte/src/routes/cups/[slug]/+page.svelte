@@ -11,6 +11,10 @@
         const response = await fetch(`${api}api` + $page.url.pathname);
         return await response.json();
     })();
+    /**
+     * 
+     * @param {number} ID
+     */
     function editMatch(ID){
         matchID = ID;
     }

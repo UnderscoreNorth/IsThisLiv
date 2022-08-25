@@ -48,7 +48,7 @@
 
     </slot>
 </div>
-<STYLE>
+<style>
     #container{
         display:grid;
         grid-template-columns:10rem 1fr;
@@ -64,6 +64,6 @@
         padding-left:0.25rem;
         padding-right:1rem;
     }
-</STYLE>
+</style>
 
 
