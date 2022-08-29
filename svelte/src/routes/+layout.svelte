@@ -91,6 +91,8 @@
         background:#2E51A2;
         border-radius:3px;
         color:white;
+        padding:0.1rem;
+        margin:-0.1rem;
     }
     :global(.c-1){
         background:#dde2e7;
@@ -121,6 +123,30 @@
     :global(.p-1){
         padding:1rem;
     }
+    :global(.Gold){
+        background:#E0C068;
+        color:black;
+    }
+    :global(.Silver){
+        background:#B7BEC5;
+        color:black;
+    }
+    :global(.W){
+        background:#ddffdd;
+        color:black;
+    }
+    :global(.D){
+        background:#ffffdd;
+        color:black;
+    }
+    :global(.L){
+        background:#ffdddd;
+        color:black;
+    }
+    :global(.V){
+        background:#ccc;
+        color:black;
+    }
     nav{
         background:#2E51A2;
         font-size:15px;
@@ -131,7 +157,8 @@
     }
     nav a, nav button{
         color:white;
-        padding:0 0.5rem;
+        padding:0 0.5rem!important;
+        margin:0!important;
         text-decoration: none;
         min-height: 2.5rem;
         display:inline-block;

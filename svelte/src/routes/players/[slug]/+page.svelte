@@ -43,4 +43,7 @@
         border:solid 1px grey;
         background:rgba(0,0,0,0.1);
     }
+    container :global(td){
+        text-align: left;
+    }
 </style>

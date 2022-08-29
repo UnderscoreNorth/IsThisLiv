@@ -1,6 +1,6 @@
 import mysql from 'mysql2/promise';
 import config from '../config.json' assert {type:"json"};
-const connection = await mysql.createConnection(config);
+let connection = await mysql.createConnection(config);
 
 class DB{
     static query = async(query,params,attempts=0) =>{
@@ -9,8 +9,8 @@ class DB{
             [rows, fields] = await connection.execute(query, params);
         } catch(err){
             if(attempts < 3){
-                await connection.connect();
-                rows = this.query(query,params,attempts+1)
+                connection = await mysql.createConnection(config);
+                rows = await this.query(query,params,attempts+1)
             }
         }
         return rows;

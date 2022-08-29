@@ -79,8 +79,12 @@ class model {
                 background: rgba(0,0,0,0.1);
                 margin: 1rem;
                 padding: 1rem;
-                border:solid 1px black;
+                border:solid 1px grey;
                 margin-bottom:0;
+            }
+            table{
+                border:none!important;
+                background:none!important;
             }
         </STYLE>`;
         result.html = html;

@@ -30,7 +30,7 @@ class model {
             let matchID = row.mID;
             let losingGoals = 0;
             let winningGoals = 0;
-            let t2 = 0;
+            let t2 = 0; 
             let mdlCheck = false;
             let time = "";
             let subSql = await DB.query("SELECT sTeam, iType,dRegTime,dInjTime FROM EventDB INNER JOIN PlayerDB ON EventDB.iPlayerID = PlayerDB.iID WHERE iMatchID = ? AND iType IN (1,3,4) ORDER BY dRegTime, dInjTime",[matchID]);
@@ -112,8 +112,6 @@ class model {
             table{
                 margin-right:2rem;
                 padding:1rem;
-                background:rgba(0,0,0,0.2);
-                border:solid 1px grey;
             }
         </STYLE>`;
         result.html = html;

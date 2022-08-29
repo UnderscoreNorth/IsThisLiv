@@ -1,4 +1,17 @@
 import DB from '../lib/db.js';
+import fs from 'fs/promises';
+import path from 'path';
+
+export async function rebuild(whitelist=[]){
+	console.log('rebuild');
+	const directory = '../express/build/'
+	const files = await fs.readdir(directory);
+	for (const file of files) {
+		if(!whitelist.includes(file)){
+			await fs.unlink(directory + file);
+		}
+	}
+}
 
 export function teamLink(team){
     if(team != 'draw'){
@@ -48,13 +61,17 @@ export async function playerLink(player){
 	return `<a href='/players/${id}-${urlname}'>${name}</a>`;
 }
 
-export function dateFormat(dateString){
+export function dateFormat(dateString,type='med'){
 	let options = {
 		year:'numeric', 
 		month: 'short', 
 		day: 'numeric' 
 	};
-
+	if(type=='short')
+		options = {
+			month: 'short', 
+			day: 'numeric' 
+		};
 	if(typeof dateString == 'object'){
 		return dateString.toLocaleString('en-US',options);	
 	} else {
@@ -96,4 +113,4 @@ export function arsort(object,index=0){
 		return b[index]-a[index]});
 }
 
-export const pageExpiry = 86400000;
+export const pageExpiry = 0;//86400000;
