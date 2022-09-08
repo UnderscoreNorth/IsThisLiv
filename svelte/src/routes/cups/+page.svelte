@@ -1,3 +1,6 @@
+<svelte:head>
+    <title>Cups - IsThisLiv</title>
+</svelte:head>
 <script>
     import config from '../../config.json';
     /**

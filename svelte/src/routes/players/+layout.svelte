@@ -9,6 +9,7 @@
     let data = [];
     let search = "";
     let searching = false;
+    let lastSearch = "-1";
     async function searchPlayer(){
         if(!searching){
             searching = true;
@@ -21,6 +22,12 @@
                 searching = false;
                 return result.json();
             });
+            if(lastSearch != '-1'){
+                lastSearch = "-1"
+                searchPlayer();
+            }
+        } else {
+            lastSearch = search;
         }
     }
 </script>

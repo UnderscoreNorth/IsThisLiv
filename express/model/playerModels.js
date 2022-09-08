@@ -12,22 +12,31 @@ class model {
         let minutes = 0;
         let avgRating = 0;
         let avgCond = 0;
-        let goals = 0;
-        let assists = 0;
-        let saves = 0;
-        let yellows = 0;
-        let reds = 0;
+        let totalGoals = 0;
+        let totalAssists = 0;
+        let totalSaves = 0;
+        let totalYellows = 0;
+        let totalReds = 0;
+        let totalOGoals = 0;
         let aliases = [];
+        let motm = 0;
+        let pName = "";
 
         let playerID = req.params.playerID.split('-')[0];
         let playerData = await DB.query("SELECT * FROM PlayerLinkDB WHERE iID=?",[playerID]).then((result)=>{
             return result[0];
         });
         team = playerData.sTeam;
+        pName = playerData.sPlayer;
 
         let playerCupData = await DB.query("SELECT * FROM PlayerDB WHERE iLink=?",[playerID]).then((result)=>{
             return result;
         })
+        for(let i in playerCupData){
+            let row = playerCupData[i];
+            if(!aliases.includes(row.sName))
+                aliases.push(row.sName);
+        }
         cups = playerCupData.length;
 
         let cupList = playerCupData.map(x=>x.iCupID);
@@ -65,6 +74,66 @@ class model {
                 }
                 pos = row.sRegPos;
                 medal = row.sMedal;
+                minutes += (row.iSubOn >= 0 && row.iSubOff >= 0  && row.bVoided ? row.iSubOff - row.iSubOn : 0);
+                avgRating += (row.bVoided && row.dRating > 0 ? row.dRating : 0);
+                avgCond += (row.bVoided && row.iCond > 0 ? row.iCond : 0);
+                let events = [];
+                let goals = [];
+                let ogoals = [];
+                let assists = [];
+                let yellows = [];
+                let reds = [];
+                let saves = row.iSaves >=0 ? row.iSaves : 0;
+                if(row.bMotM){
+                    events.push("Man of the Match");
+                    if(row.bVoided)
+                        motm++;
+                }
+                if(saves){
+                    events.push("Saves: " + saves);
+                    if(row.bVoided)
+                        totalSaves += saves;
+                }
+                let subSql = await DB.query(`SELECT * FROM EventDB WHERE iMatchID=${row.iMatchID} AND iPlayerID=${row.iPlayerID}`);
+                for(let j in subSql){
+                    let event = subSql[j];
+                    switch(event.iType){
+                        case 1:
+                        case 4:
+                            if(row.bVoided) totalGoals++;
+                            goals.push(event.dRegTime + `'` + (event.dInjTime >= 0 ? `+${event.dInjTime}` : ''))
+                            break;
+                        case 2:
+                            if(row.bVoided) totalAssists++;
+                            assists.push(event.dRegTime + `'` + (event.dInjTime >= 0 ? `+${event.dInjTime}` : ''))
+                            break;
+                        case 3:
+                            if(row.bVoided) totalOGoals++;
+                            ogoals.push(event.dRegTime + `'` + (event.dInjTime >= 0 ? `+${event.dInjTime}` : ''))
+                            break;
+                        case 5:
+                            if(row.bVoided) totalYellows++;
+                            yellows.push(event.dRegTime + `'` + (event.dInjTime >= 0 ? `+${event.dInjTime}` : ''))
+                            break;
+                        case 6:
+                        case 8:
+                            if(row.bVoided) totalReds++;
+                            reds.push(event.dRegTime + `'` + (event.dInjTime >= 0 ? `+${event.dInjTime}` : ''))
+                            break;
+                    }
+                }
+                let eventList = [
+                    ['Goals',goals],
+                    ['Own Goals',ogoals],
+                    ['Assists',assists],
+                    ['Yellows',yellows],
+                    ['Reds',reds],
+                ];
+                for(let event of eventList){
+                    if(event[1].length){
+                        events.push(`${event[0]}: ${event[1].length}(${event[1].join(', ')})`);
+                    }
+                }
                 matchesPlayed.push({
                     result: (row.bVoided ?
                         (row.sWinningTeam == 'draw' 
@@ -79,7 +148,8 @@ class model {
                     played: `${row.iSubOn} - ${row.iSubOff}`,
                     cond: row.iCond,
                     rating: row.dRating,
-                    events: []
+                    events: events,
+                    mNum:row.bVoided ? matches : ''
                 });
             }
             let matchHtml = '';
@@ -95,11 +165,12 @@ class model {
                     matchHtml += `
                         <td class='${match.result}'>${match.round}</td>
                         <td class='${match.result}'>${match.date}</td>
-                        <td class='${match.result}'>${match.team}</td>
+                        <td class='${match.result}'>/${match.team}/</td>
                         <td class='${match.result}'>${match.played}</td>
                         <td class='${match.result}'>${match.cond}</td>
                         <td class='${match.result}'>${match.rating}</td>
-                        <td class='${match.result}'>${match.events.join('\n')}</td>
+                        <td class='${match.result}'>${match.events.join('<br>')}</td>
+                        <td>${match.mNum}</td>
                     `
                     matchHtml += `</tr>`;
                 }
@@ -113,8 +184,50 @@ class model {
             }
             totalMatchHtml += matchHtml;
         }
-        html += totalMatchHtml + `</table>`;
+        let cleanSheets = 0;
+        let optionalStats = [
+            ['MotM',motm],
+            ['Goals',totalGoals],
+            ['Assists',totalAssists],
+            ['Saves',totalSaves],
+            ['Clean Sheets',cleanSheets],
+            ['Yellow Cards',totalYellows],
+            ['Red Cards',totalReds]
+        ]
+        let overallHtml = `<table>
+            <tr>
+                <th>Cups</th>
+                <td>${cups}</th>
+            </tr><tr>
+                <th>Matches</th>
+                <td>${matches}</th>
+            </tr><tr>
+                <th>Minutes</th>
+                <td>${minutes}</th>
+            </tr><tr>
+                <th>Avg Rating</th>
+                <td>${matches ? Math.round(avgRating*100/matches)/100 : '-'}</th>
+            </tr><tr>
+                <th>Avg Cond</th>
+                <td>${matches ? Math.round(avgCond*100/matches)/100 : '-'}</th>
+            </tr>`;
+        for (let optionalStat of optionalStats){
+            console.log(optionalStat);
+            if(optionalStat[1] > 0){
+                overallHtml += `<tr>
+                    <th>${optionalStat[0]}</th>
+                    <td>${optionalStat[1]} (${Math.round(optionalStat[1]*100/matches)/100})</td>
+                </tr>
+                `
+            }
+        }
+        overallHtml += `<tr><th colspan=2>Aliases</th></tr>${aliases.map(x=>`<tr><td colspan=2>${x}</td></tr>`).join('')}`;
+        let headerHtml = `<h2>${h.teamLink(team)} - ${pName}</h2>`
+        html = headerHtml + overallHtml + `</table>` + totalMatchHtml + `</table>`;
+        html += `<STYLE>table{display:inline-block;vertical-align:top;margin:1rem}</STYLE>`
         result.html = html;
+        result.playerName = pName;
+        result.playerTeam = team;
         result.date = new Date().toLocaleString('en-us',{timeStyle:'short',dateStyle:'medium'});
         await fs.writeFile(req.staticUrl,JSON.stringify(result));
         res.send(result);

@@ -9,6 +9,7 @@ class DB{
             [rows, fields] = await connection.execute(query, params);
         } catch(err){
             if(attempts < 3){
+                console.log('DB reattempt ' + attempts)
                 connection = await mysql.createConnection(config);
                 rows = await this.query(query,params,attempts+1)
             }

@@ -1,5 +1,5 @@
 <svelte:head>
-    <title>Yeah</title>
+    <title>>IsThisLiv</title>
 </svelte:head>
 <div id='container'>
     <h1>IsThisLiv</h1>

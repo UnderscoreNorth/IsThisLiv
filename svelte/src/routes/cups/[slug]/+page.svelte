@@ -1,3 +1,10 @@
+<svelte:head>
+    {#await data}
+    <title>Loading...</title>
+    {:then data} 
+    <title>{data.cupName} - IsThisLiv</title>
+    {/await}
+</svelte:head>
 <script>
     import config from '../../../config.json';
     import { page } from '$app/stores';

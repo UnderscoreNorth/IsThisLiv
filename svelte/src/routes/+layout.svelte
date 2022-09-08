@@ -30,7 +30,6 @@
     }
 </script>
 
-
 <nav id='Nav'>
     {#each links as link}
         <a  
