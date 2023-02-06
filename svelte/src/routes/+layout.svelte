@@ -10,6 +10,7 @@
     import { page } from '$app/stores';
     import MdPerson from 'svelte-icons/md/MdPerson.svelte';
     import UserModal from '$lib/userModal.svelte';
+    import { User } from '$lib/user';
 
     const links = [
         ['/','IsThisLiv'],
@@ -28,6 +29,8 @@
     function toggleLogin(){
         loginFlag = !loginFlag;
     }
+    if(typeof localStorage !== 'undefined')
+        $User.username = localStorage.getItem('username') || '';
 </script>
 
 <nav id='Nav'>
@@ -60,15 +63,22 @@
 <style>
     :global(html){
         font-family:"Helvetica";
-        background-color: #f6f6f6;
+        --bg-color:#f6f6f6;
+        --bg-c1:#dde2e7;
+        --bg-c2:#dadfe7;
+        --fg-color:black;
+        background-color: var(--bg-color);
+        color:var(--fg-color);
         height:100%;
     }
     :global(body > div){
         height:100%;
     }
     :global(html.dark-mode){
-        background-color: #151f27;
-		color: #d9dbdf;
+        --bg-color: #151f27;
+        --bg-c1:#3a4050;
+        --bg-c2:#5d6477;
+		--fg-color: #d9dbdf;
     }
     :global(body){
         margin:0;
@@ -80,11 +90,8 @@
         text-align:right;
     }
     :global(a){
-        color:black;
+        color:var(--fg-color);
         text-decoration:none;
-    }
-    :global(html.dark-mode a){
-        color: #d9dbdf;
     }
     :global(a:hover){
         background:#2E51A2;
@@ -94,16 +101,10 @@
         margin:-0.1rem;
     }
     :global(.c-1){
-        background:#dde2e7;
-    }
-    :global(html.dark-mode .c-1){
-        background:#3a4050;
+        background:var(--bg-c1);
     }
     :global(.c-2){
-        background:#dadfe7;
-    }
-    :global(html.dark-mode .c-2){
-        background:#5d6477;
+        background:var(--bg-c2);
     }
     :global(vertNav){
         display:flex;
@@ -125,10 +126,17 @@
     :global(.Gold){
         background:#E0C068;
         color:black;
+        padding:0 0.5rem;
     }
     :global(.Silver){
         background:#B7BEC5;
         color:black;
+        padding:0 0.5rem;
+    }
+    :global(.Bronze){
+        background:#964a3c;
+        color:black;
+        padding:0 0.5rem;
     }
     :global(.W){
         background:#ddffdd;

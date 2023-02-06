@@ -6,7 +6,7 @@
     {/await}
 </svelte:head>
 <script>
-    import config from '../../../config.json';
+    import config from '$lib/config.json';
     import { page } from '$app/stores';
     import { afterNavigate } from '$app/navigation';
     let api = config.api;

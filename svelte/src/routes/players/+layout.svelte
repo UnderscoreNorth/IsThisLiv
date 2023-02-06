@@ -1,6 +1,6 @@
 <script>
     import { page } from "$app/stores";
-    import config from '../../config.json';
+    import config from '$lib/config.json';
     let api = config.api;
     
     /**

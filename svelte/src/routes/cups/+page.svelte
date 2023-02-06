@@ -2,7 +2,7 @@
     <title>Cups - IsThisLiv</title>
 </svelte:head>
 <script>
-    import config from '../../config.json';
+    import config from '$lib/config.json';
     /**
      * @param {object} api
      */

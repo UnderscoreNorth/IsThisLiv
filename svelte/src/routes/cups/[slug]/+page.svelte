@@ -6,7 +6,7 @@
     {/await}
 </svelte:head>
 <script>
-    import config from '../../../config.json';
+    import config from '$lib/config.json';
     import { page } from '$app/stores';
     import {teamLink} from '$lib/helper';
     import MatchEdit from '$lib/matchEdit.svelte';

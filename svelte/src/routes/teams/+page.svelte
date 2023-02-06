@@ -1,5 +1,5 @@
 <script>
-    import config from '../../config.json';
+    import config from '$lib/config.json';
     /**
 * @type {any[]}
 */  

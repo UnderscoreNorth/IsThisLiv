@@ -4,7 +4,7 @@
      */
     export let matchID;
     let api = config.api;
-    import config from '../config.json';
+    import config from '$lib/config.json';
     function close(){
         matchID = 0;
     }
