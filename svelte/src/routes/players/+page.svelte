@@ -1,3 +1,3 @@
 <svelte:head>
-    <title>Players - IsThisLiv</title>
+	<title>Players - IsThisLiv</title>
 </svelte:head>

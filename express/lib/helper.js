@@ -117,6 +117,6 @@ export function arsort(object, index = 0) {
   });
 }
 
-export const pageExpiry = 8640000; //86400000;
+export const pageExpiry = 86400000; //86400000;
 
 export const goalTypes = [1, 4];

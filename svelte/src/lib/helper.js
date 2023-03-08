@@ -1,9 +1,9 @@
-export function teamLink(team){
-    if(team != 'draw'){
-		if(team){
+export function teamLink(team) {
+	if (team != 'draw') {
+		if (team) {
 			return `<a href='/teams/${team}'>/${team}/</a>`;
 		} else {
-			return "TBD";
+			return 'TBD';
 		}
 	} else {
 		return team;
