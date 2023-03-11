@@ -3,7 +3,6 @@ import { teamLink, pageExpiry, cupLink, playerLink } from "../lib/helper.js";
 import fs from "fs/promises";
 class model {
   static main = async (req, res, next) => {
-    console.log("main model");
     let stats = await fs.stat(req.staticUrl).catch((err) => {
       return { mtime: new Date("01/01/2000") };
     });

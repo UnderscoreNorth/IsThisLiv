@@ -1,3 +1,4 @@
+import { match } from "assert";
 import DB from "../lib/db.js";
 import * as h from "../lib/helper.js";
 import fs from "fs/promises";
@@ -7,7 +8,6 @@ class model {
       return { mtime: new Date("01/01/2000") };
     });
     let result = [];
-    console.log(req.staticUrl);
     if (new Date() - stats.mtime > h.pageExpiry) {
       let teams = await DB.query(
         "SELECT DISTINCT(sHomeTeam) FROM MatchDB WHERE bVoided = 1 ORDER BY sHomeTeam",
@@ -67,9 +67,9 @@ class model {
     let team = req.params.teamID.split("-")[0];
     let sql = await DB.query(
       `
-            SELECT sWinningTeam,CupDB.iType,MatchDB.iID,sHomeTeam,sAwayTeam,dUTCTime,iYear,sSeason 
+            SELECT sWinningTeam,CupDB.iType,MatchDB.iID,sHomeTeam,sAwayTeam,dUTCTime,iYear,sSeason,sName,sRound, bVoided 
             FROM MatchDB INNER JOIN CupDB ON MatchDB.iCupID = CupDB.iID 
-            WHERE CupDB.iType <=4 AND bVoided = 1 AND (sHomeTeam=? OR sAwayTeam=?) 
+            WHERE CupDB.iType <=4 AND (sHomeTeam=? OR sAwayTeam=?) 
             AND sWinningTeam <> '' ORDER BY dUTCTime`,
       [team, team]
     );
@@ -82,7 +82,8 @@ class model {
       2: { bWin: { ...Btemplate }, bLose: { ...Btemplate }, cups: {} },
       4: { bWin: { ...Btemplate }, bLose: { ...Btemplate }, cups: {} },
     };
-
+    let matches = [];
+    let offMatches = 0;
     for (let i in sql) {
       let row = sql[i];
       let subsql = await DB.query(
@@ -96,50 +97,96 @@ class model {
       ).then(function (result) {
         return result[0];
       });
-      let tg = subsql.tg;
-      let eg = subsql.eg;
+      let tg = subsql.tg || 0;
+      let eg = subsql.eg || 0;
       let gd = tg - eg;
       let e = row.sHomeTeam == team ? row.sAwayTeam : row.sHomeTeam;
-      if (row.iType == 3) row.iType = 2;
-      let cupSeason = row.iYear + row.sSeason;
-      if (typeof stats[row.iType].cups[cupSeason] == "undefined") {
-        stats[row.iType].cups[cupSeason] = {
-          wins: 0,
-          draws: 0,
-          losses: 0,
-          gf: 0,
-          ga: 0,
-        };
+
+      subsql = await DB.query(
+        `
+          SELECT * 
+          FROM PlayerDB 
+          INNER JOIN EventDB ON PlayerDB.iID = EventDB.iPlayerID
+          WHERE iMatchID=? AND ((sTeam = ? AND iType IN (1,4)) OR (sTeam <> ? AND iType IN(3))) AND iLink > 0 ORDER BY iLink,dRegTime,dInjTime`,
+        [row.iID, team, team]
+      );
+      let scorers = {};
+      for (let scorerRow of Array.from(subsql)) {
+        const pID = scorerRow.sTeam == team ? scorerRow.iLink : "0";
+        scorers[pID] = scorers[pID] || { id: pID, goals: [] };
+        let goal = scorerRow.dRegTime;
+        if (scorerRow.dInjTime >= 0) goal += "+" + scorerRow.dInjTime;
+        goal += `'`;
+        scorers[pID].goals.push(goal);
       }
-      if (team == row.sWinningTeam) {
-        stats[row.iType].cups[cupSeason].wins++;
+      let scorerArr = Object.values(scorers);
+      scorerArr.sort((a, b) => {
+        if (a.goals[0] > b.goals[0]) return 1;
+        if (a.goals[0] < b.goals[0]) return -1;
+        return 0;
+      });
+      if (row.bVoided) offMatches++;
+      let match = {
+        cup: h.cupShort(row.sName),
+        round: row.sRound,
+        date: h.dateFormat(row.dUTCTime, "short"),
+        team: e,
+        result: `${tg} - ${eg}`,
+        scorers: scorerArr,
+        num: row.bVoided ? offMatches : "",
+        status: "",
+      };
+      if (!row.bVoided) {
+        match.status = "V";
+      } else if (team == row.sWinningTeam) {
+        match.status = "W";
       } else if (row.sWinningTeam == e) {
-        stats[row.iType].cups[cupSeason].losses++;
+        match.status = "L";
       } else {
-        stats[row.iType].cups[cupSeason].draws++;
+        match.status = "D";
       }
-      stats[row.iType].cups[cupSeason].gf += +tg;
-      stats[row.iType].cups[cupSeason].ga += +eg;
-      if (gd > stats[row.iType].bWin.gd) {
-        console.log(gd, stats[row.iType].bWin.gd);
-        stats[row.iType].bWin.gd = gd;
-        stats[row.iType].bWin.results = [
-          `${tg} - ${eg} /${e}/ ${h.dateFormat(row.dUTCTime)}`,
-        ];
-      } else if (gd == stats[row.iType].bWin.gd) {
-        stats[row.iType].bWin.results.push(
-          `${tg} - ${eg} /${e}/ ${h.dateFormat(row.dUTCTime)}`
-        );
-      }
-      if (gd < stats[row.iType].bLose.gd) {
-        stats[row.iType].bLose.gd = gd;
-        stats[row.iType].bLose.results = [
-          `${tg} - ${eg} /${e}/ ${h.dateFormat(row.dUTCTime)}`,
-        ];
-      } else if (gd == stats[row.iType].bLose.gd) {
-        stats[row.iType].bLose.results.push(
-          `${tg} - ${eg} /${e}/ ${h.dateFormat(row.dUTCTime)}`
-        );
+      matches.push(match);
+      if (row.bVoided) {
+        if (row.iType == 3) row.iType = 2;
+        let cupSeason = row.iYear + row.sSeason;
+        if (typeof stats[row.iType].cups[cupSeason] == "undefined") {
+          stats[row.iType].cups[cupSeason] = {
+            wins: 0,
+            draws: 0,
+            losses: 0,
+            gf: 0,
+            ga: 0,
+          };
+        }
+        if (team == row.sWinningTeam) {
+          stats[row.iType].cups[cupSeason].wins++;
+        } else if (row.sWinningTeam == e) {
+          stats[row.iType].cups[cupSeason].losses++;
+        } else {
+          stats[row.iType].cups[cupSeason].draws++;
+        }
+        stats[row.iType].cups[cupSeason].gf += +tg;
+        stats[row.iType].cups[cupSeason].ga += +eg;
+        if (gd > stats[row.iType].bWin.gd) {
+          stats[row.iType].bWin.gd = gd;
+          stats[row.iType].bWin.results = [
+            `${tg} - ${eg} /${e}/ ${h.dateFormat(row.dUTCTime)}`,
+          ];
+        } else if (gd == stats[row.iType].bWin.gd) {
+          stats[row.iType].bWin.results.push(
+            `${tg} - ${eg} /${e}/ ${h.dateFormat(row.dUTCTime)}`
+          );
+        }
+        if (gd < stats[row.iType].bLose.gd) {
+          stats[row.iType].bLose.gd = gd;
+          stats[row.iType].bLose.results = [
+            `${tg} - ${eg} /${e}/ ${h.dateFormat(row.dUTCTime)}`,
+          ];
+        } else if (gd == stats[row.iType].bLose.gd) {
+          stats[row.iType].bLose.results.push(
+            `${tg} - ${eg} /${e}/ ${h.dateFormat(row.dUTCTime)}`
+          );
+        }
       }
     }
     let statsHtml = `<h3 id='stats'>Stats</h3><table>
@@ -231,8 +278,225 @@ class model {
                 </tr>
             `;
     statsHtml += `</table>`;
-    let html = `<h2>/${team}/</h2>` + statsHtml;
+    let matchesHtml = `<h3 id='matches'>Matches</h3><table>
+    <tr>
+      <th>Cup</th>
+      <th>Round</th>
+      <th>Date</th>
+      <th>Team</th>
+      <th>Result</th>
+      <th>Scorers</th>
+    </tr>`;
+    let cup = "";
+    for (let i = 0; i < matches.length; i++) {
+      const match = matches[i];
+      matchesHtml += `<tr class=${match.status}>`;
+      if (cup != match.cup) {
+        cup = match.cup;
+        let cupNum = 0;
+        for (let j = i; j < matches.length; j++) {
+          if (matches[j].cup == cup) {
+            cupNum++;
+          } else {
+            break;
+          }
+        }
+        matchesHtml += `<th style='background:var(--bg-color);color:var(--fg-color);vertical-align:top' rowspan=${cupNum}>${match.cup}</th>`;
+      }
+      let scorers = [];
+      for (let player of match.scorers) {
+        let goalStr = "";
+        if (player.id == 0) {
+          goalStr += "Own Goal ";
+        } else {
+          goalStr += (await h.playerLink(player.id)) + " ";
+        }
+        goalStr += player.goals.join(", ");
+        scorers.push(goalStr);
+      }
+      matchesHtml += `
+        <td>${match.round}</td>
+        <td>${match.date}</td>
+        <td>${h.teamLink(match.team)}</td>
+        <td>${match.result}</td>
+        <td>${scorers.join("<br>")}</td>
+        <td style='background:var(--bg-color);color:var(--fg-color)'>${
+          match.num
+        }</td>
+      `;
+    }
+    matchesHtml += "</table>";
+
+    //Roster
+    sql = await DB.query(
+      `SELECT iYear, sSeason FROM CupDB INNER JOIN MatchDB ON CupDB.iID = MatchDB.iCupID WHERE sHomeTeam = ? AND iType <= 3 GROUP BY iYear, sSeason ORDER BY MAX(dStart)`,
+      [team]
+    );
+    let cups = [];
+    for (let row of Array.from(sql)) {
+      cups.push({ year: row.iYear, season: row.sSeason });
+    }
+
+    let avgList = [];
+    sql = await DB.query(
+      `
+  SELECT 
+    sPlayer,iCupID,sMedal,bStarting,bCaptain,iLink,sSeason,iYear
+  FROM 
+    PlayerDB
+  INNER JOIN 
+    PlayerLinkDB ON PlayerDB.iLink = PlayerLinkDB.iID 
+  INNER JOIN
+      CupDB ON CupDB.iID = PlayerDB.iCupID
+  LEFT JOIN
+    PerformanceDB ON PlayerDB.iID = PerformanceDB.iPlayerID
+  WHERE 
+    PlayerDB.sTeam = ?
+    AND sPlayer <> 'Unknown Player'
+    AND iCupID IN (SELECT MAX(CupDB.iID) FROM CupDB INNER JOIN MatchDB ON CupDB.iID = MatchDB.iCupID WHERE (sHomeTeam = ? OR sAwayTeam = ?) AND iType <= 3 GROUP BY iYear, sSeason) 
+  GROUP BY 
+  sPlayer,iCupID,sMedal,bStarting,bCaptain,iLink,sSeason,iYear
+  ORDER BY 
+    iCupID,sPlayer`,
+      [team, team, team]
+    );
+    let arr = {};
+    for (let row of Array.from(sql)) {
+      arr[row.iLink] = arr[row.iLink] || {
+        id: row.iLink,
+        cups: 0,
+        name: await h.playerLink(row.iLink),
+        truename: row.sPlayer,
+      };
+      let data = "";
+      if (row["sMedal"] == "Gold") {
+        data = 5;
+      } else if (row["sMedal"] == "Silver") {
+        data = 4;
+      } else if (row["sMedal"] == "Bronze") {
+        data = 3;
+      } else if (row["bStarting"]) {
+        data = 2;
+      } else {
+        data = 1;
+      }
+      if (row.bCaptain) data += 0.5;
+      arr[row.iLink][row.iYear + row.sSeason] = data;
+      arr[row.iLink].cups++;
+    }
+    for (let player of Object.values(arr)) {
+      const id = player.id;
+      sql = await DB.query(
+        `SELECT COUNT(*) AS 'c' FROM MatchDB INNER JOIN PerformanceDB ON MatchDB.iID = PerformanceDB.iMatchID INNER JOIN PlayerDB ON PlayerDB.iID = PerformanceDB.iPlayerID WHERE bVoided = 1 AND iLink=?`,
+        [id]
+      );
+      player.apps = sql[0].c;
+      sql = await DB.query(
+        `SELECT CASE WHEN COUNT(*) > 0 THEN COUNT(*) ELSE '' END AS 'c' FROM EventDB INNER JOIN PlayerDB ON EventDB.iPlayerID = PlayerDB.iID INNER JOIN MatchDB ON MatchDB.iID = EventDB.iMatchID WHERE iType IN(1,4) AND bVoided = 1 AND iLink=?`,
+        [id]
+      );
+      player.goals = sql[0].c;
+      sql = await DB.query(
+        `SELECT CASE WHEN COUNT(*) > 0 THEN COUNT(*) ELSE '' END AS 'c' FROM EventDB INNER JOIN PlayerDB ON EventDB.iPlayerID = PlayerDB.iID INNER JOIN MatchDB ON MatchDB.iID = EventDB.iMatchID WHERE iType IN(2) AND bVoided = 1 AND iLink=?`,
+        [id]
+      );
+      player.assists = sql[0].c;
+      sql = await DB.query(
+        `SELECT SUM(iSaves) AS 'c' FROM PerformanceDB INNER JOIN PlayerDB ON PerformanceDB.iPlayerID = PlayerDB.iID INNER JOIN MatchDB ON MatchDB.iID = PerformanceDB.iMatchID WHERE iSaves > -1 AND bVoided = 1 AND iLink=?`,
+        [id]
+      );
+      player.saves = sql[0].c || "";
+      sql = await DB.query(
+        `SELECT AVG(dRating) AS 'c' FROM PerformanceDB INNER JOIN PlayerDB ON PerformanceDB.iPlayerID = PlayerDB.iID INNER JOIN MatchDB ON MatchDB.iID = PerformanceDB.iMatchID WHERE dRating > -1 AND bVoided = 1 AND iLink=?`,
+        [id]
+      );
+      player.rating = Math.round(sql[0].c * 100) / 100;
+      avgList.push(player.apps);
+    }
+    let players = Object.values(arr);
+    let avg =
+      Math.round(
+        (avgList.reduce((partialSum, a) => partialSum + a, 0) /
+          avgList.length) *
+          100
+      ) / 100;
+    let rosterHeader = [];
+    rosterHeader.push([
+      { text: "Roster Timeline", sort: "truename", dir: true },
+      { text: "Apps", sort: "apps" },
+      { text: "Cups", sort: "cups" },
+      { text: "G", sort: "goals" },
+      { text: "A", sort: "assists" },
+      { text: "S", sort: "saves" },
+      { text: "R", sort: "rating" },
+    ]);
+    let i = 0;
+    do {
+      const cup = cups[i];
+      let yearLength = 0;
+      for (let j = i; j < cups.length; j++) {
+        if (cup.year == cups[j].year) {
+          yearLength++;
+        } else {
+          break;
+        }
+      }
+      rosterHeader[0].push({ text: cup.year, colSpan: yearLength });
+      i += yearLength;
+    } while (i < cups.length);
+    rosterHeader.push([{ text: "Click header to sort", colSpan: 7 }]);
+    for (let cup of cups) {
+      rosterHeader[1].push({
+        text: cup.season.substring(0, 3),
+        sort: cup.year + cup.season,
+      });
+    }
+    let rosterFooter = `<tr><td>Average Tenure</td><td></td><td>${avg}</td></tr>`;
+    let html =
+      statsHtml +
+      matchesHtml +
+      `<STYLE>
+      .t5{
+        background:#E0C068;
+        color:#E0C068;
+        width:20px;
+      }
+      .t4{
+        background:#B7BEC5;
+        color:#B7BEC5;
+      }
+      .t3{
+        background:#BE9588;
+        color:#BE9588;
+      }
+      .t2{
+        background:#88C594;
+        color:#88C594;
+      }
+      .t1{
+        background:#AFE5BA;
+        color:#AFE5BA;
+      }
+      .no{
+        opacity:0;
+      }
+      .cap::after{
+        content:" C";
+        color:black;
+      }
+      .W a,
+    .D a,
+    .L a,
+    .V a {
+      color: black !important;
+    }</STYLE>`;
     result.html = html;
+    result.roster = {
+      header: rosterHeader,
+      footer: rosterFooter,
+      data: players,
+      cups,
+    };
     result.date = new Date().toLocaleString("en-us", {
       timeStyle: "short",
       dateStyle: "medium",

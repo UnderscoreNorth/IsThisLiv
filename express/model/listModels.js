@@ -33,7 +33,6 @@ class model {
       UNION
       SELECT sAwayTeam AS sTeam FROM MatchDB WHERE iCupID=${cupID}${where}) t
     GROUP BY sTeam ${order} ${dir}`;
-    console.log(query);
     const result = await DB.query(query);
     res.send(result);
   };

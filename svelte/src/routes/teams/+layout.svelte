@@ -77,31 +77,15 @@
 
 <div id="container">
 	<vertNav class="c-1">
-		{#if $page.url.pathname != '/teams'}
-			<a href="#stats">Stats</a>
-			<a href="#matches">Matches</a>
-			<a href="#roster">Roster</a>
-			<hr style="width:100%" />
-			<div id="navTeams">
-				{#each links as link}
-					<a href="/teams/{link}">
-						<div class={$page.url.pathname == '/teams/' + link ? 'selectedPage' : 'unselectedPage'}>
-							/{link}/
-						</div>
-					</a>
-				{/each}
-			</div>
-		{:else}
-			<div id="navTeamsFull">
-				{#each links as link}
-					<a href="/teams/{link}">
-						<div class={$page.url.pathname == '/teams/' + link ? 'selectedPage' : 'unselectedPage'}>
-							/{link}/
-						</div>
-					</a>
-				{/each}
-			</div>
-		{/if}
+		<div id="navTeams">
+			{#each links as link}
+				<a href="/teams/{link}" class="fuckyou">
+					<div class={$page.url.pathname == '/teams/' + link ? 'selectedPage' : 'unselectedPage'}>
+						/{link}/
+					</div>
+				</a>
+			{/each}
+		</div>
 	</vertNav>
 	<div id="slotContainer">
 		<slot />
@@ -110,7 +94,10 @@
 
 <style>
 	#slotContainer {
-		padding: 1rem;
+		height: calc(100vh - 2.5rem);
+		display: flex;
+		flex-direction: column;
+		overflow-y: hidden;
 	}
 	#container {
 		display: grid;
@@ -127,17 +114,19 @@
 		padding-left: 0.25rem;
 		padding-right: 1rem;
 	}
-	#navTeams,
-	#navTeamsFull {
+	#navTeams {
 		overflow-x: hidden;
 		overflow-y: scroll;
-		overflow-wrap: break-word;
 		margin-right: -1rem;
 	}
 	#navTeams {
-		height: calc(100vh - 9rem);
+		height: calc(100vh - 3.5rem);
+		margin-top: -1rem;
+		margin-bottom: -1rem;
+		padding: 0.5rem 0rem;
 	}
-	#navTeamsFull {
-		height: calc(100vh - 4.5rem);
+	.fuckyou {
+		display: inline-block;
+		width: 100%;
 	}
 </style>

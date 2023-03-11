@@ -7,10 +7,7 @@
 	import Brackets from '$lib/brackets.svelte';
 	let api = config.api;
 	let matchID = 0;
-	let data = (async () => {
-		const response = await fetch(`${api}api` + $page.url.pathname);
-		return await response.json();
-	})();
+	export let data;
 	/**
 	 *
 	 * @param {number} ID

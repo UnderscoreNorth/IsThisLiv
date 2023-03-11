@@ -17,6 +17,12 @@ import listModels from "../model/listModels.js";
 import loginModels from "../model/loginModels.js";
 import ffController from "../model/ff/ffController.js";
 import managerModels from "../model/managerModels.js";
+import rematches from "../model/misc/rematches.js";
+import lastEliteKnockout from "../model/misc/lastElite.js";
+import roundTour from "../model/misc/roundTour.js";
+import eliteStreaks from "../model/misc/eliteStreaks.js";
+import subbingGK from "../model/misc/subbingGK.js";
+import subonMOTM from "../model/misc/subonMOTM.js";
 
 const router = express.Router();
 router.use("/cups/:cupID", cupModels.cup);
@@ -41,6 +47,12 @@ router.use("/misc/bench_warmers", benchWarmers.main);
 router.use("/misc/bench_medal", benchedMedals.main);
 router.use("/misc/blessed_players", blessedPlayer.main);
 router.use("/misc/cursed_players", cursedPlayer.main);
+router.use("/misc/rematches", rematches.main);
+router.use("/misc/last_elite_knockout", lastEliteKnockout.main);
+router.use("/misc/round_tour", roundTour.main);
+router.use("/misc/elite_streaks", eliteStreaks.main);
+router.use("/misc/subbing_the_keeper", subbingGK.main);
+router.use("/misc/sub_on_motm", subonMOTM.main);
 
 async function loadCache(req, res, next) {
   let stats = await fs.stat(req.staticUrl).catch((err) => {

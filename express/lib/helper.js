@@ -110,6 +110,19 @@ export function asort(object) {
     .sort(([, a], [, b]) => a - b)
     .reduce((r, [k, v]) => ({ ...r, [k]: v }), {});
 }
+export function keySort(object, key, descending = false) {
+  object.sort((a, b) => {
+    let r = 0;
+    if (a[key] > b[key]) {
+      r = 1;
+    } else if (a[key] < b[key]) {
+      r = -1;
+    }
+    if (descending) r *= -1;
+    return r;
+  });
+  return object;
+}
 
 export function arsort(object, index = 0) {
   return Object.entries(object).sort(([, a], [, b]) => {
@@ -117,6 +130,6 @@ export function arsort(object, index = 0) {
   });
 }
 
-export const pageExpiry = 86400000; //86400000;
+export const pageExpiry = 0; //86400000;
 
 export const goalTypes = [1, 4];

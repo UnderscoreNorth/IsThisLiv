@@ -1,4 +1,4 @@
-<script lang='ts'>
+<script lang="ts">
 	import { page } from '$app/stores';
 	import { sineIn } from 'svelte/easing';
 	import { Drawer } from 'flowbite-svelte';
@@ -6,7 +6,7 @@
 	import MdMenu from 'svelte-icons/md/MdMenu.svelte';
 	import UserModal from '$lib/userModal.svelte';
 	import { User } from '$lib/user';
-	let width:any;
+	let width: any;
 	let drawerHidden = true;
 	let transitionParams = {
 		x: -320,
@@ -65,7 +65,12 @@
 		<icon on:click={() => (drawerHidden = !drawerHidden)}>
 			<MdMenu />
 		</icon>
-		<span style='margin-left:0.5rem'>IsThisLiv {links.filter(x=>$page.url.pathname.includes(x[0]) && x[0] !== '/').map(x=>'- ' + x[1]).join('')}</span>
+		<span style="margin-left:0.5rem"
+			>IsThisLiv {links
+				.filter((x) => $page.url.pathname.includes(x[0]) && x[0] !== '/')
+				.map((x) => '- ' + x[1])
+				.join('')}</span
+		>
 	{:else}
 		{#each links as link}
 			<a
@@ -81,7 +86,7 @@
 				{link[1]}</a
 			>
 		{/each}
-	{/if}	
+	{/if}
 	<div id="rightNav" style="float:right">
 		<button on:click={toggleDarkMode}>Dark Mode</button>
 		<icon on:click={toggleLogin}><MdPerson /></icon>
@@ -126,13 +131,13 @@
 	:global(a) {
 		color: var(--fg-color);
 		text-decoration: none;
+		padding: 0.1rem;
+		margin: -0.1rem;
+		border-radius: 3px;
 	}
 	:global(a:hover) {
 		background: #2e51a2;
-		border-radius: 3px;
 		color: white;
-		padding: 0.1rem;
-		margin: -0.1rem;
 	}
 	:global(.c-1) {
 		background: var(--bg-c1);
@@ -194,12 +199,12 @@
 		height: 2.5rem;
 		color: white;
 		line-height: 2.5rem;
-		padding:0 1.25rem;
-		display:flex;
+		padding: 0 1.25rem;
+		display: flex;
 	}
 	@media only screen and (max-width: 600px) {
-		nav{
-			padding:0;
+		nav {
+			padding: 0;
 		}
 	}
 	nav a,
@@ -222,7 +227,7 @@
 		cursor: pointer;
 		border-radius: 0.25rem;
 		padding: 0.25rem;
-		display:block;
+		display: block;
 	}
 	nav a:hover,
 	nav button:hover,
@@ -231,8 +236,8 @@
 		border-radius: 0;
 	}
 	#rightNav {
-		margin-left:auto;
-		display:flex;
+		margin-left: auto;
+		display: flex;
 	}
 	nav .selected {
 		background: white;
@@ -256,8 +261,8 @@
 		line-height: 1.5rem;
 		text-decoration: none;
 	}
-	:global(.mobileRow){
-		height:2.5rem;
-		line-height:2.5rem;
+	:global(.mobileRow) {
+		height: 2.5rem;
+		line-height: 2.5rem;
 	}
 </style>

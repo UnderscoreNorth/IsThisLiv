@@ -4,10 +4,7 @@
 	 * @param {object} api
 	 */
 	let api = config.api;
-	let data = (async () => {
-		const response = await fetch(`${api}api/cups`);
-		return await response.json();
-	})();
+	export let data;
 </script>
 
 <svelte:head>
@@ -40,7 +37,7 @@
 					</tr>
 				</thead>
 				<tbody>
-					{#each data as row}
+					{#each data.rows as row}
 						<tr>
 							{#each row as cell}
 								<td>{@html cell}</td>

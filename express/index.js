@@ -11,7 +11,7 @@ app.use("/", middleware);
 app.use("/api/", routes);
 
 function middleware(req, res, next) {
-  console.log(req.url);
+  console.log(req.url, new Date());
   req.staticUrl = "build/" + req.url.replace(/\//g, "__") + ".json";
   next();
 }

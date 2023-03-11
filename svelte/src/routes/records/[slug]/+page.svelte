@@ -4,19 +4,26 @@
 	import { afterNavigate } from '$app/navigation';
 	let api = config.api;
 	let firstLoad = true;
-	export let data;
+	let data = fetch(`${api}api` + $page.url.pathname).then((result) => {
+		firstLoad = false;
+		return result.json();
+	});
+	afterNavigate(() => {
+		if (!firstLoad) {
+			data = fetch(`${api}api` + $page.url.pathname).then((result) => {
+				return result.json();
+			});
+		}
+	});
 </script>
 
-<svelte:head>
-	<title
-		>{$page.url.pathname
-			.substring(6)
-			.split('_')
-			.map((x) => x.charAt(0).toUpperCase() + x.substring(1).toLowerCase())
-			.join(' ')} - IsThisLiv</title
-	>
-</svelte:head>
-
+<title
+	>{$page.url.pathname
+		.substring(9)
+		.split('-')
+		.map((x) => x.charAt(0).toUpperCase() + x.substring(1).toLowerCase())
+		.join(' ')} - IsThisLiv</title
+>
 <container>
 	{#await data}
 		<h2>Loading...</h2>

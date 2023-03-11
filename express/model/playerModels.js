@@ -252,7 +252,6 @@ class model {
                 }</th>
             </tr>`;
     for (let optionalStat of optionalStats) {
-      console.log(optionalStat);
       if (optionalStat[1] > 0) {
         overallHtml += `<tr>
                     <th>${optionalStat[0]}</th>
