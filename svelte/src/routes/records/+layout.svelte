@@ -47,7 +47,7 @@
 	</div>
 </Drawer>
 <div id="container">
-	{#if width < 1000}
+	{#if width <= 1000}
 		<div class="mobileRow c-1" style="display:flex">
 			<!-- svelte-ignore a11y-click-events-have-key-events -->
 			<icon on:click={() => (drawerHidden = !drawerHidden)}>
@@ -103,7 +103,7 @@
 		position: relative;
 		height: 100%;
 	}
-	@media only screen and (max-width: 600px) {
+	@media only screen and (max-width: 1000px) {
 		#container {
 			grid-template-columns: 1fr;
 			grid-template-rows: 2.5rem 1fr;

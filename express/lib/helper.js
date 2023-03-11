@@ -1,6 +1,7 @@
 import DB from "../lib/db.js";
 import fs from "fs/promises";
 import path from "path";
+export const pageExpiry = 86400000; //86400000;
 
 export async function rebuild(whitelist = []) {
   console.log("rebuild");
@@ -129,7 +130,5 @@ export function arsort(object, index = 0) {
     return b[index] - a[index];
   });
 }
-
-export const pageExpiry = 0; //86400000;
 
 export const goalTypes = [1, 4];

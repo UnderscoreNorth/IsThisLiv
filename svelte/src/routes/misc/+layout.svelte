@@ -1,9 +1,9 @@
-<script lang='ts'>
+<script lang="ts">
 	import { page } from '$app/stores';
 	import { sineIn } from 'svelte/easing';
 	import { Drawer } from 'flowbite-svelte';
 	import MdMenu from 'svelte-icons/md/MdMenu.svelte';
-	let width:any;
+	let width: any;
 	let drawerHidden = true;
 	let transitionParams = {
 		x: -320,
@@ -43,6 +43,7 @@
 		['roster_stats', 'Roster Stats']
 	];
 </script>
+
 <svelte:window bind:innerWidth={width} />
 <Drawer
 	backdrop={true}
@@ -58,24 +59,29 @@
 	</div>
 </Drawer>
 <div id="container">
-	{#if width < 1000}
-		<div class='mobileRow c-1' style='display:flex'>
+	{#if width <= 1000}
+		<div class="mobileRow c-1" style="display:flex">
 			<!-- svelte-ignore a11y-click-events-have-key-events -->
 			<icon on:click={() => (drawerHidden = !drawerHidden)}>
 				<MdMenu />
 			</icon>
-			<span style='margin-left:0.5rem'>{links.filter(x=>$page.url.pathname.includes(x[0]) && x[0] !== '/').map(x=>x[1]).join('')}</span>
+			<span style="margin-left:0.5rem"
+				>{links
+					.filter((x) => $page.url.pathname.includes(x[0]) && x[0] !== '/')
+					.map((x) => x[1])
+					.join('')}</span
+			>
 		</div>
 	{:else}
-	<vertNav class="c-1">
-		{#each links as link}
-			<a href="/misc/{link[0]}">
-				<div class={$page.url.pathname == '/misc/' + link[0] ? 'selectedPage' : 'unselectedPage'}>
-					{link[1]}
-				</div>
-			</a>
-		{/each}
-	</vertNav>
+		<vertNav class="c-1">
+			{#each links as link}
+				<a href="/misc/{link[0]}">
+					<div class={$page.url.pathname == '/misc/' + link[0] ? 'selectedPage' : 'unselectedPage'}>
+						{link[1]}
+					</div>
+				</a>
+			{/each}
+		</vertNav>
 	{/if}
 	<slot />
 </div>
@@ -87,8 +93,8 @@
 		position: relative;
 		height: 100%;
 	}
-	@media only screen and (max-width: 600px) {
-		#container{
+	@media only screen and (max-width: 1000px) {
+		#container {
 			grid-template-columns: 1fr;
 			grid-template-rows: 2.5rem 1fr;
 		}

@@ -38,6 +38,7 @@
 	if (typeof localStorage !== 'undefined') $User.username = localStorage.getItem('username') || '';
 </script>
 
+<svelte:window bind:innerWidth={width} />
 <svelte:head>
 	<script>
 		if (document && typeof document !== 'undefined') {
@@ -45,7 +46,7 @@
 		}
 	</script>
 </svelte:head>
-<svelte:window bind:innerWidth={width} />
+
 <Drawer
 	backdrop={true}
 	transitiontype="fly"
@@ -60,7 +61,7 @@
 	</div>
 </Drawer>
 <nav id="Nav">
-	{#if width < 1000}
+	{#if width <= 1000}
 		<!-- svelte-ignore a11y-click-events-have-key-events -->
 		<icon on:click={() => (drawerHidden = !drawerHidden)}>
 			<MdMenu />
@@ -202,7 +203,7 @@
 		padding: 0 1.25rem;
 		display: flex;
 	}
-	@media only screen and (max-width: 600px) {
+	@media only screen and (max-width: 1000px) {
 		nav {
 			padding: 0;
 		}
