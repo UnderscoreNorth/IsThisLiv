@@ -1,10 +1,13 @@
 <script>
 	import config from '$lib/config.json';
 	import { page } from '$app/stores';
+	import { User } from '$lib/user';
+	import MdAddBox from 'svelte-icons/md/MdAddBox.svelte';
 	import { teamLink } from '$lib/helper';
-	import MatchEdit from '$lib/MatchEdit/MatchEdit.svelte';
-	import MatchDisplay from '$lib/matchDisplay.svelte';
+	import MatchEdit from '$lib/matches/MatchEdit/MatchEdit.svelte';
+	import MatchDisplay from '$lib/matches/matchDisplay.svelte';
 	import Brackets from '$lib/brackets.svelte';
+	import MatchAdd from '$lib/matches/MatchAdd.svelte';
 	let api = config.api;
 	let matchID = 0;
 	export let data;
@@ -15,6 +18,10 @@
 	function editMatch(ID) {
 		matchID = ID;
 	}
+	let displayAddMatchModal = false;
+	let toggleAddMatchModal = () => {
+		displayAddMatchModal = !displayAddMatchModal;
+	};
 </script>
 
 <svelte:head>
@@ -27,6 +34,13 @@
 {#await data}
 	Loading...
 {:then data}
+	{#if displayAddMatchModal}
+		<MatchAdd
+			cupID={data.cupID}
+			toggleModal={toggleAddMatchModal}
+			hasMatches={Object.values(data.matches).length > 0}
+		/>
+	{/if}
 	<container>
 		<vertNav class="c-1">
 			<a href="#Top">Top</a>
@@ -47,7 +61,17 @@
 			<a href="#Stats">Fantasy Football</a>
 		</vertNav>
 		<contents>
-			<h1 id="Top">{data.cupName}</h1>
+			<h1 id="Top">
+				{data.cupName}{#if $User.username}
+					<icon
+						title={'Add match(es)'}
+						on:click={() => {
+							displayAddMatchModal = true;
+						}}
+						style="display:inline-block;vertical-align:text-bottom"><MdAddBox /></icon
+					>
+				{/if}
+			</h1>
 			<statContainer class="c-1">
 				Dates: {data.dates} Matches: {data.numMatches} Goals Scored: {data.goals} ({data.gpm} gpm)
 			</statContainer>

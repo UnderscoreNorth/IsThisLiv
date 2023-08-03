@@ -1,6 +1,10 @@
 {
-  "host": "",
-  "user": "",
-  "password": "",
-  "database": ""
+  "sql": {
+    "host": "",
+    "user": "",
+    "password": "",
+    "database": "",
+    "namedPlaceholders": true
+  },
+  "port": 3000
 }

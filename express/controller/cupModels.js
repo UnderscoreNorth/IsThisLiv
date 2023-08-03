@@ -1,5 +1,11 @@
 import DB from "../lib/db.js";
-import { teamLink, pageExpiry, cupLink, playerLink } from "../lib/helper.js";
+import {
+  teamLink,
+  pageExpiry,
+  cupLink,
+  playerLink,
+  cupShort,
+} from "../lib/helper.js";
 import fs from "fs/promises";
 class model {
   static main = async (req, res, next) => {
@@ -349,6 +355,7 @@ class model {
         if (a.num > b.num) return -1;
         return 1;
       });
+      result.cupID = cupID;
       result.cupName = cupMeta.sName;
       result.dates = `${new Date(
         cupMeta.dStart
@@ -365,6 +372,39 @@ class model {
     } else {
       result = JSON.parse(await fs.readFile(req.staticUrl));
     }
+    res.send(result);
+  };
+  static edit = async (req, res, next) => {
+    let result = {};
+    let data = req.body;
+    let rankPoints = 0;
+    if (data.type == 1) {
+      rankPoints = 21;
+    } else if (data.type == 2) {
+      rankPoints = 19;
+    } else if (data.type == 2.5) {
+      rankPoints = 21;
+      data.type = 2;
+    }
+    let query = `INSERT INTO CupDB (sName,sSeason,iYear,iType,dStart,dEnd,iRankPoints,sUser,iPes) VALUES
+    (?,?,?,?,?,?,?,?,?)`;
+    await DB.query(query, [
+      data.name,
+      data.season,
+      data.year,
+      data.type,
+      data.start,
+      data.finish,
+      rankPoints,
+      data.user,
+      data.version,
+    ]);
+    let cupID = await DB.query(
+      `SELECT iID FROM CupDB ORDER BY iID DESC LIMIT 1`
+    );
+    cupID = cupID[0].iID;
+    result.cupID = cupID;
+    result.cupURL = `${cupID}-${cupShort(data.name).replace(" ", "-")}`;
     res.send(result);
   };
 }

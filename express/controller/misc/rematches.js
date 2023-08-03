@@ -78,7 +78,7 @@ class model {
     }
     html += "</table></div><div class='rmCat'>";
     let fastest = [];
-    for (let i = 3; i <= 7; i++) {
+    for (let i = 2; i <= 7; i++) {
       fastest[i] = [];
     }
     for (let team of teams) {
@@ -94,7 +94,7 @@ class model {
         arr[at] = arr[at] || [];
         arr[at].push({ num: i, date: match.dUTCTime, round: match.sRound });
       }
-      for (let i = 3; i <= 7; i++) {
+      for (let i = 2; i <= 7; i++) {
         for (let at in arr) {
           let matches = arr[at];
           if (matches.length >= i) {
@@ -113,9 +113,9 @@ class model {
         }
       }
     }
-    for (let i = 3; i <= 7; i++) {
-      fastest[i] = keySort(fastest[i], "num", true);
-      html += `<h3>Fastest to rematch ${i} times</h3>
+    for (let i = 2; i <= 7; i++) {
+      fastest[i] = keySort(fastest[i], "num", false);
+      html += `<h3>Fastest to rematch ${i + 1} times</h3>
             <table><tr><th>Team</th><th>Opponent</th><th>First Match</th><th>Last Match</th><th>Done in # matches</th></tr>`;
       for (let j = 0; j < 25; j++) {
         if (!fastest[i][j]) break;

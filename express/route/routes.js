@@ -1,30 +1,35 @@
 import express from "express";
+import multer from "multer";
 import * as h from "../lib/helper.js";
 import fs from "fs/promises";
 
-import cupModels from "../model/cupModels.js";
-import teamModels from "../model/teamModels.js";
-import sqlModels from "../model/sqlModels.js";
-import repeatGroups from "../model/misc/repeatGroups.js";
-import mostDangerousLead from "../model/misc/mostDangerousLead.js";
-import subbedPlayers from "../model/misc/subbedPlayers.js";
-import benchWarmers from "../model/misc/benchWarmers.js";
-import benchedMedals from "../model/misc/benchedMedals.js";
-import blessedPlayer from "../model/misc/blessedPlayer.js";
-import cursedPlayer from "../model/misc/cursedPlayer.js";
-import playerModels from "../model/playerModels.js";
-import listModels from "../model/listModels.js";
-import loginModels from "../model/loginModels.js";
-import ffController from "../model/ff/ffController.js";
-import managerModels from "../model/managerModels.js";
-import rematches from "../model/misc/rematches.js";
-import lastEliteKnockout from "../model/misc/lastElite.js";
-import roundTour from "../model/misc/roundTour.js";
-import eliteStreaks from "../model/misc/eliteStreaks.js";
-import subbingGK from "../model/misc/subbingGK.js";
-import subonMOTM from "../model/misc/subonMOTM.js";
+import cupModels from "../controller/cupModels.js";
+import teamModels from "../controller/teamModels.js";
+import sqlModels from "../controller/sqlModels.js";
+import repeatGroups from "../controller/misc/repeatGroups.js";
+import mostDangerousLead from "../controller/misc/mostDangerousLead.js";
+import subbedPlayers from "../controller/misc/subbedPlayers.js";
+import benchWarmers from "../controller/misc/benchWarmers.js";
+import benchedMedals from "../controller/misc/benchedMedals.js";
+import blessedPlayer from "../controller/misc/blessedPlayer.js";
+import cursedPlayer from "../controller/misc/cursedPlayer.js";
+import playerModels from "../controller/playerModels.js";
+import listModels from "../controller/listModels.js";
+import loginModels from "../controller/loginModels.js";
+import ffController from "../controller/ff/ffController.js";
+import managerModels from "../controller/managerModels.js";
+import rematches from "../controller/misc/rematches.js";
+import lastEliteKnockout from "../controller/misc/lastElite.js";
+import roundTour from "../controller/misc/roundTour.js";
+import eliteStreaks from "../controller/misc/eliteStreaks.js";
+import subbingGK from "../controller/misc/subbingGK.js";
+import subonMOTM from "../controller/misc/subonMOTM.js";
+import editFile from "../controller/tools/editFile.js";
+import groupStage from "../controller/tools/groupStage.js";
+import records from "../controller/records/records.js";
 
 const router = express.Router();
+router.use("/cups/edit", cupModels.edit);
 router.use("/cups/:cupID", cupModels.cup);
 router.use("/cups", cupModels.main);
 router.use("/login", loginModels.login);
@@ -53,6 +58,13 @@ router.use("/misc/round_tour", roundTour.main);
 router.use("/misc/elite_streaks", eliteStreaks.main);
 router.use("/misc/subbing_the_keeper", subbingGK.main);
 router.use("/misc/sub_on_motm", subonMOTM.main);
+router.use("/records/", records.main);
+router.post(
+  "/tools/processSave",
+  multer({ dest: "uploads/" }).fields([{ name: "file" }, { name: "cups" }]),
+  editFile.process
+);
+router.post("/tools/groupStage", multer().none(), groupStage.save);
 
 async function loadCache(req, res, next) {
   let stats = await fs.stat(req.staticUrl).catch((err) => {

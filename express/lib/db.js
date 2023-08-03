@@ -13,7 +13,7 @@ class DB {
         console.log(query, params);
         console.trace(err);
         console.log("DB reattempt " + attempts);
-        connection = await mysql.createConnection(config);
+        connection = await mysql.createConnection(config.sql);
         rows = await this.query(query, params, attempts + 1);
       }
     }

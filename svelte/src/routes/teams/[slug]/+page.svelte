@@ -82,6 +82,7 @@
 				<tr>
 					{#each headerRow as header}
 						<th
+							class={header.sort ? 'pointer' : ''}
 							colspan={header.colSpan || 1}
 							on:click={() => {
 								if (header.sort) sortTable(header.sort, header.dir);
@@ -120,6 +121,10 @@
 {/await}
 
 <style>
+	.pointer:hover {
+		cursor: pointer;
+		background: var(--bg-c2);
+	}
 	#tbl_roster td {
 		font-size: 0.9rem;
 		overflow: hidden;

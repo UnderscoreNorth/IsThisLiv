@@ -444,7 +444,7 @@ class model {
       rosterHeader[0].push({ text: cup.year, colSpan: yearLength });
       i += yearLength;
     } while (i < cups.length);
-    rosterHeader.push([{ text: "Click header to sort", colSpan: 7 }]);
+    rosterHeader.push([{ text: "", colSpan: 7 }]);
     for (let cup of cups) {
       rosterHeader[1].push({
         text: cup.season.substring(0, 3),

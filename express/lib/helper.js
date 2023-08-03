@@ -1,7 +1,7 @@
 import DB from "../lib/db.js";
 import fs from "fs/promises";
 import path from "path";
-export const pageExpiry = 86400000; //86400000;
+export const pageExpiry = 1; //86400000;
 
 export async function rebuild(whitelist = []) {
   console.log("rebuild");

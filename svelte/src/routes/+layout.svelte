@@ -13,7 +13,7 @@
 		duration: 0,
 		easing: sineIn
 	};
-	const links = [
+	let linksArray = [
 		['/', 'IsThisLiv'],
 		['/cups', 'Cups'],
 		['/teams', 'Teams'],
@@ -25,6 +25,13 @@
 		['https://cytu.be/r/the4chancup', 'Stream'],
 		['https://implying.fun', 'VODs']
 	];
+	let links = new Set(linksArray);
+	$: if ($User.username) {
+		links.add(['/tools', 'Tools']);
+	} else {
+		console.log($User.username);
+	}
+
 	let loginFlag = false;
 	function toggleDarkMode() {
 		localStorage.setItem(
@@ -55,7 +62,7 @@
 	id="sidebar1"
 >
 	<div id="mainDrawer">
-		{#each links as link}
+		{#each Array.from(links) as link}
 			<a href={link[0]} on:click={() => (drawerHidden = true)}>{link[1]}</a>
 		{/each}
 	</div>
@@ -67,13 +74,13 @@
 			<MdMenu />
 		</icon>
 		<span style="margin-left:0.5rem"
-			>IsThisLiv {links
+			>IsThisLiv {Array.from(links)
 				.filter((x) => $page.url.pathname.includes(x[0]) && x[0] !== '/')
 				.map((x) => '- ' + x[1])
 				.join('')}</span
 		>
 	{:else}
-		{#each links as link}
+		{#each Array.from(links) as link}
 			<a
 				href={link[0]}
 				class={link[0] == '/'

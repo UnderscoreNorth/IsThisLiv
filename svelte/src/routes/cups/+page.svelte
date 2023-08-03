@@ -1,17 +1,37 @@
 <script>
 	import config from '$lib/config.json';
+	import MdAddBox from 'svelte-icons/md/MdAddBox.svelte';
+	import CupModal from '$lib/cupModal.svelte';
+	import { User } from '$lib/user';
 	/**
 	 * @param {object} api
 	 */
 	let api = config.api;
 	export let data;
+	let displayCupModal = false;
+	let toggleCupModal = () => {
+		displayCupModal = !displayCupModal;
+	};
 </script>
 
 <svelte:head>
 	<title>Cups - IsThisLiv</title>
 </svelte:head>
 <div class="p-1" id="cupContainer">
-	<h1>Cup Stats</h1>
+	<h1>
+		Cup Stats
+		{#if $User.username}
+			<icon
+				on:click={() => {
+					displayCupModal = true;
+				}}
+				style="display:inline-block;vertical-align:text-bottom"><MdAddBox /></icon
+			>
+		{/if}
+	</h1>
+	{#if displayCupModal}
+		<CupModal {toggleCupModal} />
+	{/if}
 	{#await data}
 		<p>Loading...</p>
 	{:then data}
