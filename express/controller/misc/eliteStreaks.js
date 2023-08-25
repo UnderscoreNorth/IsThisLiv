@@ -16,9 +16,9 @@ class model {
     <table><tr><th>Without Babbies In Between</th><th>With Babbies In Between</th></tr><tr><td style='vertical-align:top'>
     <table><tr><th>#</th><th>Board</th><th>Start</th><th>End</th>`;
     let sql = await DB.query(`SELECT * FROM (
-        SELECT sHomeTeam AS 'team',iType,sName,dStart FROM MatchDB INNER JOIN CupDB ON MatchDB.iCupID = CupDB.iID WHERE bVoided = 1 AND iType <= 3 GROUP BY sHomeTeam,CupDB.iID
+        SELECT sHomeTeam AS 'team',iType,sName,dStart FROM MatchDB INNER JOIN CupDB ON MatchDB.iCupID = CupDB.iCupID WHERE bVoided = 1 AND iType <= 3 GROUP BY sHomeTeam,CupDB.iCupID
         UNION
-        SELECT sAwayTeam AS 'team',iType,sName,dStart FROM MatchDB INNER JOIN CupDB ON MatchDB.iCupID = CupDB.iID WHERE bVoided =1 AND iType <= 3 GROUP BY sAwayTeam,CupDB.iID) AS t 
+        SELECT sAwayTeam AS 'team',iType,sName,dStart FROM MatchDB INNER JOIN CupDB ON MatchDB.iCupID = CupDB.iCupID WHERE bVoided =1 AND iType <= 3 GROUP BY sAwayTeam,CupDB.iCupID) AS t 
         ORDER BY team,dStart`);
 
     let t = "";

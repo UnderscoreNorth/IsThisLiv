@@ -10,7 +10,7 @@ class model {
     html +=
       "<table><tr><th>Player</th><th>Pos</th><th>Sub On</th><th>Rating</th><th colspan=2>Match</th></tr>";
     let sql = await DB.query(
-      "SELECT *,PlayerDB.sName AS 'name',CupDB.sName AS 'cname' FROM PerformanceDB INNER JOIN PlayerDB ON PerformanceDB.iPlayerID = PlayerDB.iID INNER JOIN MatchDB ON MatchDB.iID = PerformanceDB.iMatchID INNER JOIN CupDB ON CupDB.iID = MatchDB.iCupID WHERE bMotM = 1 AND iSubOn > 0 ORDER BY dUTCTime DESC"
+      "SELECT *,PlayerDB.sName AS 'name',CupDB.sName AS 'cname' FROM PerformanceDB INNER JOIN PlayerDB ON PerformanceDB.iPlayerID = PlayerDB.iPlayerID INNER JOIN MatchDB ON MatchDB.iMatchID = PerformanceDB.iMatchID INNER JOIN CupDB ON CupDB.iCupID = MatchDB.iCupID WHERE bMotM = 1 AND iSubOn > 0 ORDER BY dUTCTime DESC"
     );
     for (let row of Array.from(sql)) {
       html += `<tr><td>${row.name}</td><td>${row.sRegPos}</td><td>${

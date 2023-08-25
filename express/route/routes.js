@@ -27,6 +27,8 @@ import subonMOTM from "../controller/misc/subonMOTM.js";
 import editFile from "../controller/tools/editFile.js";
 import groupStage from "../controller/tools/groupStage.js";
 import records from "../controller/records/records.js";
+import shitmedals from "../controller/misc/shitmedals.js";
+import shot_conversion from "../controller/misc/shot_conversion.js";
 
 const router = express.Router();
 router.use("/cups/edit", cupModels.edit);
@@ -58,6 +60,8 @@ router.use("/misc/round_tour", roundTour.main);
 router.use("/misc/elite_streaks", eliteStreaks.main);
 router.use("/misc/subbing_the_keeper", subbingGK.main);
 router.use("/misc/sub_on_motm", subonMOTM.main);
+router.use("/misc/shit_medals", shitmedals.main);
+router.use("/misc/shot_conversion", shot_conversion);
 router.use("/records/", records.main);
 router.post(
   "/tools/processSave",

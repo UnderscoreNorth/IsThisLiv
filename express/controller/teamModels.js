@@ -21,13 +21,13 @@ class model {
           `SELECT SUM(CASE WHEN sWinningTeam = '${team}' THEN 1 ELSE 0 END) AS 'w',SUM(CASE WHEN sWinningTeam = 'draw' THEN 1 ELSE 0 END) AS 'd',SUM(CASE WHEN sWinningTeam <> '${team}' AND sWinningTeam <> 'draw' THEN 1 ELSE 0 END) AS 'l' FROM MatchDB WHERE (sHomeTeam = '${team}' OR sAwayTeam = '${team}') AND bVoided = 1`
         );
         let goals = await DB.query(
-          `SELECT SUM(CASE WHEN (iType IN(1,4) AND sTeam='${team}') OR (iType = 3 AND sTeam <> '${team}') THEN 1 ELSE 0 END) AS 'gf', SUM(CASE WHEN (iType IN(1,4) AND sTeam<>'${team}') OR (iType = 3 AND sTeam = '${team}') THEN 1 ELSE 0 END) AS 'ga'FROM EventDB INNER JOIN MatchDB ON EventDB.iMatchID = MatchDB.iID INNER JOIN PlayerDB ON PlayerDB.iID = EventDB.iPlayerID WHERE (sHomeTeam = '${team}' OR sAwayTeam = '${team}') AND bVoided = 1`
+          `SELECT SUM(CASE WHEN (iType IN(1,4) AND sTeam='${team}') OR (iType = 3 AND sTeam <> '${team}') THEN 1 ELSE 0 END) AS 'gf', SUM(CASE WHEN (iType IN(1,4) AND sTeam<>'${team}') OR (iType = 3 AND sTeam = '${team}') THEN 1 ELSE 0 END) AS 'ga'FROM EventDB INNER JOIN MatchDB ON EventDB.iMatchID = MatchDB.iMatchID INNER JOIN PlayerDB ON PlayerDB.iPlayerID = EventDB.iPlayerID WHERE (sHomeTeam = '${team}' OR sAwayTeam = '${team}') AND bVoided = 1`
         );
         let eCups = await DB.query(
-          `SELECT COUNT(DISTINCT(iCupID)) AS 'c' FROM MatchDB INNER JOIN CupDB ON MatchDB.iCupID = CupDB.iID WHERE (sHomeTeam = '${team}' OR sAwayTeam = '${team}') AND bVoided = 1 AND iType = 1`
+          `SELECT COUNT(DISTINCT(iCupID)) AS 'c' FROM MatchDB INNER JOIN CupDB ON MatchDB.iCupID = CupDB.iCupID WHERE (sHomeTeam = '${team}' OR sAwayTeam = '${team}') AND bVoided = 1 AND iType = 1`
         );
         let bCups = await DB.query(
-          `SELECT COUNT(DISTINCT(CONCAT(iYear,sSeason))) AS 'c' FROM MatchDB INNER JOIN CupDB ON MatchDB.iCupID = CupDB.iID WHERE (sHomeTeam = '${team}' OR sAwayTeam = '${team}') AND bVoided = 1 AND iType IN (2,3)`
+          `SELECT COUNT(DISTINCT(CONCAT(iYear,sSeason))) AS 'c' FROM MatchDB INNER JOIN CupDB ON MatchDB.iCupID = CupDB.iCupID WHERE (sHomeTeam = '${team}' OR sAwayTeam = '${team}') AND bVoided = 1 AND iType IN (2,3)`
         );
         goals = goals[0];
         stats = stats[0];
@@ -67,8 +67,8 @@ class model {
     let team = req.params.teamID.split("-")[0];
     let sql = await DB.query(
       `
-            SELECT sWinningTeam,CupDB.iType,MatchDB.iID,sHomeTeam,sAwayTeam,dUTCTime,iYear,sSeason,sName,sRound, bVoided 
-            FROM MatchDB INNER JOIN CupDB ON MatchDB.iCupID = CupDB.iID 
+            SELECT sWinningTeam,CupDB.iType,MatchDB.iMatchID,sHomeTeam,sAwayTeam,dUTCTime,iYear,sSeason,sName,sRound, bVoided 
+            FROM MatchDB INNER JOIN CupDB ON MatchDB.iCupID = CupDB.iCupID 
             WHERE CupDB.iType <=4 AND (sHomeTeam=? OR sAwayTeam=?) 
             AND sWinningTeam <> '' ORDER BY dUTCTime`,
       [team, team]
@@ -91,7 +91,7 @@ class model {
                 SELECT SUM(CASE WHEN (iType = 3 AND sTeam <> ?) OR (iType IN (1,4) AND sTeam = ?) 
                 THEN 1 ELSE 0 END) AS 'tg',SUM(CASE WHEN (iType = 3 AND sTeam = ?) 
                 OR (iType IN (1,4) AND sTeam <> ?) THEN 1 ELSE 0 END) AS 'eg' 
-                FROM EventDB INNER JOIN PlayerDB ON PlayerDB.iID = EventDB.iPlayerID 
+                FROM EventDB INNER JOIN PlayerDB ON PlayerDB.iPlayerID = EventDB.iPlayerID 
                 WHERE iMatchID = ? AND iType IN (1,3,4)`,
         [team, team, team, team, row.iID]
       ).then(function (result) {
@@ -106,7 +106,7 @@ class model {
         `
           SELECT * 
           FROM PlayerDB 
-          INNER JOIN EventDB ON PlayerDB.iID = EventDB.iPlayerID
+          INNER JOIN EventDB ON PlayerDB.iPlayerID = EventDB.iPlayerID
           WHERE iMatchID=? AND ((sTeam = ? AND iType IN (1,4)) OR (sTeam <> ? AND iType IN(3))) AND iLink > 0 ORDER BY iLink,dRegTime,dInjTime`,
         [row.iID, team, team]
       );
@@ -329,7 +329,7 @@ class model {
 
     //Roster
     sql = await DB.query(
-      `SELECT iYear, sSeason FROM CupDB INNER JOIN MatchDB ON CupDB.iID = MatchDB.iCupID WHERE sHomeTeam = ? AND iType <= 3 GROUP BY iYear, sSeason ORDER BY MAX(dStart)`,
+      `SELECT iYear, sSeason FROM CupDB INNER JOIN MatchDB ON CupDB.iCupID = MatchDB.iCupID WHERE sHomeTeam = ? AND iType <= 3 GROUP BY iYear, sSeason ORDER BY MAX(dStart)`,
       [team]
     );
     let cups = [];
@@ -347,13 +347,13 @@ class model {
   INNER JOIN 
     PlayerLinkDB ON PlayerDB.iLink = PlayerLinkDB.iID 
   INNER JOIN
-      CupDB ON CupDB.iID = PlayerDB.iCupID
+      CupDB ON CupDB.iCupID = PlayerDB.iCupID
   LEFT JOIN
-    PerformanceDB ON PlayerDB.iID = PerformanceDB.iPlayerID
+    PerformanceDB ON PlayerDB.iPlayerID = PerformanceDB.iPlayerID
   WHERE 
     PlayerDB.sTeam = ?
     AND sPlayer <> 'Unknown Player'
-    AND iCupID IN (SELECT MAX(CupDB.iID) FROM CupDB INNER JOIN MatchDB ON CupDB.iID = MatchDB.iCupID WHERE (sHomeTeam = ? OR sAwayTeam = ?) AND iType <= 3 GROUP BY iYear, sSeason) 
+    AND iCupID IN (SELECT MAX(CupDB.iCupID) FROM CupDB INNER JOIN MatchDB ON CupDB.iCupID = MatchDB.iCupID WHERE (sHomeTeam = ? OR sAwayTeam = ?) AND iType <= 3 GROUP BY iYear, sSeason) 
   GROUP BY 
   sPlayer,iCupID,sMedal,bStarting,bCaptain,iLink,sSeason,iYear
   ORDER BY 
@@ -387,27 +387,27 @@ class model {
     for (let player of Object.values(arr)) {
       const id = player.id;
       sql = await DB.query(
-        `SELECT COUNT(*) AS 'c' FROM MatchDB INNER JOIN PerformanceDB ON MatchDB.iID = PerformanceDB.iMatchID INNER JOIN PlayerDB ON PlayerDB.iID = PerformanceDB.iPlayerID WHERE bVoided = 1 AND iLink=?`,
+        `SELECT COUNT(*) AS 'c' FROM MatchDB INNER JOIN PerformanceDB ON MatchDB.iMatchID = PerformanceDB.iMatchID INNER JOIN PlayerDB ON PlayerDB.iPlayerID = PerformanceDB.iPlayerID WHERE bVoided = 1 AND iLink=?`,
         [id]
       );
       player.apps = sql[0].c;
       sql = await DB.query(
-        `SELECT CASE WHEN COUNT(*) > 0 THEN COUNT(*) ELSE '' END AS 'c' FROM EventDB INNER JOIN PlayerDB ON EventDB.iPlayerID = PlayerDB.iID INNER JOIN MatchDB ON MatchDB.iID = EventDB.iMatchID WHERE iType IN(1,4) AND bVoided = 1 AND iLink=?`,
+        `SELECT CASE WHEN COUNT(*) > 0 THEN COUNT(*) ELSE '' END AS 'c' FROM EventDB INNER JOIN PlayerDB ON EventDB.iPlayerID = PlayerDB.iPlayerID INNER JOIN MatchDB ON MatchDB.iMatchID = EventDB.iMatchID WHERE iType IN(1,4) AND bVoided = 1 AND iLink=?`,
         [id]
       );
       player.goals = sql[0].c;
       sql = await DB.query(
-        `SELECT CASE WHEN COUNT(*) > 0 THEN COUNT(*) ELSE '' END AS 'c' FROM EventDB INNER JOIN PlayerDB ON EventDB.iPlayerID = PlayerDB.iID INNER JOIN MatchDB ON MatchDB.iID = EventDB.iMatchID WHERE iType IN(2) AND bVoided = 1 AND iLink=?`,
+        `SELECT CASE WHEN COUNT(*) > 0 THEN COUNT(*) ELSE '' END AS 'c' FROM EventDB INNER JOIN PlayerDB ON EventDB.iPlayerID = PlayerDB.iPlayerID INNER JOIN MatchDB ON MatchDB.iMatchID = EventDB.iMatchID WHERE iType IN(2) AND bVoided = 1 AND iLink=?`,
         [id]
       );
       player.assists = sql[0].c;
       sql = await DB.query(
-        `SELECT SUM(iSaves) AS 'c' FROM PerformanceDB INNER JOIN PlayerDB ON PerformanceDB.iPlayerID = PlayerDB.iID INNER JOIN MatchDB ON MatchDB.iID = PerformanceDB.iMatchID WHERE iSaves > -1 AND bVoided = 1 AND iLink=?`,
+        `SELECT SUM(iSaves) AS 'c' FROM PerformanceDB INNER JOIN PlayerDB ON PerformanceDB.iPlayerID = PlayerDB.iPlayerID INNER JOIN MatchDB ON MatchDB.iMatchID = PerformanceDB.iMatchID WHERE iSaves > -1 AND bVoided = 1 AND iLink=?`,
         [id]
       );
       player.saves = sql[0].c || "";
       sql = await DB.query(
-        `SELECT AVG(dRating) AS 'c' FROM PerformanceDB INNER JOIN PlayerDB ON PerformanceDB.iPlayerID = PlayerDB.iID INNER JOIN MatchDB ON MatchDB.iID = PerformanceDB.iMatchID WHERE dRating > -1 AND bVoided = 1 AND iLink=?`,
+        `SELECT AVG(dRating) AS 'c' FROM PerformanceDB INNER JOIN PlayerDB ON PerformanceDB.iPlayerID = PlayerDB.iPlayerID INNER JOIN MatchDB ON MatchDB.iMatchID = PerformanceDB.iMatchID WHERE dRating > -1 AND bVoided = 1 AND iLink=?`,
         [id]
       );
       player.rating = Math.round(sql[0].c * 100) / 100;

@@ -44,7 +44,9 @@ class model {
 
     let cupList = playerCupData.map((x) => x.iCupID);
     cupList = await DB.query(
-      `SELECT * From CupDB WHERE iID IN (${cupList.join(",")}) ORDER BY dStart`
+      `SELECT * From CupDB WHERE iCupID IN (${cupList.join(
+        ","
+      )}) ORDER BY dStart`
     ).then((result) => {
       return result;
     });
@@ -63,9 +65,9 @@ class model {
     for (let cup of cupList) {
       let query = `
             SELECT * FROM MatchDB 
-            INNER JOIN PerformanceDB ON PerformanceDB.iMatchID = MatchDB.iID
-            INNER JOIN PlayerDB ON PerformanceDB.iPlayerID = PlayerDB.iID
-            WHERE MatchDB.iCupID = ${cup.iID} AND iLink = ${playerID}
+            INNER JOIN PerformanceDB ON PerformanceDB.iMatchID = MatchDB.iMatchID
+            INNER JOIN PlayerDB ON PerformanceDB.iPlayerID = PlayerDB.iPlayerID
+            WHERE MatchDB.iCupID = ${cup.iCupID} AND iLink = ${playerID}
             ORDER BY dUTCTime
             `;
       let sql = await DB.query(query);

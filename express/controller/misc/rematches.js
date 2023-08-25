@@ -13,7 +13,7 @@ class model {
     let result = { list: [] };
     let html = "<h2>Rematches</h2>";
     let sql = await DB.query(
-      "SELECT DISTINCT(sHomeTeam) AS 'team' FROM MatchDB INNER JOIN CupDB ON MatchDB.iCupID = CupDB.iID WHERE iType <= 3 AND bVoided = 1 ORDER BY sHomeTeam"
+      "SELECT DISTINCT(sHomeTeam) AS 'team' FROM MatchDB INNER JOIN CupDB ON MatchDB.iCupID = CupDB.iCupID WHERE iType <= 3 AND bVoided = 1 ORDER BY sHomeTeam"
     );
     let teams = [];
     for (let i in sql) {
@@ -23,7 +23,7 @@ class model {
       for (let team2 of teams) {
         if (team1 !== team2) {
           sql = await DB.query(
-            "SELECT * FROM MatchDB INNER JOIN CupDB ON MatchDB.iCupID = CupDB.iID WHERE iType <= 3 and bVoided = 1 AND ((sHomeTeam=? AND sAwayTeam = ?) OR (sHomeTeam=? AND sAwayTeam = ?)) ORDER BY dUTCTime DESC",
+            "SELECT * FROM MatchDB INNER JOIN CupDB ON MatchDB.iCupID = CupDB.iCupID WHERE iType <= 3 and bVoided = 1 AND ((sHomeTeam=? AND sAwayTeam = ?) OR (sHomeTeam=? AND sAwayTeam = ?)) ORDER BY dUTCTime DESC",
             [team1, team2, team2, team1]
           );
           let matchArr = [];
@@ -84,7 +84,7 @@ class model {
     for (let team of teams) {
       let arr = {};
       sql = await DB.query(
-        "SELECT * FROM MatchDB INNER JOIN CupDB ON MatchDB.iCupID = CupDB.iID WHERE (sHomeTeam = ? OR sAwayTeam = ?) AND bVoided = 1 AND iType <= 3 ORDER BY dUTCTime",
+        "SELECT * FROM MatchDB INNER JOIN CupDB ON MatchDB.iCupID = CupDB.iCupID WHERE (sHomeTeam = ? OR sAwayTeam = ?) AND bVoided = 1 AND iType <= 3 ORDER BY dUTCTime",
         [team, team]
       );
       let i = 0;

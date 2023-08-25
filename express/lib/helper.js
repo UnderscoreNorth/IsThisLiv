@@ -26,7 +26,7 @@ export function teamLink(team) {
   }
 }
 export async function cupLink(cupID) {
-  let cup = await DB.query("SELECT * FROM `CupDB` WHERE iID=?", [cupID]);
+  let cup = await DB.query("SELECT * FROM `CupDB` WHERE iCupID=?", [cupID]);
   cup = cup[0];
   let cupShortName =
     cup.iYear +

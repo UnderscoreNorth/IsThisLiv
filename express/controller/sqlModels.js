@@ -94,21 +94,21 @@ class model {
         data.players[i].push(sql[j]);
       }
       sql = await DB.query(
-        "SELECT PerformanceDB.* FROM PerformanceDB INNER JOIN PlayerDB ON PerformanceDB.iPlayerID = PlayerDB.iID WHERE sTeam=? AND iMatchID=? ORDER BY iSubOn,PerformanceDB.iID",
+        "SELECT PerformanceDB.* FROM PerformanceDB INNER JOIN PlayerDB ON PerformanceDB.iPlayerID = PlayerDB.iPlayerID WHERE sTeam=? AND iMatchID=? ORDER BY iSubOn,PerformanceDB.iID",
         [team, matchID]
       );
       for (let j in sql) {
         data.performances[i].push(sql[j]);
       }
       sql = await DB.query(
-        "SELECT EventDB.* FROM EventDB INNER JOIN PlayerDB ON EventDB.iPlayerID = PlayerDB.iID WHERE sTeam=? AND iMatchID=? ORDER BY dRegTime,dInjTime,iType",
+        "SELECT EventDB.* FROM EventDB INNER JOIN PlayerDB ON EventDB.iPlayerID = PlayerDB.iPlayerID WHERE sTeam=? AND iMatchID=? ORDER BY dRegTime,dInjTime,iType",
         [team, matchID]
       );
       for (let j in sql) {
         data.events[i].push(sql[j]);
       }
       sql = await DB.query(
-        "SELECT PenaltyDB.* FROM PenaltyDB INNER JOIN PlayerDB ON PenaltyDB.iPlayerID = PlayerDB.iID WHERE sTeam=? AND iMatchID=? ORDER BY PenaltyDB.iID",
+        "SELECT PenaltyDB.* FROM PenaltyDB INNER JOIN PlayerDB ON PenaltyDB.iPlayerID = PlayerDB.iPlayerID WHERE sTeam=? AND iMatchID=? ORDER BY PenaltyDB.iID",
         [team, matchID]
       );
       for (let j in sql) {

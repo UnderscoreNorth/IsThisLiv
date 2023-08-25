@@ -10,11 +10,11 @@ export default async function main(req, res, next) {
   INNER JOIN
     PlayerDB
   ON 
-    PerformanceDB.iPlayerID = PlayerDB.iID
+    PerformanceDB.iPlayerID = PlayerDB.iPlayerID
   INNER JOIN
     MatchDB
   ON
-    PerformanceDB.iMatchID = MatchDB.iID
+    PerformanceDB.iMatchID = MatchDB.iMatchID
   INNER JOIN
     RoundOrder
   ON	
@@ -74,7 +74,7 @@ export default async function main(req, res, next) {
   INNER JOIN
     FantasyPDB
   ON
-    FantasyPDB.iPlayerID = PlayerDB.iID
+    FantasyPDB.iPlayerID = PlayerDB.iPlayerID
   INNER JOIN
     FantasyDB
   ON
@@ -107,11 +107,11 @@ export default async function main(req, res, next) {
   INNER JOIN
     PlayerDB
   ON 
-    PerformanceDB.iPlayerID = PlayerDB.iID
+    PerformanceDB.iPlayerID = PlayerDB.iPlayerID
   INNER JOIN
     MatchDB
   ON
-    PerformanceDB.iMatchID = MatchDB.iID
+    PerformanceDB.iMatchID = MatchDB.iMatchID
   INNER JOIN
     RoundOrder
   ON	

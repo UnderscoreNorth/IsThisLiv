@@ -5,7 +5,7 @@ class model {
   static main = async (req, res, next) => {
     let result = {};
     let sql = await DB.query(
-      "SELECT *, MatchDB.iID AS 'mID',CupDB.iPes AS 'cPes' FROM MatchDB INNER JOIN CupDB ON MatchDB.iCupID = CupDB.iID WHERE bVoided = 1 AND sWinningTeam <> 'draw' AND sRound <> 'Friendly' ORDER BY dUTCTime DESC"
+      "SELECT *, MatchDB.iMatchID AS 'mID',CupDB.iPes AS 'cPes' FROM MatchDB INNER JOIN CupDB ON MatchDB.iCupID = CupDB.iCupID WHERE bVoided = 1 AND sWinningTeam <> 'draw' AND sRound <> 'Friendly' ORDER BY dUTCTime DESC"
     );
     let winners = {};
     let losers = {};
@@ -36,7 +36,7 @@ class model {
       let mdlCheck = false;
       let time = "";
       let subSql = await DB.query(
-        "SELECT sTeam, iType,dRegTime,dInjTime FROM EventDB INNER JOIN PlayerDB ON EventDB.iPlayerID = PlayerDB.iID WHERE iMatchID = ? AND iType IN (1,3,4) ORDER BY dRegTime, dInjTime",
+        "SELECT sTeam, iType,dRegTime,dInjTime FROM EventDB INNER JOIN PlayerDB ON EventDB.iPlayerID = PlayerDB.iPlayerID WHERE iMatchID = ? AND iType IN (1,3,4) ORDER BY dRegTime, dInjTime",
         [matchID]
       );
       for (let j in subSql) {

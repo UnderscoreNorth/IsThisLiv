@@ -44,7 +44,7 @@ class model {
       let c = 0;
       for (let round of rounds) {
         let sql2 = await DB.query(
-          `SELECT * FROM MatchDB INNER JOIN CupDB ON MatchDB.iCupID = CupDB.iID WHERE sRound = ? AND (sHomeTeam=? OR sAwayTeam=?) AND iType <= 2 AND CupDB.iID > 2 ORDER BY dUTCTime`,
+          `SELECT * FROM MatchDB INNER JOIN CupDB ON MatchDB.iCupID = CupDB.iCupID WHERE sRound = ? AND (sHomeTeam=? OR sAwayTeam=?) AND iType <= 2 AND CupDB.iCupID > 2 ORDER BY dUTCTime`,
           [round, team, team]
         );
         let n = "";

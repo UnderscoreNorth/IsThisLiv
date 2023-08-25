@@ -20,7 +20,7 @@ export default async function main(req, res, next) {
       const pTeam = player.sTeam;
       console.time(player.sName);
       let perfQ = await DB.query(
-        `SELECT *,PerformanceDB.iID AS pID FROM PerformanceDB INNER JOIN MatchDB ON PerformanceDB.iMatchID = MatchDB.iID WHERE iPlayerID=?`,
+        `SELECT *,PerformanceDB.iID AS pID FROM PerformanceDB INNER JOIN MatchDB ON PerformanceDB.iMatchID = MatchDB.iMatchID WHERE iPlayerID=?`,
         [pID]
       );
       for (let pRow of Object.values(perfQ)) {
@@ -32,7 +32,7 @@ export default async function main(req, res, next) {
           return result[0].dRating || 20;
         });
         let eventQ = await DB.query(
-          `SELECT * FROM EventDB INNER JOIN PlayerDB ON EventDB.iPlayerID = PlayerDB.iID WHERE iMatchID=?`,
+          `SELECT * FROM EventDB INNER JOIN PlayerDB ON EventDB.iPlayerID = PlayerDB.iPlayerID WHERE iMatchID=?`,
           [pRow.iMatchID]
         );
         let ag = 0;
@@ -151,7 +151,7 @@ export default async function main(req, res, next) {
     FROM 
         FantasyPDB 
     INNER JOIN 
-        PlayerDB ON FantasyPDB.iPlayerID = PlayerDB.iID 
+        PlayerDB ON FantasyPDB.iPlayerID = PlayerDB.iPlayerID 
     INNER JOIN 
         RosterOrderLookUp ON PlayerDB.sRegPos = RosterOrderLookUp.sPos 
     WHERE 
@@ -204,9 +204,9 @@ export default async function main(req, res, next) {
             FROM 
                 PlayerDB
             INNER JOIN
-                PerformanceDB ON PerformanceDB.iPlayerID = PlayerDB.iID
+                PerformanceDB ON PerformanceDB.iPlayerID = PlayerDB.iPlayerID
             INNER JOIN
-                MatchDB ON MatchDB.iID = PerformanceDB.iMatchID
+                MatchDB ON MatchDB.iMatchID = PerformanceDB.iMatchID
             WHERE  
                 bVoided = 1 
                 AND PerformanceDB.iPlayerID = ?

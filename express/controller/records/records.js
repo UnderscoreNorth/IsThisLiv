@@ -8,6 +8,8 @@ import {
   ksort,
 } from "../../lib/helper.js";
 import fs from "fs/promises";
+import sqlGet from "../../lib/sqlGet.js";
+import createTable from "../../lib/createTable.js";
 class records {
   static main = async (req, res, next) => {
     let stats = await fs.stat(req.staticUrl).catch((err) => {
@@ -17,109 +19,63 @@ class records {
     let html = "";
     if (new Date() - stats.mtime > pageExpiry) {
       console.log(req.staticUrl);
+      //-----------------------
       if (req.staticUrl.includes("Match-Individual")) {
         html = `<h2>Match Records</h2>
                 <h3>Individual</h3>`;
-        html += await event(
-          "Most Goals Scored",
-          "EventDB.iType IN (1,4) AND bVoided = 1 AND CupDB.iType <= 3"
-        );
-        html += await event(
-          "Most Goals Scored in the First Half",
-          "EventDB.iType IN (1,4) AND bVoided = 1 AND CupDB.iType <= 3 AND dRegTime <= 45"
-        );
-        html += await event(
-          "Most Goals Scored in the Second Half",
-          "EventDB.iType IN (1,4) AND bVoided = 1 AND CupDB.iType <= 3 AND dRegTime > 45 AND dRegTime <= 90"
-        );
-        html += await event(
-          "Most Goals Scored in Extra Time",
-          "EventDB.iType IN (1,4) AND bVoided = 1 AND CupDB.iType <= 3 AND dRegTime > 90"
-        );
-        html += await event(
-          "Most Assists",
-          "EventDB.iType IN (2) AND bVoided = 1 AND CupDB.iType <= 3"
-        );
-        html += await perfInd(
-          "Most Saves",
-          "bVoided = 1 AND CupDB.iType <= 3 AND iSaves >= 0",
-          "SUM(iSaves)"
-        );
-        html += await perfInd(
-          "Highest Rating",
-          "bVoided = 1 AND CupDB.iType <= 3 AND dRating > 0",
-          "MAX(dRating)"
-        );
+        html += await indEvent("Most Goals Scored", "1,4", {});
+        html += await indEvent("Most Goals Scored in the First Half", "1,4", {
+          eventdb: ["dRegTime <= 45"],
+        });
+        html += await indEvent("Most Goals Scored in the Second Half", "1,4", {
+          eventdb: ["dRegTime > 45 AND dRegTime <= 90"],
+        });
+        html += await indEvent("Most Goals Scored in Extra Time", "1,4", {
+          eventdb: ["dRegTime > 90"],
+        });
+        html += await indEvent("Most Assists", "2", {});
+        html += await indPerf("Most Saves", "SUM(iSaves)", "DESC", {
+          performancedb: ["iSaves > 0"],
+        });
+        html += await indPerf("Highest Rating", "MAX(dRating)", "DESC", {});
         html += await hatTrick("Quickest Brace", 2);
         html += await hatTrick("Quickest Hat Trick", 3);
         html += await hatTrick("Quickest Double Brace", 4);
+        //-----------------------
       } else if (req.staticUrl.includes("Match-Team")) {
         html = `<h2>Match Records</h2>
                 <h3>Team</h3>`;
-        html += await teamMatchStat(
-          "Most Shots",
-          "bVoided = 1 AND CupDB.iType <= 3 AND bFinal = 1",
-          "SUM(iShots)"
-        );
-        html += await teamMatchStat(
-          "Most Shots on Target",
-          "bVoided = 1 AND CupDB.iType <= 3 AND bFinal = 1",
-          "SUM(iShotsOT)"
-        );
-        html += await teamMatchStat(
-          "Most Fouls",
-          "bVoided = 1 AND CupDB.iType <= 3 AND bFinal = 1",
-          "SUM(iFouls)"
-        );
-        html += await teamMatchStat(
-          "Most Offsides",
-          "bVoided = 1 AND CupDB.iType <= 3 AND bFinal = 1",
-          "SUM(iOffsides)"
-        );
-        html += await teamMatchStat(
-          "Most Free Kicks",
-          "bVoided = 1 AND CupDB.iType <= 3 AND bFinal = 1",
-          "SUM(iFreeKicks)"
-        );
-        html += await teamMatchStat(
+        html += await teamStat("Most Shots", "SUM(iShots)", {});
+        html += await teamStat("Most Shots on Target", "SUM(iShotsOT)", {});
+        html += await teamStat("Most Fouls", "SUM(iFouls)", {});
+        html += await teamStat("Most Offsides", "SUM(iOffsides)", {});
+        html += await teamStat("Most Free Kicks", "SUM(iFreeKicks)", {});
+        html += await teamStat(
           "Most Passes Made (PES18+)",
-          "bVoided = 1 AND CupDB.iType <= 3 AND bFinal = 1",
-          "SUM(iPassMade)"
+          "SUM(iPassMade)",
+          {}
         );
-        html += await teamMatchStat(
-          "Most Crosses",
-          "bVoided = 1 AND CupDB.iType <= 3 AND bFinal = 1",
-          "SUM(iCrosses)"
-        );
-        html += await teamMatchStat(
-          "Most Interceptions",
-          "bVoided = 1 AND CupDB.iType <= 3 AND bFinal = 1",
-          "SUM(iInterceptions)"
-        );
-        html += await teamMatchStat(
-          "Most Tackles",
-          "bVoided = 1 AND CupDB.iType <= 3 AND bFinal = 1",
-          "SUM(iTackles)"
-        );
-        html += await teamMatchStat(
-          "Most Saves",
-          "bVoided = 1 AND CupDB.iType <= 3 AND bFinal = 1",
-          "SUM(iSaves)"
-        );
-        html += await teamPerfStat("Highest Avg Rating", "dRating", "DESC");
-        html += await teamPerfStat("Lowest Avg Rating", "dRating", "ASC");
-        html += await teamPerfStat("Highest Avg Condition", "iCond", "DESC");
-        html += await teamPerfStat("Lowest Avg Condition", "iCond", "ASC");
-        html += await teamMatchStat(
-          "Most Shots all on Target",
-          "bVoided = 1 AND CupDB.iType <= 3 AND bFinal = 1 AND iShots=iShotsOT",
-          "SUM(iShotsOT)"
-        );
-        html += await event(
-          "Most Cards",
-          "EventDB.iType IN (5,6,8) AND bVoided = 1 AND CupDB.iType <= 3",
-          true
-        );
+        html += await teamStat("Most Crosses", "SUM(iCrosses)", {});
+        html += await teamStat("Most Interceptions", "SUM(iInterceptions)", {});
+        html += await teamStat("Most Tackles", "SUM(iTackles)", {});
+        html += await teamStat("Most Saves", "SUM(iSaves)", {});
+        html += await teamPerf("Highest Avg Rating", "AVG(dRating)", "DESC", {
+          performancedb: ["dRating > 0"],
+        });
+        html += await teamPerf("Lowest Avg Rating", "AVG(dRating)", "ASC", {
+          performancedb: ["dRating > 0"],
+        });
+        html += await teamPerf("Highest Avg Condition", "AVG(iCond)", "DESC", {
+          performancedb: ["iCond > 0"],
+        });
+        html += await teamPerf("Lowest Avg Condition", "AVG(iCond)", "ASC", {
+          performancedb: ["iCond > 0"],
+        });
+        html += await teamStat("Most Shots all on Target", "SUM(iShotsOT)", {
+          none: ["iShots=iShotsOT"],
+        });
+        html += await teamEvent("Most Cards", "5,6,8", {});
+        //-----------------------
       } else if (req.staticUrl.includes("Match-Day")) {
         html = `<h2>Match Records</h2>
                 <h3>Day</h3>`;
@@ -258,6 +214,7 @@ class records {
           "SUM(CASE WHEN EventDB.iType IN (1,3,4) THEN 1 ELSE 0 END)",
           "ASC"
         );
+        //-----------------------
       } else if (req.staticUrl.includes("Match-Match")) {
         html = `<h2>Match Records</h2>
             <h3>Match</h3>`;
@@ -343,9 +300,69 @@ class records {
           "Most Cards",
           "EventDB.iType IN (5,6,8) AND bVoided = 1 AND CupDB.iType <= 3"
         );
+        //-----------------------
+      } else if (req.staticUrl.includes("Cup-Individual")) {
+        html = `<h2>Cup Records</h2>
+        <h3>Individual</h3>`;
+
+        html += await cupEvent("Most Goals Scored", "1,4", {});
+        html += await cupEvent("Most Goals Scored (Group Stage)", "1,4", {
+          matchdb: [`sRound LIKE 'Group%'`],
+        });
+        html += await cupEvent("Most Goals Scored (Knockout Stage)", "1,4", {
+          matchdb: [`sRound NOT LIKE 'Group%'`],
+        });
+        html += await cupEvent("Most Assists Scored", "2", {});
+        html += await cupEvent("Most Assists Scored (Group Stage)", "2", {
+          matchdb: [`sRound LIKE 'Group%'`],
+        });
+        html += await cupEvent("Most Assists Scored (Knockout Stage)", "2", {
+          matchdb: [`sRound NOT LIKE 'Group%'`],
+        });
+        html += await cupPerf("Most Saves", "SUM(iSaves)", "DESC", {});
+        html += await cupPerf(
+          "Most Saves (Group Stage)",
+          "SUM(iSaves)",
+          "DESC",
+          {
+            matchdb: [`sRound LIKE 'Group%'`],
+          }
+        );
+        html += await cupPerf(
+          "Most Saves (Knockout Stage)",
+          "SUM(iSaves)",
+          "DESC",
+          {
+            matchdb: [`sRound NOT LIKE 'Group%'`],
+          }
+        );
+      } else if (req.staticUrl.includes("Cup-Team")) {
+        html = `<h2>Cup Records</h2>
+        <h3>Team</h3>`;
+
+        /*teamStat("Most Shots","bVoided = 1 AND CupDB.iType <= 3 AND bFinal = 1 AND iShots > 0", "SUM(iShots)","DESC");
+	teamStat("Least Shots","bVoided = 1 AND CupDB.iType <= 3 AND bFinal = 1 AND iShots > 0", "SUM(iShots)","ASC");
+	teamStat("Most Shots on Target","bVoided = 1 AND CupDB.iType <= 3 AND bFinal = 1 AND iShotsOT > 0", "SUM(iShotsOT)","DESC");
+	teamStat("Least Shots on Target","bVoided = 1 AND CupDB.iType <= 3 AND bFinal = 1 AND iShotsOT > 0", "SUM(iShotsOT)","ASC");
+	teamStat("Most Fouls","bVoided = 1 AND CupDB.iType <= 3 AND bFinal = 1 AND iFouls > 0", "SUM(iFouls)","DESC");
+	teamStat("Most Offsides","bVoided = 1 AND CupDB.iType <= 3 AND bFinal = 1 AND iOffsides > 0", "SUM(iOffsides)","DESC");
+	teamStat("Most Free Kicks","bVoided = 1 AND CupDB.iType <= 3 AND bFinal = 1 AND iFreeKicks > 0", "SUM(iFreeKicks)","DESC");
+	teamStat("Least Free Kicks","bVoided = 1 AND CupDB.iType <= 3 AND bFinal = 1 AND iFreeKicks > 0", "SUM(iFreeKicks)","ASC");
+	teamStat("Most Passes Made (PES18+)","bVoided = 1 AND CupDB.iType <= 3 AND bFinal = 1 AND iPassMade > 0", "SUM(iPassMade)","DESC");
+	teamStat("Least Passes Made (PES18+)","bVoided = 1 AND CupDB.iType <= 3 AND bFinal = 1 AND iPassMade > 0", "SUM(iPassMade)","ASC");
+	teamStat("Most Interceptions","bVoided = 1 AND CupDB.iType <= 3 AND bFinal = 1 AND iInterceptions > 0", "SUM(iInterceptions)","DESC");
+	teamStat("Most Tackles","bVoided = 1 AND CupDB.iType <= 3 AND bFinal = 1 AND iTackles > 0", "SUM(iTackles)","DESC");
+	teamStat("Most Crosses","bVoided = 1 AND CupDB.iType <= 3 AND bFinal = 1 AND iCrosses > 0", "SUM(iCrosses)","DESC");
+	teamStat("Highest Avg Possession","bVoided = 1 AND CupDB.iType <= 3 AND bFinal = 1 AND iPoss > 0", "AVG(iPoss)","DESC");
+	teamStat("Lowest Avg Possession","bVoided = 1 AND CupDB.iType <= 3 AND bFinal = 1 AND iPoss > 0", "AVG(iPoss)","ASC");
+	teamStat("Most Saves","bVoided = 1 AND CupDB.iType <= 3 AND bFinal = 1 AND iSaves > 0", "SUM(iSaves)","DESC");
+	eventTeam("Most Cards","EventDB.iType IN (5,6,8) AND bVoided = 1 AND CupDB.iType <= 3");
+	goalsForward();*/
       }
-      html +=
-        "<style>table{margin:2rem;display:inline-block;min-width:40%}</style>";
+      html += `<style>
+        table{margin:2rem;display:inline-block;max-width:calc(50% - 2rem);vertical-align:top}
+        th{text-align:left}
+        </style>`;
       result.html = html;
       await fs.writeFile(req.staticUrl, JSON.stringify(result));
     } else {
@@ -355,14 +372,27 @@ class records {
   };
 }
 export { records as default };
-
+const cupPlayerHeader = (x) => {
+  return `${teamLink(x.sTeam)}</td><td>${x.Player}`;
+};
+const cupMatchHeader = (x) => {
+  return `${x.Cup} ${x.sRound}</td>
+  <td>${teamLink(x.sHomeTeam)} - ${teamLink(x.sAwayTeam)}`;
+};
+const teamMatchHeader = (x) => {
+  return `${teamLink(x.sTeam)}</td><td>${x.Cup} ${x.sRound}</td>
+  <td>${teamLink(x.sHomeTeam)} - ${teamLink(x.sAwayTeam)}`;
+};
+const roundAgg = (x) => {
+  return Math.round(x.c * 100) / 100;
+};
 async function attendance() {
   let sql = await DB.query(`
 	SELECT 
 		sHomeTeam, sAwayTeam, sRound, CupDB.sName AS 'Cup', iAttendence AS 'c'
 	FROM 
 		MatchDB
-		INNER JOIN CupDB ON MatchDB.iCupID = CupDB.iID
+		INNER JOIN CupDB ON MatchDB.iCupID = CupDB.iCupID
 	WHERE 
 		bVoided = 1 AND CupDB.iType <= 3
 	ORDER BY
@@ -387,86 +417,218 @@ async function attendance() {
   text += "</table>";
   return text;
 }
+async function teamPerf(title, stat, dir, wheres) {
+  const selects = {
+    playerdb: ["sTeam"],
+    cupdb: ["sName as Cup"],
+    matchdb: ["sRound", "sHomeTeam", "sAwayTeam"],
+  };
+  let result = await perf(stat, dir, selects, wheres);
 
-async function event(title, where, teamFlag = false) {
-  let sql = await DB.query(`
-	SELECT 
-		sHomeTeam, sAwayTeam, sRound, sTeam,CupDB.sName AS 'Cup', COUNT(*) AS 'c'${
-      teamFlag ? "" : `, PlayerDB.sName AS 'Player'`
-    }
-	FROM 
-		EventDB INNER JOIN PlayerDB ON EventDB.iPlayerID = PlayerDB.iID
-		INNER JOIN MatchDB ON MatchDB.iID = EventDB.iMatchID
-		INNER JOIN CupDB ON MatchDB.iCupID = CupDB.iID
-	WHERE 
-		${where}
-	GROUP BY 
-		MatchDB.iID${teamFlag ? ",sTeam" : ",PlayerDB.iID"}
-	ORDER BY
-		COUNT(*) DESC, MatchDB.dUTCTime DESC
-	LIMIT
-		25`);
-  let text = `<table>
-		<tr><th colspan=${teamFlag ? 5 : 6}>${title}</th></tr>
-		<tr>
-			<th>#</th>
-      ${teamFlag ? `<th colspan=1>Team</th>` : `<th colspan=2>Player</th>`}
-      <th colspan=2>Match</th>
-		</tr>`;
-  for (let row of Object.values(sql)) {
-    text += `<tr><td>${row["c"]}</td>
-                <td>${teamLink(row["sTeam"])}</td>
-                ${!teamFlag ? `<td>${row["Player"]}</td>` : ""}
-                <td>${row["Cup"]} ${row["sRound"]}</td>
-                <td>${teamLink(row["sHomeTeam"])} - ${teamLink(
-      row["sAwayTeam"]
-    )}</td>
-                </tr>`;
+  return createTable(
+    [
+      { header: "Record", custom: roundAgg },
+      { header: "Match", colspan: 3, custom: teamMatchHeader },
+    ],
+    result,
+    false,
+    title
+  );
+}
+async function cupPerf(title, stat, dir, wheres) {
+  const selects = {
+    playerdb: ["sName as Player", "sTeam"],
+    cupdb: ["sName as Cup"],
+  };
+  let result = await perf(stat, dir, selects, wheres);
+
+  return createTable(
+    [
+      { header: "Record", sql: "c" },
+      { header: "Player", colspan: 2, custom: cupPlayerHeader },
+      { header: "Cup", sql: "Cup" },
+    ],
+    result,
+    false,
+    title
+  );
+}
+async function indPerf(title, stat, dir, wheres) {
+  const selects = {
+    playerdb: ["sName as Player", "sTeam"],
+    matchdb: ["sRound", "sHomeTeam", "sAwayTeam"],
+    cupdb: ["sName as Cup"],
+  };
+  let result = await perf(stat, dir, selects, wheres);
+
+  return createTable(
+    [
+      { header: "Record", sql: "c" },
+      { header: "Player", colspan: 2, custom: cupPlayerHeader },
+      { header: "Match", colspan: 2, custom: cupMatchHeader },
+    ],
+    result,
+    false,
+    title
+  );
+}
+async function perf(stat, dir, selects, wheres) {
+  let newWheres = {
+    matchdb: ["bVoided=1"],
+    cupdb: ["iType <= 3"],
+  };
+
+  for (let table in wheres) {
+    newWheres[table] = newWheres[table] || [];
+    newWheres[table] = newWheres[table].concat(wheres[table]);
   }
-  text += "</table>";
-  return text;
+  let newSelects = {
+    none: [`${stat} AS c`],
+  };
+  for (let table in selects) {
+    newSelects[table] = newSelects[table] || [];
+    newSelects[table] = newSelects[table].concat(selects[table]);
+  }
+  return await sqlGet(
+    newSelects,
+    selects,
+    newWheres,
+    [{ performancedb: `${stat} ${dir}` }, { none: "MAX(dUTCTIME) DESC" }],
+    25
+  );
+}
+async function teamStat(title, stat, wheres) {
+  const selects = {
+    matchstatdb: ["sTeam"],
+    matchdb: ["sRound", "sHomeTeam", "sAwayTeam"],
+    cupdb: ["sName as Cup"],
+  };
+  let result = await matchStat(stat, selects, wheres);
+
+  return createTable(
+    [
+      { header: "Record", sql: "c" },
+      { header: "Match", colspan: 3, custom: teamMatchHeader },
+    ],
+    result,
+    false,
+    title
+  );
 }
 
-async function perfInd(title, where, stat) {
-  let sql = await DB.query(`
-	SELECT 
-		sHomeTeam, sAwayTeam, sRound, sTeam,CupDB.sName AS 'Cup', ${stat} AS 'c', PlayerDB.sName AS 'Player'
-	FROM 
-		PerformanceDB INNER JOIN PlayerDB ON PerformanceDB.iPlayerID = PlayerDB.iID
-		INNER JOIN MatchDB ON MatchDB.iID = PerformanceDB.iMatchID
-		INNER JOIN CupDB ON MatchDB.iCupID = CupDB.iID
-	WHERE 
-		${where}
-	GROUP BY 
-		PlayerDB.iID,MatchDB.iID
-	ORDER BY
-		${stat} DESC, MatchDB.dUTCTime DESC
-	LIMIT
-		25`);
-  let text = `<table>
-		<tr><th colspan=6>${title}</th></tr>
-		<tr>
-			<th>#</th><th colspan=2>Player</th><th colspan=2>Match</th>
-		</tr>`;
-  for (let row of Object.values(sql)) {
-    text += `<tr><td>${row["c"]}</td>
-            <td>${teamLink(row["sTeam"])}</td>
-            <td>${row["Player"]}</td>
-            <td>${row["Cup"]} ${row["sRound"]}</td>
-            <td>${teamLink(row["sHomeTeam"])} - ${teamLink(
-      row["sAwayTeam"]
-    )}</td>
-            </tr>`;
+async function matchStat(stat, selects, wheres) {
+  let newWheres = {
+    matchdb: ["bVoided=1"],
+    cupdb: ["iType <= 3"],
+    matchstatdb: ["bFinal = 1"],
+  };
+
+  for (let table in wheres) {
+    newWheres[table] = newWheres[table] || [];
+    newWheres[table] = newWheres[table].concat(wheres[table]);
   }
-  text += "</table>";
-  return text;
+  let newSelects = {
+    none: [`${stat} AS c`],
+  };
+  for (let table in selects) {
+    newSelects[table] = newSelects[table] || [];
+    newSelects[table] = newSelects[table].concat(selects[table]);
+  }
+  return await sqlGet(
+    newSelects,
+    selects,
+    newWheres,
+    [{ matchstatdb: `${stat} DESC` }, { none: "MAX(dUTCTIME) DESC" }],
+    25
+  );
 }
+async function teamEvent(title, eventTypes, wheres) {
+  const selects = {
+    playerdb: ["sTeam"],
+    matchdb: ["sRound", "sHomeTeam", "sAwayTeam"],
+    cupdb: ["sName as Cup"],
+  };
+  let result = await event(eventTypes, selects, wheres);
+  return createTable(
+    [
+      { header: "Record", sql: "c" },
+      { header: "Match", colspan: 3, custom: teamMatchHeader },
+    ],
+    result,
+    false,
+    title
+  );
+}
+
+async function cupEvent(title, eventTypes, wheres) {
+  const selects = {
+    playerdb: ["sName as Player", "sTeam"],
+    cupdb: ["sName as Cup"],
+  };
+  let result = await event(eventTypes, selects, wheres);
+  return createTable(
+    [
+      { header: "Record", sql: "c" },
+      { header: "Player", colspan: 2, custom: cupPlayerHeader },
+      { header: "Cup", sql: "Cup" },
+    ],
+    result,
+    false,
+    title
+  );
+}
+
+async function indEvent(title, eventTypes, wheres) {
+  const selects = {
+    playerdb: ["sName as Player", "sTeam"],
+    matchdb: ["sRound", "sHomeTeam", "sAwayTeam"],
+    cupdb: ["sName as Cup"],
+  };
+  let result = await event(eventTypes, selects, wheres);
+  return createTable(
+    [
+      { header: "Record", sql: "c" },
+      { header: "Player", colspan: 2, custom: cupPlayerHeader },
+      { header: "Match", colspan: 2, custom: cupMatchHeader },
+    ],
+    result,
+    false,
+    title
+  );
+}
+async function event(eventTypes, selects, wheres) {
+  let newWheres = {
+    matchdb: ["bVoided=1"],
+    eventdb: [`iType IN (${eventTypes})`],
+    cupdb: ["iType <= 3"],
+  };
+
+  for (let table in wheres) {
+    newWheres[table] = newWheres[table] || [];
+    newWheres[table] = newWheres[table].concat(wheres[table]);
+  }
+  let newSelects = {
+    none: ["COUNT(*) AS c"],
+  };
+  for (let table in selects) {
+    newSelects[table] = newSelects[table] || [];
+    newSelects[table] = newSelects[table].concat(selects[table]);
+  }
+  return await sqlGet(
+    newSelects,
+    selects,
+    newWheres,
+    [{ none: "COUNT(*) DESC" }, { none: "MAX(dUTCTIME) DESC" }],
+    25
+  );
+}
+
 async function hatTrick(title, num) {
   let sql = await DB.query(`
-        SELECT iPlayerID,iMatchID 
+        SELECT iPlayerID,MatchDB.iMatchID 
         FROM EventDB 
         INNER JOIN MatchDB 
-        ON EventDB.iMatchID = MatchDB.iID 
+        ON EventDB.iMatchID = MatchDB.iMatchID 
         WHERE iType IN(1,4) 
         GROUP BY iPlayerID,iMatchID 
         HAVING COUNT(*) >= ${num} 
@@ -517,7 +679,7 @@ async function hatTrick(title, num) {
         `
                     SELECT sName,sTeam 
                     FROM PlayerDB 
-                    WHERE iID=?`,
+                    WHERE iPlayerID=?`,
         [re[0]]
       );
       let matchDB = await DB.query(
@@ -525,8 +687,8 @@ async function hatTrick(title, num) {
                     SELECT sName,sRound,sHomeTeam,sAwayTeam 
                     FROM MatchDB 
                     INNER JOIN CupDB 
-                    ON MatchDB.iCupID = CupDB.iID 
-                    WHERE MatchDB.iID=?`,
+                    ON MatchDB.iCupID = CupDB.iCupID 
+                    WHERE MatchDB.iMatchID=?`,
         [re[1]]
       );
       text += `<tr>
@@ -543,39 +705,6 @@ async function hatTrick(title, num) {
   return text;
 }
 
-async function teamMatchStat(title, where, stat) {
-  let sql = await DB.query(`
-	SELECT 
-		sHomeTeam, sAwayTeam, sRound, CupDB.sName AS 'Cup', ${stat} AS 'c', CASE WHEN bHome = 1 THEN sHomeTeam ELSE sAwayTeam END AS 'team'
-	FROM 
-		MatchStatDB INNER JOIN MatchDB ON MatchDB.iID = MatchStatDB.iMatchID
-		INNER JOIN CupDB ON MatchDB.iCupID = CupDB.iID
-	WHERE 
-		${where}
-	GROUP BY 
-		MatchDB.iID,bHome
-	ORDER BY
-		${stat} DESC, MatchDB.dUTCTime DESC
-	LIMIT
-		25`);
-  let text = `<table>
-		<tr><th colspan=4>${title}</th></tr>
-		<tr>
-			<th>#</th><th colspan=2>Match</th>
-		</tr>`;
-  for (let row of Object.values(sql)) {
-    text += `<tr>
-    <td>${row["c"]}</td>
-    <td>${teamLink(row.team)}</td>
-    <td>${row["Cup"]} ${row["sRound"]}</td><td>${teamLink(
-      row["sHomeTeam"]
-    )} - ${teamLink(row["sAwayTeam"])}</td>
-            </tr>`;
-  }
-  text += "</table>";
-  return text;
-}
-
 async function teamPerfStat(title, stat, dir) {
   let sql = await DB.query(`
 		SELECT 
@@ -587,9 +716,9 @@ async function teamPerfStat(title, stat, dir) {
 			,MIN(sAwayTeam) as 'sAwayTeam'
 			,MIN(sRound) as 'sRound' 
 		FROM PerformanceDB 
-		INNER JOIN MatchDB ON PerformanceDB.iMatchID=MatchDB.iID 
-		INNER JOIN PlayerDB ON PerformanceDB.iPlayerID = PlayerDB.iID 
-		INNER JOIN CupDB ON MatchDB.iCupID = CupDB.iID 
+		INNER JOIN MatchDB ON PerformanceDB.iMatchID=MatchDB.iMatchID 
+		INNER JOIN PlayerDB ON PerformanceDB.iPlayerID = PlayerDB.iPlayerID 
+		INNER JOIN CupDB ON MatchDB.iCupID = CupDB.iCupID 
 		WHERE bVoided = 1 AND ${stat} > 0 AND CupDB.iType <= 3
 		GROUP BY iMatchID, sTeam  
 		HAVING COUNT(*) > 11 
@@ -616,11 +745,11 @@ async function teamPerfStat(title, stat, dir) {
 async function dayEvent(title, where, order) {
   let sql = await DB.query(`
 	SELECT 
-		MIN(CupDB.sName) AS 'Cup', MIN(iCupID) AS 'iCupID', COUNT(DISTINCT(MatchDB.iID)) AS 'c2',${where} AS 'c',DATE(dUTCTime) AS 'dDate'
+		MIN(CupDB.sName) AS 'Cup', MIN(iCupID) AS 'iCupID', COUNT(DISTINCT(MatchDB.iMatchID)) AS 'c2',${where} AS 'c',DATE(dUTCTime) AS 'dDate'
 	FROM 
 		MatchDB
-		INNER JOIN CupDB ON MatchDB.iCupID = CupDB.iID
-		LEFT JOIN EventDB ON MatchDB.iID = EventDB.iMatchID
+		INNER JOIN CupDB ON MatchDB.iCupID = CupDB.iCupID
+		LEFT JOIN EventDB ON MatchDB.iMatchID = EventDB.iMatchID
 	WHERE 
 		bVoided = 1
 		AND CupDB.iType <= 3
@@ -628,7 +757,7 @@ async function dayEvent(title, where, order) {
 	GROUP BY 
 		DATE(dUTCTime)
 	ORDER BY
-		${where} / COUNT(DISTINCT(MatchDB.iID)) ${order}, DATE(dUTCTime) DESC
+		${where} / COUNT(DISTINCT(MatchDB.iMatchID)) ${order}, DATE(dUTCTime) DESC
 	LIMIT
 		25`);
   let text = `<table>
@@ -658,8 +787,8 @@ async function dayMatchStat(title, where, stat, order) {
 	SELECT 
 		DATE(dUTCTime) AS 'dDate', iCupID, MIN(CupDB.sName) AS 'Cup', ${stat} AS 'c',COUNT(*) AS 'c2'
 	FROM 
-		MatchStatDB INNER JOIN MatchDB ON MatchDB.iID = MatchStatDB.iMatchID
-		INNER JOIN CupDB ON MatchDB.iCupID = CupDB.iID
+		MatchStatDB INNER JOIN MatchDB ON MatchDB.iMatchID = MatchStatDB.iMatchID
+		INNER JOIN CupDB ON MatchDB.iCupID = CupDB.iCupID
 	WHERE 
 		${where}
 	GROUP BY 

@@ -1,21 +1,18 @@
 import _default from "./default.js";
 export default class {
-  static tableName = "cupdb";
+  static tableName = "penaltydb";
   static mapping = {
-    iCupID: {
+    iPenaltyID: {
       primary: true,
       link: true,
     },
-    sName: {},
-    sSeason: {},
-    iYear: {},
-    iCupType: {
+    iMatchID: {
       link: true,
     },
-    dStart: {},
-    dEnd: {},
-    iRankPoints: {},
+    iPlayerID: {
+      link: true,
+    },
+    bGoal: {},
     sUser: {},
-    iPes: {},
   };
 }

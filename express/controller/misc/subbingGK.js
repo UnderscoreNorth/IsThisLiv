@@ -15,7 +15,7 @@ class model {
     html +=
       "<table><tr><th>Team</th><th>Opponent</th><th colspan=2>Match</th><th>Subbed At</th><th>Result At Sub</th><th>End Result</tr>";
     let sql = await DB.query(
-      "SELECT sTeam,MatchDB.*,iSubOff FROM `PerformanceDB` INNER JOIN PlayerDB ON PerformanceDB.iPlayerID = PlayerDB.iID INNER JOIN MatchDB ON PerformanceDB.iMatchID = MatchDB.iID WHERE sRegPos = 'GK' AND bVoided = 1 AND iSubOff NOT IN (90,120) AND iSubOff > 0 ORDER BY dUTCTime DESC"
+      "SELECT sTeam,MatchDB.*,iSubOff FROM `PerformanceDB` INNER JOIN PlayerDB ON PerformanceDB.iPlayerID = PlayerDB.iPlayerID INNER JOIN MatchDB ON PerformanceDB.iMatchID = MatchDB.iMatchID WHERE sRegPos = 'GK' AND bVoided = 1 AND iSubOff NOT IN (90,120) AND iSubOff > 0 ORDER BY dUTCTime DESC"
     );
     for (let row of Array.from(sql)) {
       const team = row.sTeam;
@@ -26,8 +26,8 @@ class model {
         agb = 0,
         agt = 0;
       let sql2 = await DB.query(
-        "SELECT iType,sTeam,dRegTime FROM EventDB INNER JOIN PlayerDB ON EventDB.iPlayerID = PlayerDB.iID WHERE iMatchID=? AND iType IN (1,3,4) ORDER BY dRegTime, dInjTime",
-        [row.iID]
+        "SELECT iType,sTeam,dRegTime FROM EventDB INNER JOIN PlayerDB ON EventDB.iPlayerID = PlayerDB.iPlayerID WHERE iMatchID=? AND iType IN (1,3,4) ORDER BY dRegTime, dInjTime",
+        [row.iMatchID]
       );
       for (let row2 of Array.from(sql2)) {
         if (row2.iType == 3) {

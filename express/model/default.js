@@ -1,4 +1,4 @@
-import DB from "../lib/db";
+import DB from "../lib/db.js";
 export default class {
   static getOfficialCups = async () => {
     return await DB.query(

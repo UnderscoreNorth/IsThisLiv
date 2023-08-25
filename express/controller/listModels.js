@@ -13,9 +13,9 @@ class model {
     const cupID =
       req.body.cupID ??
       (await DB.query(
-        `SELECT iID FROM CupDB WHERE iType <= 2 ORDER BY dStart DESC LIMIT 1`
+        `SELECT iCupID FROM CupDB WHERE iType <= 2 ORDER BY dStart DESC LIMIT 1`
       ).then((result) => {
-        return result[0].iID;
+        return result[0].iCupID;
       }));
     let where = "";
     if (req.body.aliveTeams) {

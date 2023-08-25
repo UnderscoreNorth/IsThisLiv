@@ -20,7 +20,7 @@ class model {
       );
       let wikiText = ``;
       for (let i in cups) {
-        let cupID = cups[i].iID;
+        let cupID = cups[i].iCupID;
         let cupName = cups[i].sName;
         //console.time(cupName);
         let sql = await DB.query(
@@ -83,15 +83,15 @@ class model {
         );
         let penMatches = sql[0].c;
         sql = await DB.query(
-          `SELECT COUNT(*) AS c FROM EventDB INNER JOIN MatchDB ON EventDB.iMatchID = MatchDB.iID WHERE iCupID=? AND bVoided = 1 AND iType IN(1,3,4)`,
+          `SELECT COUNT(*) AS c FROM EventDB INNER JOIN MatchDB ON EventDB.iMatchID = MatchDB.iMatchID WHERE iCupID=? AND bVoided = 1 AND iType IN(1,3,4)`,
           [cupID]
         );
         let goals = sql[0].c;
         sql = await DB.query(
           `SELECT SUM(CASE WHEN iType=3 THEN -1 ELSE 1 END) AS 'g', iLink
           FROM EventDB 
-          INNER JOIN MatchDB ON EventDB.iMatchID = MatchDB.iID
-          INNER JOIN PlayerDB ON EventDB.iPlayerID = PlayerDB.iID
+          INNER JOIN MatchDB ON EventDB.iMatchID = MatchDB.iMatchID
+          INNER JOIN PlayerDB ON EventDB.iPlayerID = PlayerDB.iPlayerID
           WHERE 
           iTYPE IN (1,3,4)
           AND bVoided = 1
@@ -108,8 +108,8 @@ class model {
         sql = await DB.query(
           `SELECT COUNT(*) AS 'g', iLink
             FROM EventDB 
-            INNER JOIN MatchDB ON EventDB.iMatchID = MatchDB.iID
-            INNER JOIN PlayerDB ON EventDB.iPlayerID = PlayerDB.iID
+            INNER JOIN MatchDB ON EventDB.iMatchID = MatchDB.iMatchID
+            INNER JOIN PlayerDB ON EventDB.iPlayerID = PlayerDB.iPlayerID
             WHERE 
             iTYPE IN (2)
             AND bVoided = 1
@@ -126,8 +126,8 @@ class model {
         sql = await DB.query(
           `SELECT SUM(iSaves) AS 'g', iLink
             FROM PerformanceDB
-            INNER JOIN MatchDB ON PerformanceDB.iMatchID = MatchDB.iID
-            INNER JOIN PlayerDB ON PerformanceDB.iPlayerID = PlayerDB.iID
+            INNER JOIN MatchDB ON PerformanceDB.iMatchID = MatchDB.iMatchID
+            INNER JOIN PlayerDB ON PerformanceDB.iPlayerID = PlayerDB.iPlayerID
             WHERE 
             iSaves > 0
             AND bVoided = 1
@@ -142,12 +142,12 @@ class model {
           ? (await playerLink(sql[0].iLink)) + ` (${sql[0].g})`
           : "";
         sql = await DB.query(
-          `SELECT COUNT(*) AS c FROM EventDB INNER JOIN MatchDB ON EventDB.iMatchID = MatchDB.iID WHERE iCupID=? AND bVoided = 1 AND iType IN(5,8)`,
+          `SELECT COUNT(*) AS c FROM EventDB INNER JOIN MatchDB ON EventDB.iMatchID = MatchDB.iMatchID WHERE iCupID=? AND bVoided = 1 AND iType IN(5,8)`,
           [cupID]
         );
         let yellows = sql[0].c;
         sql = await DB.query(
-          `SELECT COUNT(*) AS c FROM EventDB INNER JOIN MatchDB ON EventDB.iMatchID = MatchDB.iID WHERE iCupID=? AND bVoided = 1 AND iType IN(6,8)`,
+          `SELECT COUNT(*) AS c FROM EventDB INNER JOIN MatchDB ON EventDB.iMatchID = MatchDB.iMatchID WHERE iCupID=? AND bVoided = 1 AND iType IN(6,8)`,
           [cupID]
         );
         let reds = sql[0].c;
@@ -191,7 +191,9 @@ class model {
     if (new Date() - stats.mtime > pageExpiry) {
       let cupID = req.params.cupID.split("-")[0];
       let teams = [];
-      let cupMeta = await DB.query("SELECT * FROM CupDB WHERE iID=?", [cupID]);
+      let cupMeta = await DB.query("SELECT * FROM CupDB WHERE iCupID=?", [
+        cupID,
+      ]);
       let totalGoals = 0;
       let totalMatches = 0;
       let scorers = {};
@@ -249,8 +251,8 @@ class model {
         let players = [{}, {}];
 
         let subSql = await DB.query(
-          "SELECT * FROM EventDB INNER JOIN PlayerDB ON EventDB.iPlayerID = PlayerDB.iID WHERE iMatchID=? ORDER BY dRegTime,dInjTime",
-          [row.iID]
+          "SELECT * FROM EventDB INNER JOIN PlayerDB ON EventDB.iPlayerID = PlayerDB.iPlayerID WHERE iMatchID=? ORDER BY dRegTime,dInjTime",
+          [row.iMatchID]
         );
         for (let j in subSql) {
           let e = subSql[j];
@@ -305,7 +307,7 @@ class model {
           winner: row.sWinningTeam,
           homeg: goals[0],
           awayg: goals[1],
-          id: row.iID,
+          id: row.iMatchID,
           official: row.bVoided,
           roundOrder: row.iOrder,
         });
@@ -400,9 +402,9 @@ class model {
       data.version,
     ]);
     let cupID = await DB.query(
-      `SELECT iID FROM CupDB ORDER BY iID DESC LIMIT 1`
+      `SELECT iCupID FROM CupDB ORDER BY iCupID DESC LIMIT 1`
     );
-    cupID = cupID[0].iID;
+    cupID = cupID[0].iCupID;
     result.cupID = cupID;
     result.cupURL = `${cupID}-${cupShort(data.name).replace(" ", "-")}`;
     res.send(result);

@@ -13,7 +13,7 @@ class model {
     for (let row of Array.from(sql)) {
       let team = row.sHomeTeam;
       let last = await DB.query(
-        "SELECT * FROM `MatchDB` INNER JOIN CupDB On MatchDB.iCupID = CupDB.iID WHERE iType = 1 AND (sRound = 'Round of 16' OR sRound = 'Round of 32') AND (sHomeTeam = ? OR sAwayTeam = ?) AND bVoided = 1 ORDER BY dUTCTime DESC",
+        "SELECT * FROM `MatchDB` INNER JOIN CupDB On MatchDB.iCupID = CupDB.iCupID WHERE iType = 1 AND (sRound = 'Round of 16' OR sRound = 'Round of 32') AND (sHomeTeam = ? OR sAwayTeam = ?) AND bVoided = 1 ORDER BY dUTCTime DESC",
         [team, team]
       ).then((result) => {
         let r = result[0];

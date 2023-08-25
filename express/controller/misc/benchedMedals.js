@@ -1,10 +1,10 @@
-import DB from '../../lib/db.js';
-import * as h from '../../lib/helper.js';
-import fs from 'fs/promises';
+import DB from "../../lib/db.js";
+import * as h from "../../lib/helper.js";
+import fs from "fs/promises";
 class model {
-    static main = async(req, res, next) =>{
-        let result = {};
-        /*let sql = await DB.query("SELECT PlayerDB.* FROM PlayerDB INNER JOIN CupDB ON PlayerDB.iCupID = CupDB.iID WHERE sMedal <> '' AND iType <= 3");
+  static main = async (req, res, next) => {
+    let result = {};
+    /*let sql = await DB.query("SELECT PlayerDB.* FROM PlayerDB INNER JOIN CupDB ON PlayerDB.iCupID = CupDB.iCupID WHERE sMedal <> '' AND iType <= 3");
         let arr = {};
         for(let i in sql){
             let row = sql[i];
@@ -77,10 +77,13 @@ class model {
             $d .= "' ><td>" . playerLink($row[1],$row[0]) . "</td><td>" . $row['10'] . " " . $row['11'] . "</td><td>" . teamLink($row[2]) . "</td><td>" . $row[9] . "</td><td>" . 
             date('o-m-d',$time) . " " . $row[5] . "</td><td>" . teamLink($row[3]) . "</td><td>" . $row[7] . "-" . $row[8] . "</td><td>" . teamLink($row[4]) . "</td></tr>";
         }*/
-        result.html = html;
-        result.date = new Date().toLocaleString('en-us',{timeStyle:'short',dateStyle:'medium'});
-        await fs.writeFile(req.staticUrl,JSON.stringify(result));
-        res.send(result);     
-    }
-}                                 
-export {model as default};
+    result.html = html;
+    result.date = new Date().toLocaleString("en-us", {
+      timeStyle: "short",
+      dateStyle: "medium",
+    });
+    await fs.writeFile(req.staticUrl, JSON.stringify(result));
+    res.send(result);
+  };
+}
+export { model as default };
