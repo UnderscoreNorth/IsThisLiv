@@ -76,8 +76,7 @@ router.use("/", async (req, res, next) => {
       const matches = await getMatches({
         team: m.team,
         start: m.start,
-        //@ts-ignore
-        end: m.end == "Invalid Date" ? new Date() : m.end,
+        end: m.end ?? new Date(),
       });
       for (const { match } of matches) {
         if (match.winningTeam == m.team) {
@@ -105,31 +104,25 @@ router.use("/", async (req, res, next) => {
       }
     }
     let days = Math.floor(
-      //@ts-ignore
-      ((m.end == "Invalid Date" ? new Date().getTime() : m.end.getTime()) -
-        m.start.getTime()) /
+      ((m?.end?.getTime() ?? new Date().getTime()) - m.start.getTime()) /
         86400000
     );
     mObj[key].runs.push({
       board: m.team,
       start: dateFormat(m.start, "number"),
-      //@ts-ignore
-      end: m.end == "Invalid Date" ? "Active" : dateFormat(m.end, "number"),
+      end: m.end ? dateFormat(m.end, "number") : "Active",
       days,
       colour: colours[m.team],
     });
     mObj[key].tot += days;
-    //@ts-ignore
-    mObj[key].active = m.end == "Invalid Date" ? true : false;
+    mObj[key].active = m.end ? false : true;
     if (mObj[key].runs.length > max) max = mObj[key].runs.length;
     if (sort == "days") mObj[key].sortValue = -mObj[key].tot;
     if (sort == "start") {
       if (mObj[key].sortValue == 0) mObj[key].sortValue = m.start.getTime();
     }
     if (sort == "end") {
-      mObj[key].sortValue =
-        //@ts-ignore
-        (m.end == "Invalid Date" ? new Date().getTime() : m.end.getTime()) * -1;
+      mObj[key].sortValue = (m.end?.getTime() ?? new Date().getTime()) * -1;
     }
     if (sort == "board") mObj[key].sortValue = m.team;
     if (sort == "eff") mObj[key].sortValue = -mObj[key].stats.e;
