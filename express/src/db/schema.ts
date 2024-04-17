@@ -59,7 +59,7 @@ export const Manager = mysqlTable("manager", {
   end: date("end"),
   team: varchar("team", { length: 11 }),
 });
-export const PlayerLink = mysqlTable("playerLink", {
+export const PlayerLink = mysqlTable("playerlink", {
   linkID: int("linkID").primaryKey().autoincrement(),
   team: teamCol(),
   name: varchar("name", { length: 100 }),

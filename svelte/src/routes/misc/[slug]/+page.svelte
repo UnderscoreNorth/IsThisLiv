@@ -1,8 +1,7 @@
 <script>
 	import { page } from '$app/stores';
-	import { afterNavigate } from '$app/navigation';
-	let firstLoad = true;
-	export let data;
+	import { api } from '$lib/constants';
+	let data = api('/misc/' + $page.params.slug);
 </script>
 
 <svelte:head>

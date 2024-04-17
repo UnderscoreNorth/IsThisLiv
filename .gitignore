@@ -7,3 +7,4 @@ svelte/package-lock.json
 svelte/.svelte-kit/
 svelte/node_modules/
 svelte/src/config.json
+svelte/src/lib/config.json
