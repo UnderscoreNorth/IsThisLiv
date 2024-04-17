@@ -8,15 +8,15 @@ export async function search(req: Request) {
     string,
     { id: number; team: string; urlName: string; name: string }
   > = {};
-  for (const { playerLink } of players) {
-    if (!playerLink?.linkID) continue;
-    result[playerLink.linkID] = {
-      id: playerLink.linkID,
-      team: playerLink.team,
-      urlName: playerLink.name.replace(/./gm, function (s) {
+  for (const { playerlink } of players) {
+    if (!playerlink?.linkID) continue;
+    result[playerlink.linkID] = {
+      id: playerlink.linkID,
+      team: playerlink.team,
+      urlName: playerlink.name.replace(/./gm, function (s) {
         return s.match(/[a-z0-9]+/i) ? s : "";
       }),
-      name: playerLink.name,
+      name: playerlink.name,
     };
   }
   return Object.values(result);

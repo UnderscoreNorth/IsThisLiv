@@ -72,10 +72,10 @@ export async function uploadEditFile(req: Request, res: Response) {
           team
         ]) {
           let search = (await getPlayers({ team, like: name })).filter(
-            (x) => x?.playerLink?.linkID
+            (x) => x?.playerlink?.linkID
           );
           let linkID: number;
-          if (search.length) linkID = search[0].playerLink.linkID;
+          if (search.length) linkID = search[0].playerlink.linkID;
           await db.insert(Player).values({
             cupID,
             user: "",

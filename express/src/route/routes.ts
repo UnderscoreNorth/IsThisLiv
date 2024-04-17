@@ -7,6 +7,7 @@ import teams from "../controller/teams";
 import players from "../controller/players";
 import sql from "../controller/sql";
 import managers from "../controller/managers";
+import records from "../controller/records";
 
 /*import cupModels from "../../controller/cupModels.js";
 import teamModels from "../../controller/teamModels.js";
@@ -42,6 +43,7 @@ router.use("/cups", cups);
 router.use("/teams", teams);
 router.use("/players", players);
 router.use("/managers", managers);
+router.use("/records/", records);
 /*router.use("/cups/edit", cupModels.edit);
 router.use("/cups/:cupID", cupModels.cup);
 router.use("/cups", cupModels.main);
@@ -67,7 +69,7 @@ router.use("/misc/subbing_the_keeper", subbingGK.main);
 router.use("/misc/sub_on_motm", subonMOTM.main);
 router.use("/misc/shit_medals", shitmedals.main);
 router.use("/misc/shot_conversion", shot_conversion);
-router.use("/records/", records.main);
+
 
 router.post("/tools/groupStage", multer().none(), groupStage.save);*/
 

@@ -18,8 +18,8 @@ export async function getUnlinked(req: Request) {
     teamLinks[team] = Array.from(
       new DeepSet(
         players
-          .filter((x) => x.player.team == team && x?.playerLink?.linkID)
-          .map((x) => x.playerLink)
+          .filter((x) => x.player.team == team && x?.playerlink?.linkID)
+          .map((x) => x.playerlink)
           .sort((a, b) => {
             if (a.name > b.name) return 1;
             return -1;

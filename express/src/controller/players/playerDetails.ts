@@ -27,8 +27,8 @@ export async function playerDetails(req: Request) {
   let linkID = parseInt(req.params.linkID.split("-")[0]);
 
   let playerData = await getPlayers({ linkID });
-  team = playerData[0].playerLink.team;
-  pName = playerData[0].playerLink.name;
+  team = playerData[0].playerlink.team;
+  pName = playerData[0].playerlink.name;
 
   aliases = new Set(playerData.map((x) => x.player.name.trim()));
 

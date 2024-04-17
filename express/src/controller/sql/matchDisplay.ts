@@ -38,12 +38,12 @@ export type MatchData = {
     {
       player: InferInsertModel<typeof Player>;
       rosterOrder: InferInsertModel<typeof RosterOrder>;
-      playerLink: InferInsertModel<typeof PlayerLink>;
+      playerlink: InferInsertModel<typeof PlayerLink>;
     }[],
     {
       player: InferInsertModel<typeof Player>;
       rosterOrder: InferInsertModel<typeof RosterOrder>;
-      playerLink: InferInsertModel<typeof PlayerLink>;
+      playerlink: InferInsertModel<typeof PlayerLink>;
     }[]
   ];
   performances: [[], []];
@@ -114,7 +114,7 @@ export async function matchDisplay(req: Request) {
     let team = teams[i];
     data.players[i] = (await getPlayers({ cupID, team })).map((x) => {
       delete x.cup;
-      delete x.playerLink;
+      delete x.playerlink;
       return x;
     });
     data.performances[i] = await getPerformances({ cupID, team });

@@ -22,7 +22,7 @@
 		['/teams', 'Teams'],
 		['/players', 'Players'],
 		['/managers', '>Managers'],
-		//['/records', 'Records'],
+		['/records', 'Records'],
 		//['/misc', 'Misc Stats'],
 		//['/ff', 'Fantasy Football'],
 		['https://implyingrigged.info/', 'Wiki'],
