@@ -74,6 +74,7 @@
 	function getCupURL(cups,id){
 		return id + '-' + cupShort(cups.filter((x)=>x.cupID == id)[0].cupName).replace(" ","-");
 	}
+	//<a href='/cups/{getCupURL(cups,data.cupID-1)}' on:click={()=>{changeCup(data.cupID-1)}}  class='element' style='float:left'>&lt;</a>
 </script>
 
 <svelte:head>
@@ -112,13 +113,11 @@
 				<select></select>
 				{:then cups}
 				<div>
-				<a href='/cups/{getCupURL(cups,data.cupID-1)}' on:click={()=>{changeCup(data.cupID-1)}}  class='element' style='float:left'>&lt;</a>
 				<select class='element' style='margin-bottom:0.7rem' bind:this={select} value={data.cupID} on:change={()=>{changeCup()}}>
 					{#each cups as row}
 						<option value={row.cupID}>{cupShort(row.cupName)}</option>
 					{/each}
 				</select>
-				<a href='/cups/{getCupURL(cups,data.cupID+1)}' on:click={()=>{changeCup(data.cupID+1)}} class='element' style='float:right'>&gt;</a>
 				</div>
 				{/await}
 			<a href="#Top">Top</a>
@@ -204,7 +203,7 @@
 			{/if}
 			{#if data.matches.kos}
 				<h2 id="Knockouts">Knockout Stage</h2>
-				<Brackets {data} />
+				<Brackets data2={data} />
 				<div style="padding:0 2rem">
 					{#each data.matches.kos as group}
 						<div class="kos">
@@ -344,6 +343,8 @@
 		background: var(--bg-color);
 		color: var(--fg-color);
 		padding: 0.2rem;
-		vertical-align: middle;
+	}
+	groupTable tr td:nth-child(1){
+		text-align: left;
 	}
 </style>

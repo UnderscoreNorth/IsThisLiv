@@ -1,6 +1,7 @@
 <script>
 	import { page } from '$app/stores';
 	import { api } from '$lib/constants';
+	import TeamIcon from '$lib/teamIcon.svelte';
 	let filter = 'All';
 	let sort = '';
 	const loadData = async (sort) => {
@@ -61,7 +62,7 @@
 								{#each Array(data.max) as _, j}
 									{#if row.runs[j]}
 										<td style="color:black;background:{row.runs[j].colour}"
-											>/{row.runs[j].board}/</td
+											>/{row.runs[j].board}/<TeamIcon team={row.runs[j].board}/></td
 										>
 										<td style="color:black;background:{row.runs[j].colour}">{row.runs[j].start}</td>
 										<td style="color:black;background:{row.runs[j].colour}">{row.runs[j].end}</td>
@@ -96,6 +97,7 @@
 		position: sticky;
 		top: 0;
 		background: var(--bg-color);
+		z-index: 1;
 	}
 	#filters {
 		background: var(--bg-color);

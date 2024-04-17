@@ -3,12 +3,13 @@
 	import { teamLink } from '$lib/helper';
 	import MdEdit from 'svelte-icons/md/MdEdit.svelte';
 	import { User } from '$lib/user';
+	import TeamIcon from '$lib/teamIcon.svelte';
 </script>
 
 <leftInfo>{match.date}<br />{match.time}</leftInfo>
-<homeInfo>{@html teamLink(match.home)}</homeInfo>
+<homeInfo>{@html teamLink(match.home)}<TeamIcon team={match.home}/></homeInfo>
 <scoreInfo>{match.homeg}–{match.awayg}</scoreInfo>
-<awayInfo>{@html teamLink(match.away)}</awayInfo>
+<awayInfo><TeamIcon team={match.away}/>{@html teamLink(match.away)}</awayInfo>
 <rightInfo>
 	{#if $User.user}
 		<!-- svelte-ignore a11y-click-events-have-key-events -->

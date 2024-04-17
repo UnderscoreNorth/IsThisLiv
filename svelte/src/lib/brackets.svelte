@@ -12,13 +12,14 @@
                         roundOrder:number;
                     }>
                 };
-    export let data:{
+    export let data2:{
         matches:{
             kos:Array<
                 Round
             >
         }
     };    
+    let data = JSON.parse(JSON.stringify(data2));
     for(let i in data.matches.kos){
         if(data.matches.kos[i].name == '3rd Place'){
             data.matches.kos[parseInt(i)+1].matches.push(data.matches.kos[i].matches[0]);            
@@ -47,12 +48,12 @@
                     <div class='bracketName' style:visibility={'hidden'}></div>
                         {#each data.matches.kos.length == (i +1) ? [1] : round.matches as match}
                             <div class='bracketMatchContainer'>
-                                <div style:height={Math.pow(2,i-1) * 2.25 + (Math.pow(2,i-1)-1) * .25 + 'rem'}/>
+                                <div style:height={Math.pow(2,i-1) * 2.25 + (Math.pow(2,i-1)-1) * .5 + 'rem'}/>
                                     <div class='gapMiddle'>
                                     <div class='gapLeft' />
                                     <div class='gapTop' />
                                 </div>
-                                <div style:height={Math.pow(2,i-1) * 2.25 + (Math.pow(2,i-1)-1) * .25 + 'rem'}/>
+                                <div style:height={Math.pow(2,i-1) * 2.25 + (Math.pow(2,i-1)-1) * .5 + 'rem'}/>
                         </div>
                     {/each}    
                 </div>
@@ -242,9 +243,6 @@
         flex-direction: row;
         flex-wrap: nowrap;
     }
-    .gapEdges{
-        height:2.25rem;
-    }
     .gapMiddle{
         flex-grow: 1;
         display:grid;
@@ -263,20 +261,20 @@
     .bracketGapperParent{
         display:grid;        
         grid-template-rows: 2rem auto;
-        gap:0.5rem;
+        gap:1rem;
     }
     .bracketRound{
         display:grid;        
         grid-template-rows: 2rem;
         grid-auto-rows: 1fr;
-        gap:0.5rem;
+        gap:1rem;
         flex-grow: 1;
         max-width: 20rem;
     }
     .doubleRound{
         display:grid;        
         grid-template-rows: 2fr 1fr;
-        gap:0.5rem;
+        gap:1rem;
         flex-grow: 1;
         max-width: 20rem;
     }

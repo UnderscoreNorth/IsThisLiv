@@ -13,11 +13,18 @@ export async function rebuild(whitelist = []) {
     }
   }
 }
+export function teamIcon(team: string) {
+  return `<img class='teamIcon' src='/icons/team-small/38px-${
+    team[0].toUpperCase() + team.substring(1).toLowerCase()
+  }_icon.png' alt='${team}' />`;
+}
 
-export function teamLink(team: string) {
+export function teamLink(team: string, icon?: "left" | "right") {
   if (team != "draw") {
     if (team) {
-      return `<a href='/teams/${team}'>/${team}/</a>`;
+      return `<a href='/teams/${team}'>${
+        icon == "left" ? teamIcon(team) : ""
+      }/${team}/${icon == "right" ? teamIcon(team) : ""}</a>`;
     } else {
       return "TBD";
     }

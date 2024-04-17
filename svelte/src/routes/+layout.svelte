@@ -285,4 +285,10 @@
 		float: right;
 		padding: 1rem;
 	}
+	:global(.teamIcon){
+		height: 25px;
+        padding:0 0.5rem;
+        vertical-align: middle;
+        filter: drop-shadow(1px 0px 0px #00000040) drop-shadow(-1px 0px 0px #00000040) drop-shadow(0px 1px 0px #00000040) drop-shadow(0px -1px 0px #00000040);
+	}
 </style>

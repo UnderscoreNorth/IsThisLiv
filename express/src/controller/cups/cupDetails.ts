@@ -107,7 +107,7 @@ export async function cupDetails(req: Request) {
       if (typeof matches[roundType][match.round].table[team] != "object")
         matches[roundType][match.round].table[team] = {
           status: "red",
-          data: [teamLink(team), 0, 0, 0, 0, 0, 0, 0, 0],
+          data: [teamLink(team, "left"), 0, 0, 0, 0, 0, 0, 0, 0],
         };
     }
 
