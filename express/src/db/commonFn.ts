@@ -51,7 +51,9 @@ export async function getCups(options?: {
   asc?: boolean;
 }) {
   const where = and(
-    options?.excludeFriendlies == true ? lte(Cup.cupType, 3) : undefined,
+    options?.excludeFriendlies == true
+      ? lte(Cup.cupType, 3)
+      : lte(Cup.cupType, 4),
     options?.cupList ? inArray(Cup.cupID, options.cupList) : undefined
   );
   return await db
