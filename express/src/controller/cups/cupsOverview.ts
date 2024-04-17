@@ -30,7 +30,11 @@ export async function cupsOverview(req: Request) {
     let third = "";
     let fourth = "";
     if (cup.cupType < 3 && cup.end < new Date()) {
-      for (const match of matches) {
+      for (const match of matches.sort((a, b) => {
+        if (a.utcTime > b.utcTime) return -1;
+        if (a.utcTime < b.utcTime) return 1;
+        return 0;
+      })) {
         if (!first) {
           first = teamLink(match.winningTeam);
           second = teamLink(
