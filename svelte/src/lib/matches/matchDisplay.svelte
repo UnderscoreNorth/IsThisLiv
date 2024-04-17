@@ -10,7 +10,7 @@
 <scoreInfo>{match.homeg}–{match.awayg}</scoreInfo>
 <awayInfo>{@html teamLink(match.away)}</awayInfo>
 <rightInfo>
-	{#if $User.username}
+	{#if $User.user}
 		<!-- svelte-ignore a11y-click-events-have-key-events -->
 		<icon on:click={() => editMatch(match.id)}><MdEdit /></icon>
 	{/if}

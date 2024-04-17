@@ -1,26 +1,16 @@
 <script lang="ts">
 	import { User } from '$lib/user';
 	import { ffStore } from '$lib/fantasyFootball/fantasyFootballStore';
-	import config from '$lib/config.json';
-	const api = config.api;
+	import { api } from '$lib/constants';
 	let ffCalculating = false;
 	const calcFF = async () => {
 		ffCalculating = true;
-		const response = await fetch(`${api}api/ff/calculate`, {
-			method: 'post',
-			headers: {
-				Accept: 'application/json',
-				'Content-Type': 'application/json'
-			},
-			body: JSON.stringify({
-				cupID: $ffStore.cupID
-			})
-		});
+		await api('/ff/calculate',{cupID:$ffStore.cupID});
 		ffCalculating = false;
 	};
 </script>
 
-{#if $User.username}
+{#if $User.user}
 	<button on:click={calcFF} disabled={ffCalculating}>Calculate FF</button>
 {/if}
 

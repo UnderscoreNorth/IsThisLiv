@@ -1,10 +1,9 @@
 <script>
+	import { api } from '$lib/constants';
 	export let toggleModal;
 	export let cupID;
 	export let hasMatches;
 	import { User } from '../user';
-	import config from '$lib/config.json';
-	let api = config.api;
 	let bulkType = 0;
 	const groupLetters = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'];
 	let bulkTeams = {};
@@ -15,21 +14,14 @@
 		}
 	}
 	let submitBulk = async () => {
-		if ($User.username && bulkType) {
+		if ($User.user && bulkType) {
 			let data = {
 				bulkTeams,
 				bulkType,
-				user: $User.username,
+				user: $User.user,
 				cupID
 			};
-			let response = await fetch(`${api}api/matches/bulk`, {
-				method: 'POST',
-				headers: {
-					'Content-Type': 'application/json'
-				},
-				body: JSON.stringify(data)
-			});
-			let jsonResponse = await response.json();
+			await api('/matches/bulk',{data});
 			location.reload();
 		}
 	};

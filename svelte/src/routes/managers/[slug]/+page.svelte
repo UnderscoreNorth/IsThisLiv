@@ -1,24 +1,10 @@
 <script>
 	import { page } from '$app/stores';
-	import config from '$lib/config.json';
+	import { api } from '$lib/constants';
 	let filter = 'All';
-	const api = config.api;
 	let sort = '';
 	const loadData = async (sort) => {
-		const response = await fetch(`${api}api/managers`, {
-			method: 'post',
-			headers: {
-				Accept: 'application/json',
-				'Content-Type': 'application/json'
-			},
-			body: JSON.stringify({
-				sort
-			})
-		}).catch((err) => {
-			return '';
-		});
-		let result = await response.json();
-		return result;
+		return await api('/managers',{sort});
 	};
 	page.subscribe((r) => {
 		sort = r.params.slug;
@@ -86,12 +72,12 @@
 								{/each}
 								<th>{row.tot}</th>
 								{#if sort == 'points' || sort == 'eff'}
-									<td>{row.w}</td>
-									<td>{row.d}</td>
-									<td>{row.l}</td>
-									<td>{row.w + row.d + row.l}</td>
-									<td>{row.e}%</td>
-									<td>{row.pts}</td>
+									<td>{row.stats.w}</td>
+									<td>{row.stats.d}</td>
+									<td>{row.stats.l}</td>
+									<td>{row.stats.t}</td>
+									<td>{row.stats.e}%</td>
+									<td>{row.stats.p}</td>
 								{/if}
 							</tr>
 						{/if}

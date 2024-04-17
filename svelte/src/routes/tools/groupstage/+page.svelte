@@ -45,12 +45,12 @@
 			}}
 			enctype="multipart/form-data"
 			method="post"
-			action={`${api}api/tools/groupstage`}
+			action={`${api}/tools/groupstage`}
 		>
 			<label for="cup">Cup</label>
 			<select id="cup" name="cup">
-				{#each data.rows.reverse() as row}
-					<option value={row.iID}>{row.sName}</option>
+				{#each data.rows as row}
+					<option value={row.cupID}>{row.cupName}</option>
 				{/each}
 			</select> <br />
 

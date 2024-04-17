@@ -1,27 +1,71 @@
-<script>
-	import config from '$lib/config.json';
+<script lang='ts'>
 	import { page } from '$app/stores';
 	import { User } from '$lib/user';
+	// @ts-ignore
 	import MdAddBox from 'svelte-icons/md/MdAddBox.svelte';
-	import { teamLink } from '$lib/helper';
+	import { cupShort, teamLink } from '$lib/helper';
 	import MatchEdit from '$lib/matches/MatchEdit/MatchEdit.svelte';
 	import MatchDisplay from '$lib/matches/matchDisplay.svelte';
 	import Brackets from '$lib/brackets.svelte';
 	import MatchAdd from '$lib/matches/MatchAdd.svelte';
-	let api = config.api;
+	import TeamModal from '$lib/team/teamModal.svelte';
+	import { browser } from '$app/environment';
+	import { api } from '$lib/constants';
 	let matchID = 0;
-	export let data;
-	/**
-	 *
-	 * @param {number} ID
-	 */
-	function editMatch(ID) {
+	let data:{
+		teams: string[];
+		cupID: number;
+		cupName: string;
+		dates: string;
+		matches: Record<
+			"groups" | "kos",
+			{
+				name: string;
+				matches: [
+				{
+					date: string;
+					time: string;
+					stadium: string;
+					attendance: number;
+					home: string;
+					away: string;
+					winner: string;
+					homeg: number;
+					awayg: number;
+					id: number;
+					official: number;
+					roundOrder: number;
+				}
+				];
+				table: any;
+			}[]
+		>;
+		goals: number;
+		numMatches: number;
+		gpm: number;
+		scorers: any[];
+		assisters: any[];
+		owngoalers: any[];
+		goalies: any[];
+		cards: any[];
+		date:Date;
+		} = api('/cups/' + $page.params.slug);
+	
+	function editMatch(ID:number) {
 		matchID = ID;
 	}
 	let displayAddMatchModal = false;
 	let toggleAddMatchModal = () => {
 		displayAddMatchModal = !displayAddMatchModal;
 	};
+	let displayTeam = '';
+	let cupsData = api('/cups/list');
+	let select:HTMLSelectElement;
+	function changeCup(){
+		if(browser){
+			window.location.replace('/cups/' + select.value + '-' + select.options[select.selectedIndex].text.replace(" ","-"))
+		}
+	}
 </script>
 
 <svelte:head>
@@ -32,7 +76,12 @@
 	{/await}
 </svelte:head>
 {#await data}
-	Loading...
+<container>
+	<vertNav class="c-1" />
+	<contents>
+		<h1>Loading...</h1>
+	</contents>
+</container>
 {:then data}
 	{#if displayAddMatchModal}
 		<MatchAdd
@@ -41,8 +90,24 @@
 			hasMatches={Object.values(data.matches).length > 0}
 		/>
 	{/if}
+	{#if displayTeam}
+		<TeamModal
+			cupID={data.cupID}
+			team={displayTeam}
+			clear={()=>{displayTeam=''}}
+		/>
+	{/if}
 	<container>
 		<vertNav class="c-1">
+				{#await cupsData}
+				<select></select>
+				{:then cups}
+				<select bind:this={select} value={data.cupID} on:change={()=>{changeCup()}}>
+					{#each cups as row}
+						<option value={row.cupID}>{cupShort(row.cupName)}</option>
+					{/each}
+				</select>
+				{/await}
 			<a href="#Top">Top</a>
 			<a href="#Teams">Competitors</a>
 			{#if data.matches.groups}
@@ -58,11 +123,17 @@
 				{/each}
 			{/if}
 			<a href="#Stats">Statistics</a>
+			<a style="padding-left:1rem" href="#goals">Goals</a>
+			<a style="padding-left:1rem" href="#assists">Assists</a>
+			<a style="padding-left:1rem" href="#saves">Saves</a>
+			<a style="padding-left:1rem" href="#cards">Cards</a>
 			<a href="#Stats">Fantasy Football</a>
 		</vertNav>
 		<contents>
+			<div id="pageModifiedTime">Last updated - {data.date}</div>
 			<h1 id="Top">
-				{data.cupName}{#if $User.username}
+				{data.cupName}{#if $User.user}
+					<!-- svelte-ignore a11y-click-events-have-key-events -->
 					<icon
 						title={'Add match(es)'}
 						on:click={() => {
@@ -72,12 +143,14 @@
 					>
 				{/if}
 			</h1>
+			
 			<statContainer class="c-1">
 				Dates: {data.dates} Matches: {data.numMatches} Goals Scored: {data.goals} ({data.gpm} gpm)
 			</statContainer>
 			<teamsContainer id="Teams" class="c-1">
 				{#each data.teams as teamData}
-					<teamBox class="c-2">{@html teamLink(teamData.name)}</teamBox>
+					<!-- svelte-ignore a11y-click-events-have-key-events -->
+					<teamBox on:click={()=>displayTeam=teamData} class="c-2">{@html teamLink(teamData)}</teamBox>
 				{/each}
 			</teamsContainer>
 			{#if data.matches.groups}
@@ -86,26 +159,28 @@
 					{#each data.matches.groups as group}
 						<div class="groups">
 							<h3 id={group.name}>{group.name}</h3>
-							<groupTable>
-								<tr>
-									<th>Team</th>
-									<th>Pld</th>
-									<th>W</th>
-									<th>D</th>
-									<th>L</th>
-									<th>GF</th>
-									<th>GA</th>
-									<th>GD</th>
-									<th>Pts</th>
-								</tr>
-								{#each group.table as row}
-									<tr class={row.status}>
-										{#each row.data as cell}
-											<td>{@html cell}</td>
-										{/each}
+							{#if !['Playoff Knockout'].includes(group.name)}
+								<groupTable>
+									<tr>
+										<th>Team</th>
+										<th>Pld</th>
+										<th>W</th>
+										<th>D</th>
+										<th>L</th>
+										<th>GF</th>
+										<th>GA</th>
+										<th>GD</th>
+										<th>Pts</th>
 									</tr>
-								{/each}
-							</groupTable>
+									{#each group.table as row}
+										<tr class={row.status}>
+											{#each row.data as cell}
+												<td>{@html cell}</td>
+											{/each}
+										</tr>
+									{/each}
+								</groupTable>
+							{/if}
 							{#each group.matches as match}
 								<match>
 									<MatchDisplay {editMatch} {match} />
@@ -136,7 +211,7 @@
 			{/if}
 			<h2 id="Stats">Statistics</h2>
 			<div style="padding:0 2rem">
-				<h2>Goals</h2>
+				<h2 id='goals'>Goals</h2>
 				{#each data.scorers as subArr}
 					{#if subArr?.num}
 						<h3>{subArr.num}</h3>
@@ -145,8 +220,26 @@
 						{/each}
 					{/if}
 				{/each}
-				<h2>Assists</h2>
+				<h2 id='assists'>Assists</h2>
 				{#each data.assisters as subArr}
+					{#if subArr?.num}
+						<h3>{subArr.num}</h3>
+						{#each subArr.players as scorer}
+							<div style="display:inline-block;width:20%">{@html scorer}</div>
+						{/each}
+					{/if}
+				{/each}
+				<h2 id='saves'>Saves</h2>
+				{#each data.goalies as subArr}
+					{#if subArr?.num}
+						<h3>{subArr.num}</h3>
+						{#each subArr.players as scorer}
+							<div style="display:inline-block;width:20%">{@html scorer}</div>
+						{/each}
+					{/if}
+				{/each}
+				<h2 id='cards'>Cards</h2>
+				{#each data.cards as subArr}
 					{#if subArr?.num}
 						<h3>{subArr.num}</h3>
 						{#each subArr.players as scorer}
@@ -214,7 +307,11 @@
 		display: inline-block;
 		padding: 1rem;
 		margin: 0.25rem;
-		border-radius: 0.25rem;
+		border-radius: 0.25rem;		
+	}
+	teamBox:hover{
+		cursor: pointer;
+		background:var(--bg-color)
 	}
 	match {
 		display: grid;

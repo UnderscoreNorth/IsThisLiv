@@ -1,45 +1,43 @@
 <script>
 	import { User } from './user';
-	import config from '$lib/config.json';
-	const api = config.api;
+	import Modal from './modal.svelte';
+	import { browser } from '$app/environment';
+	import { api } from './constants';
+	
 	let inputUser = '';
 	let inputPass = '';
+	let error = '';
 	const login = async () => {
-		const response = await fetch(`${api}api/login`, {
-			method: 'post',
-			headers: {
-				Accept: 'application/json',
-				'Content-Type': 'application/json'
-			},
-			body: JSON.stringify({
-				inputUser,
-				inputPass
-			})
-		});
-		let result = await response.json();
-		if (result.username) {
-			localStorage.setItem('username', result.username);
-			User.set({
-				username: result.username,
-				accesstoken: '',
-				refreshtoken: '',
-				expiry: ''
-			});
+		let result = await api('/sql/user/login',{user:inputUser,pass:inputPass});
+		if(result.error){
+			error = result.error;
+		} else if (result.user) {
+			localStorage.setItem('user', JSON.stringify(result));
+			User.set(result);
 		}
 	};
 	const logout = () => {
 		User.set({
-			username: '',
+			user: '',
 			accesstoken: '',
 			refreshtoken: '',
-			expiry: ''
+			expiry: '',
+			access:0
 		});
+		localStorage.removeItem('user');
+		if(browser){
+			window.location.replace('/')
+		}
 	};
 </script>
-
+{#if error !== ''}
+<Modal close={()=>{error=''}}>
+	<br><br>{error}
+</Modal>
+{/if}
 <modal class="c-1">
-	{#if $User.username}
-		{$User.username}
+	{#if $User.user}
+		{$User.user}
 		<hr />
 		<button on:click={logout}>Logout</button>
 	{:else}

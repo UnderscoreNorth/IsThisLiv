@@ -1,10 +1,9 @@
 <script lang="ts">
-	import config from '$lib/config.json';
 	import { ffStore } from './fantasyFootballStore';
 	import FFTable from '$lib/fantasyFootball/FFtable.svelte';
 	import FFTeamCreator from './FFTeamCreator.svelte';
-	export let currentCup: number;
-	const api = config.api;
+	import { api } from '$lib/constants';
+	export let currentCup: number;	
 	let cupID = $ffStore.cupID;
 	let selectedTab = 'Board stats';
 	const tabs = ['Board stats', 'Team stats', 'Player stats', 'Fantasy Team'];
@@ -12,18 +11,7 @@
 		selectedTab = tab;
 	};
 	const loadData = async () => {
-		const response = await fetch(`${api}api/ff/cup`, {
-			method: 'post',
-			headers: {
-				Accept: 'application/json',
-				'Content-Type': 'application/json'
-			},
-			body: JSON.stringify({
-				cupID
-			})
-		});
-		let result = await response.json();
-		return result;
+		return await api('/ff/cup',{cupID});
 	};
 	let promise = loadData();
 	ffStore.subscribe((value) => {

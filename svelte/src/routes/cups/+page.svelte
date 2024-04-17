@@ -1,13 +1,12 @@
 <script>
-	import config from '$lib/config.json';
 	import MdAddBox from 'svelte-icons/md/MdAddBox.svelte';
 	import CupModal from '$lib/cupModal.svelte';
 	import { User } from '$lib/user';
+	import { api } from '$lib/constants';
 	/**
 	 * @param {object} api
 	 */
-	let api = config.api;
-	export let data;
+	let data = api('/cups');
 	let displayCupModal = false;
 	let toggleCupModal = () => {
 		displayCupModal = !displayCupModal;
@@ -20,7 +19,7 @@
 <div class="p-1" id="cupContainer">
 	<h1>
 		Cup Stats
-		{#if $User.username}
+		{#if $User.user}
 			<icon
 				on:click={() => {
 					displayCupModal = true;
@@ -57,7 +56,7 @@
 					</tr>
 				</thead>
 				<tbody>
-					{#each data.rows as row}
+					{#each data as row}
 						<tr>
 							{#each row as cell}
 								<td>{@html cell}</td>

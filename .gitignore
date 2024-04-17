@@ -1,7 +1,8 @@
 express/config.json
 express/node_modules/
 express/package-lock.json
-express/build/
+express/cache/
+express/uploads/
 svelte/package-lock.json
 svelte/.svelte-kit/
 svelte/node_modules/

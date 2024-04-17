@@ -1,8 +1,6 @@
 <script lang="ts">
 	import { afterNavigate } from '$app/navigation';
-	import { page } from '$app/stores';
-	import config from '$lib/config.json';
-	let api = config.api;
+	import { api } from '$lib/constants';
 	let width: any;
 	let data = [];
 	let search = '';
@@ -14,19 +12,11 @@
 			data = [];
 		}
 	});
-	async function searchPlayer() {
+	async function searchPlayer() {		
 		if (!searching) {
 			searching = true;
-			data = await fetch(`${api}api/playerSearch`, {
-				method: 'POST',
-				headers: {
-					'Content-Type': 'application/json'
-				},
-				body: JSON.stringify({ search: search })
-			}).then((result) => {
-				searching = false;
-				return result.json();
-			});
+			data = await api('/players/search',{search});
+			searching = false;
 			if (lastSearch != '-1') {
 				lastSearch = '-1';
 				searchPlayer();

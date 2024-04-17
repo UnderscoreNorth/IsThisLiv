@@ -1,13 +1,7 @@
 <script>
-	import config from '$lib/config.json';
-	/**
-	 * @type {any[]}
-	 */
-	let api = config.api;
-	let data = (async () => {
-		const response = await fetch(`${api}api/teams`);
-		return await response.json();
-	})();
+	import { api } from "$lib/constants";
+
+	let data = api('/teams');
 </script>
 
 <svelte:head>

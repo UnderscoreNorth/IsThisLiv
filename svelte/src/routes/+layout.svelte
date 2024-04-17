@@ -6,6 +6,9 @@
 	import MdMenu from 'svelte-icons/md/MdMenu.svelte';
 	import UserModal from '$lib/userModal.svelte';
 	import { User } from '$lib/user';
+	import { DeepSet } from '$lib/deepSet';
+	import { api } from '$lib/constants';
+	export let data;
 	let width: any;
 	let drawerHidden = true;
 	let transitionParams = {
@@ -18,19 +21,19 @@
 		['/cups', 'Cups'],
 		['/teams', 'Teams'],
 		['/players', 'Players'],
-		['/records', 'Records'],
-		['/misc', 'Misc Stats'],
-		['/ff', 'Fantasy Football'],
+		['/managers', '>Managers'],
+		//['/records', 'Records'],
+		//['/misc', 'Misc Stats'],
+		//['/ff', 'Fantasy Football'],
 		['https://implyingrigged.info/', 'Wiki'],
 		['https://cytu.be/r/the4chancup', 'Stream'],
 		['https://implying.fun', 'VODs']
 	];
-	let links = new Set(linksArray);
-	$: if ($User.username) {
+	let links = new  DeepSet(linksArray);
+	User.subscribe((u)=>{
+		if(u.access > 0)
 		links.add(['/tools', 'Tools']);
-	} else {
-		console.log($User.username);
-	}
+	})
 
 	let loginFlag = false;
 	function toggleDarkMode() {
@@ -39,10 +42,10 @@
 			document.documentElement.classList.toggle('dark-mode') ? '1' : '0'
 		);
 	}
+	//
 	function toggleLogin() {
 		loginFlag = !loginFlag;
 	}
-	if (typeof localStorage !== 'undefined') $User.username = localStorage.getItem('username') || '';
 </script>
 
 <svelte:window bind:innerWidth={width} />
@@ -62,9 +65,11 @@
 	id="sidebar1"
 >
 	<div id="mainDrawer">
-		{#each Array.from(links) as link}
-			<a href={link[0]} on:click={() => (drawerHidden = true)}>{link[1]}</a>
-		{/each}
+		{#key $User}
+			{#each Array.from(links) as link}
+				<a href={link[0]} on:click={() => (drawerHidden = true)}>{link[1]}</a>
+			{/each}
+		{/key}
 	</div>
 </Drawer>
 <nav id="Nav">
@@ -80,20 +85,22 @@
 				.join('')}</span
 		>
 	{:else}
-		{#each Array.from(links) as link}
-			<a
-				href={link[0]}
-				class={link[0] == '/'
-					? $page.url.pathname == link[0]
+		{#key $User}
+			{#each Array.from(links) as link}
+				<a
+					href={link[0]}
+					class={link[0] == '/'
+						? $page.url.pathname == link[0]
+							? 'selected'
+							: ''
+						: $page.url.pathname.includes(link[0])
 						? 'selected'
-						: ''
-					: $page.url.pathname.includes(link[0])
-					? 'selected'
-					: ''}
-			>
-				{link[1]}</a
-			>
-		{/each}
+						: ''}
+				>
+					{link[1]}</a
+				>
+			{/each}
+		{/key}
 	{/if}
 	<div id="rightNav" style="float:right">
 		<button on:click={toggleDarkMode}>Dark Mode</button>
@@ -272,5 +279,9 @@
 	:global(.mobileRow) {
 		height: 2.5rem;
 		line-height: 2.5rem;
+	}
+	:global(#pageModifiedTime) {
+		float: right;
+		padding: 1rem;
 	}
 </style>

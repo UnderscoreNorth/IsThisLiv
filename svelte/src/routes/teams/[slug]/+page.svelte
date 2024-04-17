@@ -1,27 +1,20 @@
 <script lang="ts">
-	import config from '$lib/config.json';
-	import { page } from '$app/stores';
-	import { afterNavigate } from '$app/navigation';
-	let api = config.api;
-	let firstLoad = true;
+import { page } from '$app/stores';
+	import { api } from '$lib/constants';
+	//let data;	
+	let data = {};
 	let sortData;
-	let data = fetch(`${api}api` + $page.url.pathname).then(async (result) => {
-		firstLoad = false;
-		let json = await result.json();
-		sortData = json;
-		return json;
-	});
-
-	afterNavigate(() => {
-		console.log(firstLoad, 16);
-		if (!firstLoad) {
-			data = fetch(`${api}api` + $page.url.pathname).then(async (result) => {
-				let json = await result.json();
-				sortData = json;
-				return json;
+	let id = '';
+	page.subscribe((p)=>{
+		if(id!==p.url.pathname){
+			id = p.url.pathname;
+			data = api($page.url.pathname).then((r)=>{
+				sortData = r;
+				return r;
 			});
 		}
-	});
+	})
+	
 	let sortAsc = false;
 	let sortField = '';
 	const sortTable = (field: string, defaultSort = false) => {
@@ -159,11 +152,7 @@
 		flex-shrink: 1;
 		overflow-y: scroll;
 		padding: 1rem;
-	}
-	#pageModifiedTime {
-		float: right;
-		padding: 1rem;
-	}
+	}	
 	container :global(table) {
 		border: solid 1px grey;
 		background: rgba(0, 0, 0, 0.1);

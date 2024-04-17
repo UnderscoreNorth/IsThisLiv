@@ -1,20 +1,15 @@
 <script>
-	import config from '$lib/config.json';
 	import { page } from '$app/stores';
-	import { afterNavigate } from '$app/navigation';
-	let api = config.api;
-	let firstLoad = true;
-	let data = fetch(`${api}api` + $page.url.pathname).then((result) => {
-		firstLoad = false;
-		return result.json();
-	});
-	afterNavigate(() => {
-		if (!firstLoad) {
-			data = fetch(`${api}api` + $page.url.pathname).then((result) => {
-				return result.json();
-			});
+	import { api } from '$lib/constants';
+	//let data;	
+	let data = {};
+	let id = '';
+	page.subscribe((p)=>{
+		if(id!==p.url.pathname){
+			id = p.url.pathname;
+			data = api($page.url.pathname);
 		}
-	});
+	})
 </script>
 
 <svelte:head>

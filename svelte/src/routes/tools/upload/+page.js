@@ -1,7 +1,5 @@
-import config from '$lib/config.json';
-let api = config.api;
+import { api } from '$lib/constants';
+
 export async function load({ fetch, params }) {
-	const res = await fetch(`${api}api/list/cups`);
-	const item = await res.json();
-	return { rows: item };
+	return { rows: await api('/cups/list') };
 }

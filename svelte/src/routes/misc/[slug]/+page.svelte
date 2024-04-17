@@ -1,8 +1,6 @@
 <script>
-	import config from '$lib/config.json';
 	import { page } from '$app/stores';
 	import { afterNavigate } from '$app/navigation';
-	let api = config.api;
 	let firstLoad = true;
 	export let data;
 </script>

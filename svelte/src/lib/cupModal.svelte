@@ -2,8 +2,7 @@
 	export let toggleCupModal;
 	import { User } from './user';
 	import { goto } from '$app/navigation';
-	import config from '$lib/config.json';
-	let api = config.api;
+	import { api } from './constants';
 	let cupData = {
 		name: '',
 		season: '',
@@ -15,17 +14,9 @@
 		user: ''
 	};
 	let submitCup = async () => {
-		if ($User.username) {
-			cupData.user = $User.username;
-			let response = await fetch(`${api}api/cups/edit`, {
-				method: 'POST',
-				headers: {
-					'Content-Type': 'application/json'
-				},
-				body: JSON.stringify(cupData)
-			});
-			let jsonResponse = await response.json();
-			goto(`/cups/${jsonResponse.cupURL}`);
+		if ($User.user) {
+			cupData.user = $User.user;
+			goto(`/cups/${(await api('/cups/edit',cupData)).cupURL}`);
 		}
 	};
 </script>

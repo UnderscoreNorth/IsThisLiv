@@ -1,24 +1,12 @@
 <script>
-	import config from '$lib/config.json';
 	import FFTeamCreator from '$lib/fantasyFootball/FFTeamCreator.svelte';
 	import FFCupStats from '$lib/fantasyFootball/FFCupStats.svelte';
 	import { ffStore } from '$lib/fantasyFootball/fantasyFootballStore';
 	import FFNav from '$lib/fantasyFootball/FFNav.svelte';
-	const api = config.api;
+	import { api } from '$lib/constants';
 	let currentCup = 0;
 	const loadData = async () => {
-		const response = await fetch(`${api}api/list/cups`, {
-			method: 'post',
-			headers: {
-				Accept: 'application/json',
-				'Content-Type': 'application/json'
-			},
-			body: JSON.stringify({
-				order: 'dStart',
-				dir: 'DESC'
-			})
-		});
-		let result = await response.json();
+		let result = await api('/lists/cups',{order:'dStart',dir:'DESC'});
 		currentCup = result[0].iID;
 		ffStore.update((r) => {
 			r.cupID = result[0].iID;

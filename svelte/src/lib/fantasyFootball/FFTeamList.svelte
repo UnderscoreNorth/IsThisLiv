@@ -1,20 +1,8 @@
 <script lang="ts">
-	import config from '$lib/config.json';
-	const api = config.api;
+	import { api } from "$lib/constants";
+
 	let data = (async () => {
-		const response = await fetch(`${api}api/list/teams`, {
-			method: 'post',
-			headers: {
-				Accept: 'application/json',
-				'Content-Type': 'application/json'
-			},
-			body: JSON.stringify({
-				aliveTeams: true,
-				order: 'sTeam',
-				dir: 'ASC'
-			})
-		});
-		return Object.values(await response.json());
+		return Object.values(await api('/list/teams',{aliveTeams:true,order:'sTeam',dir:'ASC'}));
 	})();
 </script>
 

@@ -1,6 +1,37 @@
 <script lang="ts">
+	import { api } from "$lib/constants";
 	export let data: MatchStat;
-	interface MatchStat {
+    export let close:Function;
+    type Event = {
+        eventID?:number;
+        matchID?:number;
+        playerID?:number;
+        eventType?:number;
+        regTime?:number;
+        injTime?:number;
+    }
+    type Player = {
+        playerID?:number;
+        team?:string;
+        cupID?:number;
+        name?:string;
+    }
+    type Performance = {
+        perfID?:number;
+        playerID?:number;
+        subOn?:number;
+        subOff?:number;
+        rating?:number;
+        saves?:number;
+        motm?:boolean;
+        cond?:number;
+    }
+    type Penalty = {
+        penaltyID?:number;
+        playerID?:number;
+        goal?:boolean;
+    }
+	type MatchStat = {
 		matchID: number;
 		rounds: Array<string>;
 		round: string;
@@ -11,30 +42,59 @@
 		teams: Array<string>;
 		winner: string;
 		off: boolean;
+        valid:boolean;
 		version: number;
-		matchStats: Object;
-        eventTypes: Object;
-        events:Array<Array<Object>>;
+		matchStats: Array<Array<Array<{sql:string,name:string,value:number}>>>;
+        eventType: string[];
+        events:Array<Array<{event:Event,player:Player}>>;
+        performances:Array<Array<{player:Player,performance:Performance}>>;
+        players:Array<Array<{player:Player}>>;
+        penalties:Array<Array<{player:Player,penalty:Penalty}>>
 	}
 	const halves = [{ name: 'First Half' }, { name: 'Second Half' }, { name: 'Eggstra Dime' }];
-    const addEvent = (i:number) =>{
-        data.events[i].push(
-            {iID:'',
-            iPlayerID:'',
-            iType:'',
-            dRegTime:'',
-            dInjTime:''}
-        );
+    const addEvent = (i:number) =>{        
+        data.events[i].push({
+            event:{
+            },
+            player:{}
+        })
         data = data;
     }
+    const addPenalty = (i:number) =>{        
+        data.penalties[i].push({
+            penalty:{
+            },
+            player:{}
+        })
+        data = data;
+    }
+    const addNewEvent = (i:number)=>{
+        if(data.events[i][data.events[i].length -1].event.regTime){
+            data.events[i].push({
+                event:{
+                },
+                player:{}
+            })
+            data = data;
+        }
+    }
+    let saving = false;
+    const saveData = async()=>{
+        saving = true;
+        const result = await api('/sql/matchSave/',{data});               
+        if(!result.error) close(); 
+    }
+    let ratingsOnly = false;
+    let condOnly = false;
+    let subOnly = false;
 </script>
 <div id='matchContainer'>
 <div id='matchMeta'>
     <table style="margin-left:auto;margin-right:auto;">
         <tr>
             <th>ID</th><th>Stage</th><th>Date</th><th>Stadium</th><th>Attend</th><th>Winner</th><th
-                >Official</th
-            ><th>Pes</th>
+                >Official</th><th>Valid</th>
+            <th>Pes</th>
         </tr>
         <tr>
             <td>{data.matchID}</td>
@@ -77,6 +137,14 @@
                     bind:checked={data.off}
                 /></td
             >
+            <td
+                ><input
+                    style="transform:scale(2)"
+                    type="checkbox"
+                    id="official"
+                    bind:checked={data.valid}
+                /></td
+            >
             <td><input id="version" bind:value={data.version} style='width:3rem'/></td>
         </tr>
     </table>
@@ -87,195 +155,188 @@
         {#each halves as half, i}
             <table id="matchstat1" style="text-align:center">
                 <tr><th colspan="3">{half.name}</th></tr>
-                {#if data.matchStats[i][0]}
-                    {#each data.matchStats[i][0] as row, j}
-                        <tr>
-                            <td
-                                ><input
-                                    bind:value={row.value}
-                                    disabled={row.name == 'SQL ID' ||
-                                    (data.version >= 2018 && row.name == 'Pass completed (%)') ||
-                                    (data.version < 2018 && row.name == 'Passes') ||
-                                    (data.version < 2018 && row.name == '(Made)')
-                                        ? true
-                                        : false}
-                                /></td
-                            >
-                            <td>{row.name}</td>
-                            <td
-                                ><input
-                                    value={data.matchStats[i][1][j].value}
-                                    disabled={row.name == 'SQL ID' ||
-                                    (data.version >= 2018 && row.name == 'Pass completed (%)') ||
-                                    (data.version < 2018 && row.name == 'Passes') ||
-                                    (data.version < 2018 && row.name == '(Made)')
-                                        ? true
-                                        : false}
-                                /></td
-                            >
-                        </tr>
-                    {/each}
-                {:else}
-                    {#each data.matchStats[0][0] as row, j}
-                        <tr>
-                            <td
-                                ><input
-                                    home="1"
-                                    disabled={row.name == 'SQL ID' ||
-                                    (data.version >= 2018 && row.name == 'Pass completed (%)') ||
-                                    (data.version < 2018 && row.name == 'Passes') ||
-                                    (data.version < 2018 && row.name == '(Made)')
-                                        ? true
-                                        : false}
-                                /></td
-                            >
-                            <td>{row.name}</td>
-                            <td
-                                ><input
-                                    home="0"
-                                    disabled={row.name == 'SQL ID' ||
-                                    (data.version >= 2018 && row.name == 'Pass completed (%)') ||
-                                    (data.version < 2018 && row.name == 'Passes') ||
-                                    (data.version < 2018 && row.name == '(Made)')
-                                        ? true
-                                        : false}
-                                /></td
-                            >
-                        </tr>
-                    {/each}
-                {/if}
+                {#each data.matchStats[i][0] as row, j}
+                    <tr>
+                        <td
+                            ><input
+                                bind:value={data.matchStats[i][0][j].value}
+                                disabled={row.name == 'SQL ID' ||
+                                (data.version >= 2018 && row.name == 'Pass completed (%)') ||
+                                (data.version < 2018 && row.name == 'Passes') ||
+                                (data.version < 2018 && row.name == '(Made)')
+                                    ? true
+                                    : false}
+                            /></td
+                        >
+                        <td>{row.name}</td>
+                        <td
+                            ><input
+                                bind:value={data.matchStats[i][1][j].value}
+                                disabled={row.name == 'SQL ID' ||
+                                (data.version >= 2018 && row.name == 'Pass completed (%)') ||
+                                (data.version < 2018 && row.name == 'Passes') ||
+                                (data.version < 2018 && row.name == '(Made)')
+                                    ? true
+                                    : false}
+                            /></td
+                        >
+                    </tr>
+                {/each}              
             </table>
         {/each}
     </scorecards>
 </div>
-<div id='matchPerformances'>
-    {#each data.performances as performances,i}
-        <div>
-            /{data.teams[i+1]}/
-            <table>
-                <tr>
-                    <th>ID</th>
-                    <th>Player</th>
-                    <th>Cond</th>
-                    <th>Rating</th>
-                    <th>Saves</th>
-                    <th>Sub On</th>
-                    <th>Sub Off</th>
-                    <th>MotM</th>
-                </tr>
-                {#each Array(15) as _, j}
+<div id='matchPerformances'>   
+    <h3>Performances<br>
+        <button on:click={()=>{ratingsOnly=!ratingsOnly}}>Ratings Only</button>
+        <button on:click={()=>{condOnly=!condOnly}}>Cond Only</button>
+        <button on:click={()=>{subOnly=!subOnly}}>Sub Only</button>
+    </h3>
+    <scorecards>
+        {#each data.performances as performances,i}
+            <div>
+                /{data.teams[i+1]}/
+                <table>
                     <tr>
-                        <td>{data.performances[i][j]?.iID || ''}</td>
-                        <td><select bind:value={data.performances[i][j].iPlayerID}>
-                            <option></option>
-                            {#each Object.values(data.players[i]) as player}
-                                <option value={player.iID}>{player.sName}</option>
-                            {/each}
-                            </select>
-                        </td>
-                        <td>
-                            <select bind:value={data.performances[i][j].iCond}>
-                                <option></option>
-                                <option value=1 >1 ↓</option>
-                                <option value=2 >2 ↘</option>
-                                <option value=3 >3 →</option>
-                                <option value=4 >4 ↗</option>
-                                <option value=5 >5 ↑</option>	
-                        </select>
-                        </td>
-                        <td>
-                            <input bind:value={data.performances[i][j].dRating} type='number' step='0.5'/>
-                        </td>
-                        <td>
-                            <input bind:value={data.performances[i][j].iSaves} type='number' step='1'/>
-                        </td>
-                        <td>
-                            <input bind:value={data.performances[i][j].iSubOn} type='number'/>
-                        </td>
-                        <td>
-                            <input bind:value={data.performances[i][j].iSubOff} type='number' />
-                        </td>
-                        <td>
-                            <input bind:group={data.motm} type='radio' value={data.performances[i][j].iPlayerID}/>
-                        </td>
+                        <th>ID</th>
+                        <th>Player</th>
+                        <th>Cond</th>
+                        <th>Rating</th>
+                        <th>Saves</th>
+                        <th>Sub On</th>
+                        <th>Sub Off</th>
+                        <th>MotM</th>
                     </tr>
-                {/each}
-            </table>
-        </div>
-    {/each}
-</div>
-<div id='matchPenalties'>
-    {#each data.penalties as penalties,i}
-    <div>
-        /{data.teams[i+1]}/
-        <table>
-            <tr>
-                <th>ID</th>
-                <th>Player</th>
-                <th>Goal</th>
-            </tr>
-        {#each penalties as penalty,j}
-            <tr>
-                <td>{penalty.iID}</td>
-                <td>
-                    <select bind:value={data.penalties[i][j].iPlayerID}>
-                    {#each Object.values(data.players[i]) as player}
-                        <option value={player.iID}>{player.sName}</option>
+                    {#each Array(15) as _, j}
+                        <tr>
+                            <td>{data.performances[i][j]?.performance.perfID || ''}</td>
+                            <td><select bind:value={data.performances[i][j].player.playerID} disabled={condOnly || subOnly}>
+                                <option></option>
+                                {#each Object.values(data.players[i]) as {player}}
+                                    <option value={player.playerID}>{player.name}</option>
+                                {/each}
+                                </select>
+                            </td>
+                            <td>
+                                <select disabled={ratingsOnly || subOnly} bind:value={data.performances[i][j].performance.cond}>
+                                    <option></option>
+                                    <option value={1} >1 ↓</option>
+                                    <option value={2} >2 ↘</option>
+                                    <option value={3} >3 →</option>
+                                    <option value={4} >4 ↗</option>
+                                    <option value={5} >5 ↑</option>	
+                            </select>
+                            </td>
+                            <td>
+                                <input bind:value={data.performances[i][j].performance.rating} type='number' step='0.5' disabled={condOnly || subOnly}/>
+                            </td>
+                            <td>
+                                <input bind:value={data.performances[i][j].performance.saves} type='number' step='1' disabled={ratingsOnly || condOnly || subOnly}/>
+                            </td>
+                            <td>
+                                <input bind:value={data.performances[i][j].performance.subOn} type='number' disabled={ratingsOnly || condOnly}/>
+                            </td>
+                            <td>
+                                <input bind:value={data.performances[i][j].performance.subOff} type='number' disabled={ratingsOnly || condOnly} />
+                            </td>
+                            <td>
+                                <input bind:group={data.motm} type='radio' value={data.performances[i][j].player.playerID} disabled={ratingsOnly || condOnly || subOnly}/>
+                            </td>
+                        </tr>
                     {/each}
-                    </select>
-                </td>
-                <td><input bind:checked={data.penalties[i][j].bGoal} type='checkbox'/></td>
-            </tr>
+                </table>
+            </div>
         {/each}
-        <tr>
-            <td colspan=3>
-                <button on:click={()=>addEvent(i)}>Add Player</button>
-            </td>
-        </tr>
-        </table>
-    </div>
-{/each}
+    </scorecards>
 </div>
 <div id='matchEvents'>
-    {#each data.events as events,i}
-        <div>
-            /{data.teams[i+1]}/
-            <table>
+    <h3>Events</h3>
+    <scorecards>
+        {#each data.events as events,i}
+            <div>
+                /{data.teams[i+1]}/
+                <table>
+                    <tr>
+                        <th>ID</th>
+                        <th>Player</th>
+                        <th>Event</th>
+                        <th>Reg Time</th>
+                        <th>Inj Time</th>
+                    </tr>
+                {#each events as {event,player},j}
+                    <tr>
+                        <td>{event.eventID ?? ''}</td>
+                        <td>
+                            <select bind:value={player.playerID}>
+                                <option></option>
+                                {#each Object.values(data.players[i]) as {player}}
+                                    <option value={player.playerID}>{player.name}</option>
+                                {/each}
+                            </select>
+                        </td>
+                        <td><select bind:value={event.eventType}>
+                            <option></option>
+                            {#each Object.keys(data.eventType) as i}
+                                <option value={parseInt(i)}>{data.eventType[parseInt(i)]}</option>
+                            {/each}
+                        </select></td>
+                        <td><input on:change={()=>{addNewEvent(i)}} bind:value={event.regTime}/></td>
+                        <td><input bind:value={event.injTime}/></td>
+                    </tr>
+                {/each}
                 <tr>
-                    <th>ID</th>
-                    <th>Player</th>
-                    <th>Event</th>
-                    <th>Reg Time</th>
-                    <th>Inj Time</th>
-                </tr>
-            {#each events as event,j}
-                <tr>
-                    <td>{event.iID}</td>
-                    <td>
-                        <select bind:value={data.events[i][j].iPlayerID}>
-                        {#each Object.values(data.players[i]) as player}
-                            <option value={player.iID}>{player.sName}</option>
-                        {/each}
-                        </select>
+                    <td colspan=5>
+                        <button on:click={()=>addEvent(i)}>Add Event</button>
                     </td>
-                    <td><select value={1}>
-                        {#each Object.keys(data.eventType) as i}
-                            <option value={i}>{data.eventType[i]}</option>
-                        {/each}
-                    </select></td>
-                    <td><input bind:value={data.events[i][j].dRegTime}/></td>
-                    <td><input bind:value={data.events[i][j].dInjTime}/></td>
                 </tr>
-            {/each}
-            <tr>
-                <td colspan=5>
-                    <button on:click={()=>addEvent(i)}>Add Event</button>
-                </td>
-            </tr>
-            </table>
-        </div>
-    {/each}
+                </table>
+            </div>
+        {/each}
+    </scorecards>
 </div>
+
+<div id='matchPenalties'>
+    <h3>Penalties</h3>
+    <scorecards>
+        {#each data.penalties as penalties,i}
+            <div>
+                /{data.teams[i+1]}/
+                <table>
+                    <tr>
+                        <th>ID</th>
+                        <th>Player</th>
+                        <th>Goal</th>
+                    </tr>
+                {#each penalties as {penalty,player},j}
+                    <tr>
+                        <td>{penalty.penaltyID ?? ''}</td>
+                        <td>   
+                            <select bind:value={player.playerID}>
+                                <option></option>
+                                {#each Object.values(data.players[i]) as {player}}
+                                    <option value={player.playerID}>{player.name}</option>
+                                {/each}
+                            </select>
+                        </td>
+                        <td><input bind:checked={penalty.goal} type='checkbox'/></td>
+                    </tr>
+                {/each}
+                <tr>
+                    <td colspan=3>
+                        <button on:click={()=>addPenalty(i)}>Add Player</button>
+                    </td>
+                </tr>
+                </table>
+            </div>    
+        {/each}
+    </scorecards>
+</div>
+<button
+    style='padding:1rem;margin:1rem'
+    on:click={() => {
+        saveData();
+    }} disabled={saving}>{saving ? 'Saving' : 'Save'}</button
+>
 </div>
 <style>
     #matchContainer{
@@ -302,19 +363,13 @@
     #matchMeta { grid-area: matchMeta; }
     #matchPenalties { 
         grid-area: matchPenalties; 
-        display:flex;
-        justify-content:center;
     }
     #matchStats { grid-area: matchStats; }
     #matchPerformances { 
         grid-area: matchPerformances; 
-        display:flex;
-        justify-content:center;
     }
     #matchEvents { 
         grid-area: matchEvents; 
-        display:flex;
-        justify-content:center;
     }
 	scorecards {
 		display: flex;

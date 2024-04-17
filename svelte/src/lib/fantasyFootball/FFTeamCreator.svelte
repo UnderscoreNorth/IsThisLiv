@@ -1,26 +1,14 @@
 <script lang="ts">
+	import { api } from '$lib/constants';
 	import FFPositionList from './FFPositionList.svelte';
 	import FFTeamList from './FFTeamList.svelte';
 	import { ffStore } from './fantasyFootballStore.js';
-	import config from '$lib/config.json';
-	const api = config.api;
 	let user = '';
 	let inputUser = '';
 	let pvtKey = '';
 	let cupID = $ffStore.cupID;
 	const teamList = async () => {
-		const response = await fetch(`${api}api/ff/teamList`, {
-			method: 'post',
-			headers: {
-				Accept: 'application/json',
-				'Content-Type': 'application/json'
-			},
-			body: JSON.stringify({
-				cupID
-			})
-		});
-		let result = await response.json();
-		return result;
+		return await api('/ff/teamList',{cupID});
 	};
 	const login = async () => {};
 	const register = async () => {};
