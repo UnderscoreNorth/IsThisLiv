@@ -56,7 +56,9 @@ export type MatchData = {
 
 export async function matchDisplay(req: Request) {
   let matchID = parseInt(req.params.matchID);
-  let matchData = (await getMatches({ matchID }))[0];
+  let matchData = (
+    await getMatches({ matchID, getUnofficial: true, getVoided: true })
+  )[0];
   let matchMeta = matchData.match;
   let cupID = matchData.cup.cupID;
   let data: MatchData = {
@@ -112,14 +114,27 @@ export async function matchDisplay(req: Request) {
 
   for (let i in teams) {
     let team = teams[i];
-    data.players[i] = (await getPlayers({ cupID, team })).map((x) => {
+    data.players[i] = (
+      await getPlayers({ cupID, team, getFriendlies: true })
+    ).map((x) => {
       delete x.cup;
       delete x.playerlink;
       return x;
     });
-    data.performances[i] = await getPerformances({ cupID, team, matchID });
-    data.events[i] = await getEvents({ cupID, team, matchID });
-    data.penalties[i] = await getPenalties({ cupID, team, matchID });
+    data.performances[i] = await getPerformances({
+      cupID,
+      team,
+      matchID,
+      getFriendlies: true,
+      getVoided: true,
+    });
+    data.events[i] = await getEvents({ cupID, team, matchID, getVoided: true });
+    data.penalties[i] = await getPenalties({
+      cupID,
+      team,
+      matchID,
+      getVoided: true,
+    });
   }
   for (let i of data.performances) {
     for (let j of i) {

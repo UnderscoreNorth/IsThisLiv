@@ -82,7 +82,11 @@ export async function cupDetails(req: Request) {
       motms[p.player.linkID]++;
     }
   }
-  for (const { match, roundorder } of await getMatches({ cupID })) {
+  for (const { match, roundorder } of await getMatches({
+    cupID,
+    getVoided: true,
+    getUnofficial: true,
+  })) {
     let roundType = "";
     totalMatches++;
     switch (roundorder.order) {
@@ -113,7 +117,10 @@ export async function cupDetails(req: Request) {
 
     let goals = [0, 0];
 
-    for (const e of await getEvents({ matchID: match.matchID })) {
+    for (const e of await getEvents({
+      matchID: match.matchID,
+      getVoided: true,
+    })) {
       let oTeam = e.player.team;
       let aTeam =
         e.player.team !== match.homeTeam ? match.homeTeam : match.awayTeam;
@@ -171,7 +178,8 @@ export async function cupDetails(req: Request) {
       homeg: goals[0],
       awayg: goals[1],
       id: match.matchID,
-      official: match.valid,
+      official: match.official,
+      valid: match.valid,
       roundOrder: roundorder.order,
     });
   }

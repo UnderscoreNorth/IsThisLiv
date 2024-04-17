@@ -11,6 +11,8 @@
 	import TeamModal from '$lib/team/teamModal.svelte';
 	import { browser } from '$app/environment';
 	import { api } from '$lib/constants';
+	import { goto } from '$app/navigation';
+	import TeamIcon from '$lib/teamIcon.svelte';
 	let matchID = 0;
 	let data:{
 		teams: string[];
@@ -49,7 +51,7 @@
 		goalies: any[];
 		cards: any[];
 		date:Date;
-		} = api('/cups/' + $page.params.slug);
+		};
 	
 	function editMatch(ID:number) {
 		matchID = ID;
@@ -61,15 +63,31 @@
 	let displayTeam = '';
 	let cupsData = api('/cups/list');
 	let select:HTMLSelectElement;
+	page.subscribe(async(p)=>{
+		if(p.params.slug){
+			if(data){
+				data.then((r)=>{
+					if(r?.cupID !== parseInt(p.params.slug.split("-")[0])){
+						data = api('/cups/' + p.params.slug);
+					}
+				})
+			} else {
+				data = api('/cups/' + p.params.slug);
+			}
+		}
+	})
 	function changeCup(id=0){
-		if(browser){
+		goto(select.value + '-' + select.options[select.selectedIndex].text.replace(" ","-"))
+		//$page.params.slug = select.value + '-' + select.options[select.selectedIndex].text.replace(" ","-");
+		//data = api('/cups/' + select.value + '-' + select.options[select.selectedIndex].text.replace(" ","-"));
+		/*if(browser){
 			if(id == 0){
 				window.location.replace('/cups/' + select.value + '-' + select.options[select.selectedIndex].text.replace(" ","-"))
 			} else {
 				console.log(id,Array.from(select.options).filter((x)=>x.value == id.toString()));
 				window.location.replace('/cups/' + id + '-' + Array.from(select.options).filter((x)=>x.value == id.toString())[0].label.replace(" ","-"))
 			}			
-		}
+		}*/
 	}
 	function getCupURL(cups,id){
 		return id + '-' + cupShort(cups.filter((x)=>x.cupID == id)[0].cupName).replace(" ","-");
@@ -161,7 +179,7 @@
 			<teamsContainer id="Teams" class="c-1">
 				{#each data.teams as teamData}
 					<!-- svelte-ignore a11y-click-events-have-key-events -->
-					<teamBox on:click={()=>displayTeam=teamData} class="c-2">{@html teamLink(teamData)}</teamBox>
+					<teamBox on:click={()=>displayTeam=teamData} class="c-2"><TeamIcon team={teamData}/>{@html teamLink(teamData)}</teamBox>
 				{/each}
 			</teamsContainer>
 			{#if data.matches.groups}
@@ -346,5 +364,14 @@
 	}
 	groupTable tr td:nth-child(1){
 		text-align: left;
+	}
+	@media only screen and (max-width: 1000px) {
+		vertNav{
+			display:none;
+		}
+		container {
+			grid-template-columns: 1fr;
+			font-size: 65%;
+		}
 	}
 </style>

@@ -16,7 +16,7 @@
 <svelte:head>
 	<title>Cups - IsThisLiv</title>
 </svelte:head>
-<div class="p-1" id="cupContainer">
+<div id="cupContainer">
 	<h1>
 		Cup Stats
 		{#if $User.user}
@@ -81,5 +81,14 @@
 	}
 	#cupContainer {
 		height: calc(100% - 2rem);
+		padding:1rem;
+	}
+	@media only screen and (max-width: 1000px) {
+		tr *:not(:first-child){
+			display: none;
+		}
+		#cupContainer{
+			padding:0
+		}
 	}
 </style>
