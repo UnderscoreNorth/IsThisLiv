@@ -25,7 +25,7 @@ export function teamLink(team: string) {
     return team;
   }
 }
-export async function cupLink(cupID) {
+export async function cupLink(cupID, logo = false) {
   let cup = await db.query.Cup.findFirst({
     where: (Cup, { eq }) => eq(Cup.cupID, cupID),
   });
@@ -42,6 +42,12 @@ export async function cupLink(cupID) {
       ? "Q"
       : "F") +
     "C";
+  if (logo)
+    return `<a style='display:inline-block' href='/cups/${cupID}-${cupShortName}'>${
+      logo
+        ? `<img style='height:2.5rem;vertical-align:middle;margin-right:5px' src='/icons/cups/${cupID}.png' />`
+        : ""
+    }<span style='vertical-align:middle'>${cup.cupName}</span></a>`;
   return `<a href='/cups/${cupID}-${cupShortName}'>${cup.cupName}</a>`;
 }
 

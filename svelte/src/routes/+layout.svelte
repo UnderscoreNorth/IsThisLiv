@@ -269,6 +269,7 @@
 		padding: 1rem;
 		display: flex;
 		flex-direction: column;
+		box-shadow: 5px 5px 10px var(--bg-color);
 	}
 	#mainDrawer a {
 		color: var(--color-red);

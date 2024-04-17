@@ -58,8 +58,8 @@
 				<tbody>
 					{#each data as row}
 						<tr>
-							{#each row as cell}
-								<td>{@html cell}</td>
+							{#each row as cell,i}
+								<td style:text-align={i==0 ? 'left' : ''}>{@html cell}</td>
 							{/each}
 						</tr>
 					{/each}

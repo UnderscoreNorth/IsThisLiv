@@ -61,10 +61,18 @@
 	let displayTeam = '';
 	let cupsData = api('/cups/list');
 	let select:HTMLSelectElement;
-	function changeCup(){
+	function changeCup(id=0){
 		if(browser){
-			window.location.replace('/cups/' + select.value + '-' + select.options[select.selectedIndex].text.replace(" ","-"))
+			if(id == 0){
+				window.location.replace('/cups/' + select.value + '-' + select.options[select.selectedIndex].text.replace(" ","-"))
+			} else {
+				console.log(id,Array.from(select.options).filter((x)=>x.value == id.toString()));
+				window.location.replace('/cups/' + id + '-' + Array.from(select.options).filter((x)=>x.value == id.toString())[0].label.replace(" ","-"))
+			}			
 		}
+	}
+	function getCupURL(cups,id){
+		return id + '-' + cupShort(cups.filter((x)=>x.cupID == id)[0].cupName).replace(" ","-");
 	}
 </script>
 
@@ -99,14 +107,19 @@
 	{/if}
 	<container>
 		<vertNav class="c-1">
+			<img src='/icons/cups/{data.cupID}.png' alt='logo' style='border-radius:1rem;background:var(--bg-color);padding:5px' /><br/>
 				{#await cupsData}
 				<select></select>
 				{:then cups}
-				<select bind:this={select} value={data.cupID} on:change={()=>{changeCup()}}>
+				<div>
+				<a href='/cups/{getCupURL(cups,data.cupID-1)}' on:click={()=>{changeCup(data.cupID-1)}}  class='element' style='float:left'>&lt;</a>
+				<select class='element' style='margin-bottom:0.7rem' bind:this={select} value={data.cupID} on:change={()=>{changeCup()}}>
 					{#each cups as row}
 						<option value={row.cupID}>{cupShort(row.cupName)}</option>
 					{/each}
 				</select>
+				<a href='/cups/{getCupURL(cups,data.cupID+1)}' on:click={()=>{changeCup(data.cupID+1)}} class='element' style='float:right'>&gt;</a>
+				</div>
 				{/await}
 			<a href="#Top">Top</a>
 			<a href="#Teams">Competitors</a>
@@ -131,7 +144,7 @@
 		</vertNav>
 		<contents>
 			<div id="pageModifiedTime">Last updated - {data.date}</div>
-			<h1 id="Top">
+			<h1 id="Top">				
 				{data.cupName}{#if $User.user}
 					<!-- svelte-ignore a11y-click-events-have-key-events -->
 					<icon
@@ -143,7 +156,6 @@
 					>
 				{/if}
 			</h1>
-			
 			<statContainer class="c-1">
 				Dates: {data.dates} Matches: {data.numMatches} Goals Scored: {data.goals} ({data.gpm} gpm)
 			</statContainer>
@@ -327,5 +339,11 @@
 	}
 	h2 {
 		border-bottom: solid 1px grey;
+	}
+	.element{
+		background: var(--bg-color);
+		color: var(--fg-color);
+		padding: 0.2rem;
+		vertical-align: middle;
 	}
 </style>

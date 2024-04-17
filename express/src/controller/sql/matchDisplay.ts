@@ -117,9 +117,9 @@ export async function matchDisplay(req: Request) {
       delete x.playerlink;
       return x;
     });
-    data.performances[i] = await getPerformances({ cupID, team });
-    data.events[i] = await getEvents({ cupID, team });
-    data.penalties[i] = await getPenalties({ cupID, team });
+    data.performances[i] = await getPerformances({ cupID, team, matchID });
+    data.events[i] = await getEvents({ cupID, team, matchID });
+    data.penalties[i] = await getPenalties({ cupID, team, matchID });
   }
   for (let i of data.performances) {
     for (let j of i) {
