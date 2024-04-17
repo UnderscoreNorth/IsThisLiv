@@ -25,36 +25,33 @@ export async function cupsOverview(req: Request) {
     let matches = (await getMatches({ cupID: cup.cupID, sort: "desc" })).map(
       (x) => x.match
     );
-    let first = "";
-    let second = "";
-    let third = "";
-    let fourth = "";
+    let places = ["", "", "", ""];
     if (cup.cupType < 3 && cup.end < new Date()) {
       for (const match of matches.sort((a, b) => {
         if (a.utcTime > b.utcTime) return -1;
         if (a.utcTime < b.utcTime) return 1;
-        return 0;
+        if (a.matchID > b.matchID) return -1;
+        return 1;
       })) {
-        if (!first) {
-          first = teamLink(match.winningTeam);
-          second = teamLink(
-            match.homeTeam == match.winningTeam
-              ? match.awayTeam
-              : match.homeTeam
-          );
-          continue;
+        const winner = teamLink(match.winningTeam);
+        const loser = teamLink(
+          match.homeTeam == match.winningTeam ? match.awayTeam : match.homeTeam
+        );
+        for (let i = 0; i < 4; i++) {
+          if (places[i]) continue;
+          if (!places.slice(0, i).includes(winner)) {
+            places[i] = winner;
+            continue;
+          }
+          if (!places.slice(0, i).includes(loser)) {
+            places[i] = loser;
+            continue;
+          }
         }
-        if (!third && match.homeTeam !== first && match.awayTeam !== second) {
-          third = teamLink(match.winningTeam);
-          fourth = teamLink(
-            match.homeTeam == match.winningTeam
-              ? match.awayTeam
-              : match.homeTeam
-          );
-          break;
-        }
+        if (places[3]) break;
       }
     }
+    let [first, second, third, fourth] = places;
     let etMatches = matches.filter((m) => m.endPeriod > 1).length;
     let penMatches = matches.filter((m) => m.endPeriod == 3).length;
     let goals = (
