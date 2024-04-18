@@ -21,3 +21,23 @@ export function cupShort(cupName) {
 	}
 	return shortName;
 }
+export function cupToBooru(cupName){
+	let words = cupName.split(' ')
+	return words[0] + '_' + words[2]
+}
+export async function getBooru(tag){
+	return await fetch(
+		`https://isthisliv.com/booru/api/post/2`,
+		{
+			mode:'no-cors',
+			method: 'get',
+			headers: {
+				'Content-Type': 'application/json',
+				'Accept': 'application/json'
+			},
+	  }
+	).then(async (result) => {
+		console.log(result);
+		return await result.json();
+	});
+}

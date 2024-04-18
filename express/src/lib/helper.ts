@@ -205,3 +205,14 @@ export class DeepSet extends Set {
     return JSON.stringify(o) === JSON.stringify(i);
   }
 }
+
+export async function deleteFile(id: number, type: "Cup") {
+  let files = await fs.readdir("cache/");
+
+  if (type == "Cup") {
+    for (const file of files) {
+      if (parseInt(file.split("__api__cups__")?.[1]?.split("-")?.[0]) == id)
+        await fs.unlink("cache/" + file);
+    }
+  }
+}

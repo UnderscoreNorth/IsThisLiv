@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { browser } from "$app/environment";
 	import { api } from "$lib/constants";
 	export let data: MatchStat;
     export let close:Function;
@@ -82,7 +83,10 @@
     const saveData = async()=>{
         saving = true;
         const result = await api('/sql/matchSave/',{data});               
-        if(!result.error) close(); 
+        if(browser){
+            location.reload();
+        }
+        if(!result.error) close();         
     }
     let ratingsOnly = false;
     let condOnly = false;

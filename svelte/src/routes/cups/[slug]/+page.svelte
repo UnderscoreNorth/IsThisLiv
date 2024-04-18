@@ -3,7 +3,7 @@
 	import { User } from '$lib/user';
 	// @ts-ignore
 	import MdAddBox from 'svelte-icons/md/MdAddBox.svelte';
-	import { cupShort, teamLink } from '$lib/helper';
+	import { cupShort, cupToBooru, getBooru, teamLink } from '$lib/helper';
 	import MatchEdit from '$lib/matches/MatchEdit/MatchEdit.svelte';
 	import MatchDisplay from '$lib/matches/matchDisplay.svelte';
 	import Brackets from '$lib/brackets.svelte';
@@ -52,7 +52,7 @@
 		cards: any[];
 		date:Date;
 		};
-	
+	let imgs;
 	function editMatch(ID:number) {
 		matchID = ID;
 	}
@@ -63,16 +63,23 @@
 	let displayTeam = '';
 	let cupsData = api('/cups/list');
 	let select:HTMLSelectElement;
+	async function getData(slug:string){
+		data = api('/cups/' + slug).then((data)=>{
+			console.log(getBooru(cupToBooru(data.cupName)))
+			return data;
+		});
+			
+	}
 	page.subscribe(async(p)=>{
 		if(p.params.slug){
 			if(data){
 				data.then((r)=>{
 					if(r?.cupID !== parseInt(p.params.slug.split("-")[0])){
-						data = api('/cups/' + p.params.slug);
+						getData(p.params.slug);
 					}
 				})
 			} else {
-				data = api('/cups/' + p.params.slug);
+				getData(p.params.slug);
 			}
 		}
 	})
@@ -158,6 +165,7 @@
 			<a style="padding-left:1rem" href="#saves">Saves</a>
 			<a style="padding-left:1rem" href="#cards">Cards</a>
 			<a href="#Stats">Fantasy Football</a>
+			<a href="#Gallery">Gallery</a>
 		</vertNav>
 		<contents>
 			<div id="pageModifiedTime">Last updated - {data.date}</div>
@@ -277,6 +285,10 @@
 					{/if}
 				{/each}
 			</div>
+			<h2 id='Gallery'>Gallery</h2>
+			{#await imgs then imgs}
+
+			{/await}
 		</contents>
 	</container>
 {/await}

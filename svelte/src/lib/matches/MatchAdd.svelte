@@ -3,32 +3,12 @@
 	export let toggleModal;
 	export let cupID;
 	export let hasMatches;
-	import { User } from '../user';
-	let bulkType = 0;
-	const groupLetters = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'];
-	let bulkTeams = {};
-	for (let groupLetter of groupLetters) {
-		bulkTeams[groupLetter] = {};
-		for (let i = 0; i < 5; i++) {
-			bulkTeams[groupLetter][i] = '';
-		}
-	}
-	let submitBulk = async () => {
-		if ($User.user && bulkType) {
-			let data = {
-				bulkTeams,
-				bulkType,
-				user: $User.user,
-				cupID
-			};
-			await api('/matches/bulk',{data});
-			location.reload();
-		}
-	};
 </script>
 
 <!-- svelte-ignore a11y-click-events-have-key-events -->
+<!-- svelte-ignore a11y-no-static-element-interactions -->
 <closeout on:click={toggleModal}>
+	<!-- svelte-ignore a11y-no-static-element-interactions -->
 	<container
 		class="c-2"
 		on:click={(e) => {
@@ -37,32 +17,7 @@
 	>
 		<h3>Match Add</h3>
 
-		{#if !hasMatches}
-			<hr />
-			<h3>Bulk Add</h3>
-			Group type
-			<select bind:value={bulkType}>
-				<option value="1">32 Teams Traditional Schedule</option>
-				<option value="1.1">32 Teams Modern Schedule</option>
-				<option value="2">40 Teams Traditional Schedule</option>
-				<option value="2.1">40 Teams Modern Schedule</option>
-			</select>
-			<groupsContainer>
-				{#each groupLetters as groupLetter}
-					<div>
-						Group {groupLetter}
-						<input placeholder="team" bind:value={bulkTeams[groupLetter][0]} />
-						<input placeholder="team" bind:value={bulkTeams[groupLetter][1]} />
-						<input placeholder="team" bind:value={bulkTeams[groupLetter][2]} />
-						<input placeholder="team" bind:value={bulkTeams[groupLetter][3]} />
-						{#if Math.floor(bulkType) == 2}
-							<input placeholder="team" bind:value={bulkTeams[groupLetter][4]} />
-						{/if}
-					</div>
-				{/each}
-			</groupsContainer>
-			<button on:click={submitBulk}>Submit</button>
-		{/if}
+		
 	</container>
 </closeout>
 

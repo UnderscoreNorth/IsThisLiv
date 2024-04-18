@@ -3,6 +3,7 @@ import { MatchData } from "./matchDisplay";
 import { db } from "../../db";
 import { Event, Match, Penalty, Performance, Player } from "../../db/schema";
 import { eq, InferSelectModel } from "drizzle-orm";
+import { deleteFile } from "../../lib/helper";
 
 export async function matchSave(req: Request) {
   const { data } = req.body as { data: MatchData };
@@ -110,5 +111,6 @@ export async function matchSave(req: Request) {
       }
     }
   }
+  await deleteFile(data.cupID, "Cup");
   return {};
 }

@@ -155,6 +155,7 @@ export async function getPerformances(options: {
     .where(where)
     .orderBy(Match.utcTime, Performance.subOn, Performance.perfID);
 }
+
 export async function getPlayers(options: {
   cupID?: number;
   team?: string;
@@ -176,7 +177,7 @@ export async function getPlayers(options: {
     .select()
     .from(Player)
     .innerJoin(Cup, eq(Player.cupID, Cup.cupID))
-    .innerJoin(RosterOrder, eq(Player.regPos, RosterOrder.pos))
+    .leftJoin(RosterOrder, eq(Player.regPos, RosterOrder.pos))
     .leftJoin(PlayerLink, eq(Player.linkID, PlayerLink.linkID))
     .where(where)
     .orderBy(Player.cupID, Player.name);
