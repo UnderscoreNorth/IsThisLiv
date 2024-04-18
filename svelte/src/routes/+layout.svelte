@@ -25,6 +25,7 @@
 		['/records', 'Records'],
 		//['/misc', 'Misc Stats'],
 		//['/ff', 'Fantasy Football'],
+		['/booru','Booru'],
 		['https://implyingrigged.info/', 'Wiki'],
 		['https://cytu.be/r/the4chancup', 'Stream'],
 		['https://implying.fun', 'VODs']

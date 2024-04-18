@@ -65,7 +65,7 @@
 	let select:HTMLSelectElement;
 	async function getData(slug:string){
 		data = api('/cups/' + slug).then((data)=>{
-			console.log(getBooru(cupToBooru(data.cupName)))
+			imgs = getBooru(cupToBooru(data.cupName))
 			return data;
 		});
 			
@@ -286,14 +286,30 @@
 				{/each}
 			</div>
 			<h2 id='Gallery'>Gallery</h2>
-			{#await imgs then imgs}
-
-			{/await}
+			<div id='images'>
+				{#await imgs then imgs}
+					{#each imgs as img}
+						{#if img.type == 'image'}
+							<a target='_blank' href='https://isthisliv.com/booru/post/{img.id}'><img src='https://isthisliv.com/booru/{img.thumbnailUrl}' alt='Booru Post {img.id}'/> </a>
+						{/if}
+					{/each}
+				{/await}
+			</div>
 		</contents>
 	</container>
 {/await}
 
 <style>
+	#images{
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: 10px;
+	}
+	#images img{
+		max-height:200px;
+		max-width: 200px;
+	}
 	container {
 		display: grid;
 		grid-template-columns: 10rem 1fr;
