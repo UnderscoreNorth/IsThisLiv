@@ -13,6 +13,7 @@
 	import { api } from '$lib/constants';
 	import { goto } from '$app/navigation';
 	import TeamIcon from '$lib/teamIcon.svelte';
+	import Gallery from '$lib/gallery.svelte'
 	let matchID = 0;
 	let data:{
 		teams: string[];
@@ -72,6 +73,7 @@
 	}
 	page.subscribe(async(p)=>{
 		if(p.params.slug){
+			if(!p.url.pathname.includes('cup')) return;
 			if(data){
 				data.then((r)=>{
 					if(r?.cupID !== parseInt(p.params.slug.split("-")[0])){
@@ -286,30 +288,12 @@
 				{/each}
 			</div>
 			<h2 id='Gallery'>Gallery</h2>
-			<div id='images'>
-				{#await imgs then imgs}
-					{#each imgs as img}
-						{#if img.type == 'image'}
-							<a target='_blank' href='https://isthisliv.com/booru/post/{img.id}'><img src='https://isthisliv.com/booru/{img.thumbnailUrl}' alt='Booru Post {img.id}'/> </a>
-						{/if}
-					{/each}
-				{/await}
-			</div>
+			<Gallery {imgs} />
 		</contents>
 	</container>
 {/await}
 
 <style>
-	#images{
-		display: flex;
-		flex-wrap: wrap;
-		align-items: center;
-		gap: 10px;
-	}
-	#images img{
-		max-height:200px;
-		max-width: 200px;
-	}
 	container {
 		display: grid;
 		grid-template-columns: 10rem 1fr;

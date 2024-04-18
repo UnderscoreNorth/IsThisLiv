@@ -2,6 +2,7 @@
 import { page } from '$app/stores';
 	import { api } from '$lib/constants';
 	import { cupShort, cupToBooru, getBooru, teamLink } from '$lib/helper';
+	import Gallery from '$lib/gallery.svelte'
 	//let data;	
 	let data = {};
 	let sortData;
@@ -9,6 +10,7 @@ import { page } from '$app/stores';
 	let imgs;
 	page.subscribe((p)=>{
 		if(id!==p.url.pathname){
+			if(!p.url.pathname.includes('team')) return;
 			id = p.url.pathname;
 			data = api($page.url.pathname).then((r)=>{
 				imgs = getBooru('/' + $page.url.pathname.replace('/', '').substring(6) + '/')
@@ -112,15 +114,7 @@ import { page } from '$app/stores';
 			{@html data.roster.footer}
 		</table>
 		<h2 id='gallery'>Gallery</h2>
-		<div id='images'>
-			{#await imgs then imgs}
-				{#each imgs as img}
-					{#if img.type == 'image'}
-						<a target='_blank' href='https://isthisliv.com/booru/post/{img.id}'><img src='https://isthisliv.com/booru/{img.thumbnailUrl}' alt='Booru Post {img.id}'/> </a>
-					{/if}
-				{/each}
-			{/await}
-		</div>
+		<Gallery {imgs} />
 	</container>
 {:catch}
 	<h2>Error</h2>
@@ -128,16 +122,6 @@ import { page } from '$app/stores';
 {/await}
 
 <style>
-	#images{
-		display: flex;
-		flex-wrap: wrap;
-		align-items: center;
-		gap: 10px;
-	}
-	#images img{
-		max-height:200px;
-		max-width: 200px;
-	}
 	.pointer:hover {
 		cursor: pointer;
 		background: var(--bg-c2);
