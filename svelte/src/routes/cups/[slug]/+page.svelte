@@ -144,7 +144,7 @@
 		/>
 	{/if}
 	<container>
-		<vertNav class="c-1">
+		<vertNav class="c-1" style={'font-size:small'}>
 			<img src='/icons/cups/{data.cupID}.png' alt='logo' style='border-radius:1rem;background:var(--bg-color);padding:5px' /><br/>
 				{#await cupsData}
 				<select></select>
@@ -204,7 +204,7 @@
 			</teamsContainer>
 			{#if data.matches.groups}
 				<h2 id="Groups">Group Stage</h2>
-				<div style="padding:0 2rem">
+				<div class='groupsContainer' style="padding:0 2rem">
 					{#each data.matches.groups as group}
 						<div class="groups">
 							<h3 id={group.name}>{group.name}</h3>
@@ -241,8 +241,10 @@
 			{/if}
 			{#if data.matches.kos}
 				<h2 id="Knockouts">Knockout Stage</h2>
+				<div id='bracketContainer'>
 				<Brackets data2={data} />
-				<div style="padding:0 2rem">
+			</div>
+				<div class='groupsContainer' style="padding:0 2rem">
 					{#each data.matches.kos as group}
 						<div class="kos">
 							<h3 id={group.name}>{group.name}</h3>
@@ -259,7 +261,7 @@
 				<MatchEdit bind:matchID />
 			{/if}
 			<h2 id="Stats">Statistics</h2>
-			<div style="padding:0 2rem">
+			<div class='groupsContainer' style="padding:0 2rem">
 				<h2 id='goals'>Goals</h2>
 				{#each data.scorers as subArr}
 					{#if subArr?.num}
@@ -298,7 +300,7 @@
 				{/each}
 			</div>
 			<h2 id='Records'>Records</h2>
-			<div id='recordsContainer' style="padding:0 2rem">
+			<div id='recordsContainer'  class='groupsContainer'  style="padding:0 2rem">
 				{#await recordData}
 					<h3>Loading...</h3>
 				 {:then records}
@@ -410,9 +412,39 @@
 		vertNav{
 			display:none;
 		}
+		#pageModifiedTime{
+			float:none;
+			padding:0;
+		}
 		container {
 			grid-template-columns: 1fr;
 			font-size: 65%;
+		}
+		statcontainer{
+			display:block;
+		}
+		teamscontainer{
+			display:flex;
+			flex-wrap: wrap;
+		}
+		:global(teamscontainer teambox){
+			padding:2px 0.5rem 2px 0!important;
+		}
+		.groups{
+			display:flex;
+			flex-wrap: wrap;
+			flex-direction: column;
+		}
+		groupTable th, groupTable td{
+			min-width: 0 !important;
+		}
+		.groupsContainer{
+			padding:0 !important;	
+		}
+		#bracketContainer{
+			overflow-x: auto;
+			min-width: 40rem;
+			min-height: fit-content;
 		}
 	}
 	#recordsContainer{
