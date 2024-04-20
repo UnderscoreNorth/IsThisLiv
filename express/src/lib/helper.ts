@@ -14,6 +14,7 @@ export async function rebuild(whitelist = []) {
   }
 }
 export function teamIcon(team: string) {
+  if (team.length == 0) return "";
   return `<img class='teamIcon' src='/icons/team-small/38px-${
     team[0].toUpperCase() + team.substring(1).toLowerCase()
   }_icon.png' alt='${team}' />`;
@@ -71,29 +72,39 @@ export function cupShort(cupName) {
   return shortName;
 }
 
-export async function playerLink(player: number | [number, string]) {
+export async function playerLink(
+  player: number | [number, string, string],
+  icon?: "left" | "right"
+) {
   let id = 0;
   let name = "";
+  let team = "";
   if (player == null) return "Unlinked Player";
   if (typeof player == "number") {
     id = player;
-    name = await db.query.PlayerLink.findFirst({
+    await db.query.PlayerLink.findFirst({
       where: (p, { eq }) => eq(p.linkID, id),
     })
       .then((r) => {
-        return r.name;
+        name = r.name;
+        team = r.team;
       })
       .catch(() => {
-        return "Unlinked Player";
+        name = "Unlinked Player";
       });
   } else {
     id = player[0];
     name = player[1];
+    team = player[2];
   }
   let urlname = name.replace(/./gm, function (s) {
     return s.match(/[a-z0-9\s]+/i) ? s : "";
   });
-  return `<a href='/players/${id}-${urlname}'>${name}</a>`;
+  return (
+    (icon == "left" ? teamIcon(team) : "") +
+    `<a href='/players/${id}-${urlname}'>${name}</a>` +
+    (icon == "right" ? teamIcon(team) : "")
+  );
 }
 
 export function dateFormat(

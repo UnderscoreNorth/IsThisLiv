@@ -233,7 +233,7 @@ async function sortArray(obj: Record<number, number>) {
   let arr: Array<{ num: number; players: string[] }> = [];
   for (let i in obj) {
     if (arr[obj[i]] == undefined) arr[obj[i]] = { num: obj[i], players: [] };
-    arr[obj[i]].players.push(await playerLink(parseInt(i)));
+    arr[obj[i]].players.push(await playerLink(parseInt(i), "left"));
   }
   arr.sort((a, b) => {
     if (a.num > b.num) return -1;

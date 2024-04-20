@@ -2,7 +2,9 @@
 	import { page } from '$app/stores';
 	import { sineIn } from 'svelte/easing';
 	import { Drawer } from 'flowbite-svelte';
+	//@ts-ignore
 	import MdPerson from 'svelte-icons/md/MdPerson.svelte';
+	//@ts-ignore
 	import MdMenu from 'svelte-icons/md/MdMenu.svelte';
 	import UserModal from '$lib/userModal.svelte';
 	import { User } from '$lib/user';
@@ -21,9 +23,8 @@
 		['/teams', 'Teams'],
 		['/players', 'Players'],
 		['/managers', '>Managers'],
-		['/records', 'Records'],
-		//['/misc', 'Misc Stats'],
-		//['/ff', 'Fantasy Football'],
+		['/records', 'Records/Stats'],
+		['/ff', 'Fantasy League'],
 		['/files','Files'],
 		['/booru','Booru'],
 		['https://implyingrigged.info/', 'Wiki'],
@@ -226,7 +227,7 @@
 	nav a,
 	nav button {
 		color: white;
-		padding: 0 0.5rem !important;
+		padding: 0 0.4rem !important;
 		margin: 0 !important;
 		text-decoration: none;
 		min-height: 2.5rem;
@@ -243,7 +244,7 @@
 		cursor: pointer;
 		border-radius: 0.25rem;
 		padding: 0.25rem;
-		display: block;
+		display: inline-block;
 	}
 	nav a:hover,
 	nav button:hover,

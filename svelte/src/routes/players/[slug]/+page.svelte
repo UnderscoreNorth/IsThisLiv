@@ -7,7 +7,7 @@
 	page.subscribe((p)=>{
 		if(id!==p.url.pathname){
 			id = p.url.pathname;
-			data = api($page.url.pathname);
+			data = api($page.url.pathname?.split('-')?.[0]);
 		}
 	})
 </script>
