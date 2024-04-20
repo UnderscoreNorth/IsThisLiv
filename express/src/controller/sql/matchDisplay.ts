@@ -150,28 +150,28 @@ export async function matchDisplay(req: Request) {
 }
 function formatStats(obj: Record<string, number> = {}) {
   return [
-    { sql: "iID", name: "SQL ID", value: obj.statID },
-    { sql: "iPoss", name: "Posession (%)", value: obj.poss },
-    { sql: "iShots", name: "Shots", value: obj.shots },
-    { sql: "iShotsOT", name: "(on target)", value: obj.shotsOT },
-    { sql: "iFouls", name: "Fouls", value: obj.fouls },
-    { sql: "iOffsides", name: "(offside)", value: obj.offsides },
-    { sql: "iCorners", name: "Corner Kicks", value: obj.corners },
-    { sql: "iFreeKicks", name: "Free Kicks", value: obj.freeKicks },
+    { sql: "statID", name: "SQL ID", value: obj.statID },
+    { sql: "poss", name: "Posession (%)", value: obj.poss },
+    { sql: "shots", name: "Shots", value: obj.shots },
+    { sql: "shotsOT", name: "(on target)", value: obj.shotsOT },
+    { sql: "fouls", name: "Fouls", value: obj.fouls },
+    { sql: "offsides", name: "(offside)", value: obj.offsides },
+    { sql: "corners", name: "Corner Kicks", value: obj.corners },
+    { sql: "freeKicks", name: "Free Kicks", value: obj.freeKicks },
     {
-      sql: "iPassComp",
+      sql: "passComp",
       name: "Pass completed (%)",
       value: obj.passComp,
     },
-    { sql: "iPassTot", name: "Passes", value: obj.passTot },
-    { sql: "iPassMade", name: "(Made)", value: obj.passMade },
-    { sql: "iCrosses", name: "Crosses", value: obj.crosses },
+    { sql: "passTot", name: "Passes", value: obj.passTot },
+    { sql: "passMade", name: "(Made)", value: obj.passMade },
+    { sql: "crosses", name: "Crosses", value: obj.crosses },
     {
-      sql: "iInterceptions",
+      sql: "interceptions",
       name: "Interceptions",
       value: obj.interceptions,
     },
-    { sql: "iTackles", name: "Tackles", value: obj.tackles },
-    { sql: "iSaves", name: "Saves", value: obj.saves },
+    { sql: "tackles", name: "Tackles", value: obj.tackles },
+    { sql: "saves", name: "Saves", value: obj.saves },
   ];
 }

@@ -64,6 +64,7 @@ export async function mainRecords(req: Request) {
   } else if (url.includes("match-match")) {
     return await calcRecords({ types: ["match-match"], date, calcAll });
   }
+  return {};
 }
 export async function cupRecords(req: Request) {
   const cupID = parseInt(req.params.cupID);

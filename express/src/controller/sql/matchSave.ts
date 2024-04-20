@@ -1,12 +1,23 @@
 import { Request } from "express";
 import { MatchData } from "./matchDisplay";
 import { db } from "../../db";
-import { Event, Match, Penalty, Performance, Player } from "../../db/schema";
-import { eq, InferSelectModel } from "drizzle-orm";
+import {
+  Event,
+  Match,
+  MatchStat,
+  Penalty,
+  Performance,
+  Player,
+} from "../../db/schema";
+import { and, eq, InferSelectModel, not } from "drizzle-orm";
 import { deleteFile } from "../../lib/helper";
 
 export async function matchSave(req: Request) {
   const { data } = req.body as { data: MatchData };
+  const currentMatch = (
+    await db.select().from(Match).where(eq(Match.matchID, data.matchID))
+  )[0];
+  if (!currentMatch) return {};
   await db
     .update(Match)
     .set({
@@ -110,6 +121,83 @@ export async function matchSave(req: Request) {
         await db.insert(Penalty).values(penaltyData);
       }
     }
+  }
+  let finalPeriod = 0;
+  for (const period in data.matchStats) {
+    for (const teamIndex in data.matchStats[period]) {
+      const team =
+        teamIndex == "0" ? currentMatch.homeTeam : currentMatch.awayTeam;
+      const statObj: InferSelectModel<typeof MatchStat> = {
+        matchID: data.matchID,
+        team: team,
+        statID: -1,
+        poss: -1,
+        shots: -1,
+        shotsOT: -1,
+        fouls: -1,
+        offsides: -1,
+        corners: -1,
+        freeKicks: -1,
+        passComp: -1,
+        passTot: -1,
+        passMade: -1,
+        crosses: -1,
+        interceptions: -1,
+        tackles: -1,
+        saves: -1,
+        period: parseInt(period) + 1,
+        home: teamIndex == "1" ? true : false,
+        finalPeriod: false,
+      };
+      if (statObj.passMade >= 0 && statObj.passTot > 0) {
+        statObj.passComp = statObj.passMade / statObj.passTot;
+      }
+      let isBlank = true;
+      for (const stat of data.matchStats[period][teamIndex]) {
+        if (stat.value !== undefined && stat.value !== "")
+          statObj[stat.sql] = stat.value;
+        if (
+          !["statID", "passMade", "passTot"].includes(stat.sql) &&
+          stat.value !== undefined &&
+          stat.value !== ""
+        ) {
+          isBlank = false;
+        }
+      }
+      if (!isBlank && parseInt(period) + 1 > finalPeriod)
+        finalPeriod = parseInt(period) + 1;
+      if (isBlank && statObj.statID) {
+        await db.delete(MatchStat).where(eq(MatchStat.statID, statObj.statID));
+      } else if (!isBlank && statObj.statID > 0) {
+        await db
+          .update(MatchStat)
+          .set(statObj)
+          .where(eq(MatchStat.statID, statObj.statID));
+      } else if (!isBlank && statObj.statID == -1) {
+        delete statObj.statID;
+        await db.insert(MatchStat).values(statObj);
+      }
+    }
+  }
+  if (finalPeriod > 0) {
+    await db
+      .update(MatchStat)
+      .set({ finalPeriod: true })
+      .where(
+        and(
+          eq(MatchStat.matchID, data.matchID),
+          eq(MatchStat.period, finalPeriod)
+        )
+      );
+    await db
+      .update(MatchStat)
+      .set({ finalPeriod: false })
+      .where(
+        and(
+          eq(MatchStat.matchID, data.matchID),
+          not(eq(MatchStat.period, finalPeriod))
+        )
+      );
   }
   await deleteFile(data.cupID, "Cup");
   return {};
