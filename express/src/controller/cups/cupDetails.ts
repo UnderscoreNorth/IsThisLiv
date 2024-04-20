@@ -57,6 +57,7 @@ type Result = {
 
 export async function cupDetails(req: Request) {
   let cupID = parseInt(req.params.cupID.split("-")[0]);
+  if (!(cupID > 0)) return {};
   let teams = [];
   let cupMeta = await getCup(cupID);
   let totalGoals = 0;

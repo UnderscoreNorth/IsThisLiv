@@ -1,7 +1,7 @@
 <script>
 	// @ts-ignore
 	import MdAddBox from 'svelte-icons/md/MdAddBox.svelte';
-	import CupModal from '$lib/cupModal.svelte';
+	import CupModal from './cupModal.svelte';
 	import { User } from '$lib/user';
 	import { api } from '$lib/helper';
 	import Modal from '$lib/modal.svelte';

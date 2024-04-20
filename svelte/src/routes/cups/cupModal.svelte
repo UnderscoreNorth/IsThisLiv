@@ -1,5 +1,5 @@
 <script lang='ts'>
-	import { User } from './user';
+	import { User } from '../../lib/user';
 	import { goto } from '$app/navigation';
 	import { api } from '$lib/helper';
 	let cupData = {
@@ -15,7 +15,7 @@
 	let submitCup = async () => {
 		if ($User.user) {
 			cupData.user = $User.user;
-			goto(`/cups/${(await api('/cups/edit',cupData)).cupURL}`);
+			goto(`/cups/${(await api('/sql/newCup',cupData)).cupURL}`);
 		}
 	};
 </script>

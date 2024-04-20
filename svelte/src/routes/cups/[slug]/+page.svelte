@@ -5,9 +5,9 @@
 	import MdAddBox from 'svelte-icons/md/MdAddBox.svelte';
 	import { cupShort, cupToBooru, getBooru, teamLink } from '$lib/helper';
 	
-	import MatchEdit from '$lib/matches/MatchEdit/MatchEdit.svelte';
-	import MatchAdd from '$lib/matches/MatchAdd.svelte';
-	import TeamModal from '$lib/team/teamModal.svelte';
+	import MatchEdit from './MatchEdit.svelte';
+	import MatchAdd from './MatchAdd.svelte';
+	import TeamModal from './teamModal.svelte';
 	import { api } from '$lib/helper';
 	import TeamIcon from '$lib/teamIcon.svelte';
 	import Gallery from '$lib/gallery.svelte'

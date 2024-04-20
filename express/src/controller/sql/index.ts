@@ -11,6 +11,7 @@ import { db } from "../../db";
 import { Round } from "../../db/schema";
 import { matchAdd } from "./matchAdd";
 import { calcAllCups } from "../records/records";
+import { newCup } from "./newCup";
 
 const router = express.Router();
 router.use("/user", user);
@@ -42,5 +43,8 @@ router.use("/rounds", async (req, res, next) => {
 });
 router.use("/addMatch", async (req, res, next) => {
   res.send(await matchAdd(req));
+});
+router.use("/newCup", async (req, res, next) => {
+  res.send(await newCup(req));
 });
 export default router;
