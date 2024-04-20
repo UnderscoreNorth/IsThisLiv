@@ -1,5 +1,5 @@
 <script lang='ts'>
-	import { api } from '$lib/constants';
+	import { api } from '$lib/helper';
 	export let matchID:number;
 	import Modal from '$lib/modal.svelte';
 	import MatchEditData from './MatchEditData.svelte';

@@ -1,8 +1,10 @@
 <script>
+	// @ts-ignore
 	import MdAddBox from 'svelte-icons/md/MdAddBox.svelte';
 	import CupModal from '$lib/cupModal.svelte';
 	import { User } from '$lib/user';
-	import { api } from '$lib/constants';
+	import { api } from '$lib/helper';
+	import Modal from '$lib/modal.svelte';
 	/**
 	 * @param {object} api
 	 */
@@ -20,6 +22,8 @@
 	<h1>
 		Cup Stats
 		{#if $User.user}
+			<!-- svelte-ignore a11y-click-events-have-key-events -->
+			<!-- svelte-ignore a11y-no-static-element-interactions -->
 			<icon
 				on:click={() => {
 					displayCupModal = true;
@@ -28,9 +32,9 @@
 			>
 		{/if}
 	</h1>
-	{#if displayCupModal}
-		<CupModal {toggleCupModal} />
-	{/if}
+	<Modal close={toggleCupModal} title={'New Cup'}>
+		<CupModal />
+	</Modal>
 	{#await data}
 		<p>Loading...</p>
 	{:then data}

@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { User } from '$lib/user';
 	import { ffStore } from '$lib/fantasyFootball/fantasyFootballStore';
-	import { api } from '$lib/constants';
+	import { api } from '$lib/helper';
 	let ffCalculating = false;
 	const calcFF = async () => {
 		ffCalculating = true;

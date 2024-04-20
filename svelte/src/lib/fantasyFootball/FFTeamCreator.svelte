@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { api } from '$lib/constants';
+	import { api } from '$lib/helper';
 	import FFPositionList from './FFPositionList.svelte';
 	import FFTeamList from './FFTeamList.svelte';
 	import { ffStore } from './fantasyFootballStore.js';

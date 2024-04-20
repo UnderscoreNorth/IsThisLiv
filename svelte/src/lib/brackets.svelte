@@ -19,7 +19,13 @@
             >
         }
     };    
-    let data = JSON.parse(JSON.stringify(data2));
+    let data:{
+        matches:{
+            kos:Array<
+                Round
+            >
+        }
+    } = JSON.parse(JSON.stringify(data2));
     for(let i in data.matches.kos){
         if(data.matches.kos[i].name == '3rd Place'){
             data.matches.kos[parseInt(i)+1].matches.push(data.matches.kos[i].matches[0]);            

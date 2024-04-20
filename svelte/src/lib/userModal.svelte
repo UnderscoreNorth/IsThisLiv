@@ -2,7 +2,7 @@
 	import { User } from './user';
 	import Modal from './modal.svelte';
 	import { browser } from '$app/environment';
-	import { api } from './constants';
+	import { api } from '$lib/helper';
 	
 	let inputUser = '';
 	let inputPass = '';

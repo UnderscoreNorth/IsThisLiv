@@ -2,7 +2,7 @@
 	import { ffStore } from './fantasyFootballStore';
 	import FFTable from '$lib/fantasyFootball/FFtable.svelte';
 	import FFTeamCreator from './FFTeamCreator.svelte';
-	import { api } from '$lib/constants';
+	import { api } from '$lib/helper';
 	export let currentCup: number;	
 	let cupID = $ffStore.cupID;
 	let selectedTab = 'Board stats';

@@ -3,7 +3,7 @@
 	import FFCupStats from '$lib/fantasyFootball/FFCupStats.svelte';
 	import { ffStore } from '$lib/fantasyFootball/fantasyFootballStore';
 	import FFNav from '$lib/fantasyFootball/FFNav.svelte';
-	import { api } from '$lib/constants';
+	import { api } from '$lib/helper';
 	let currentCup = 0;
 	const loadData = async () => {
 		let result = await api('/lists/cups',{order:'dStart',dir:'DESC'});

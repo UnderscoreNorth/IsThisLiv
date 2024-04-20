@@ -1,4 +1,5 @@
-export function teamLink(team) {
+import CONFIG from '$lib/config.json'
+export function teamLink(team:string) {
   if (team != "draw") {
     if (team) {
       return `<a href='/teams/${team}'>/${team}/</a>`;
@@ -9,11 +10,11 @@ export function teamLink(team) {
     return team;
   }
 }
-export function cupShort(cupName) {
+export function cupShort(cupName:string) {
   let cupWords = cupName.split(" ");
   let shortName = "";
   for (let cupWord of cupWords) {
-    if (parseInt(cupWord) && cupWord > 2000) {
+    if (parseInt(cupWord) && parseInt(cupWord) > 2000) {
       shortName += cupWord + " ";
     } else if (cupWord != "4chan") {
       shortName += cupWord[0];
@@ -21,12 +22,29 @@ export function cupShort(cupName) {
   }
   return shortName;
 }
-export function cupToBooru(cupName) {
+export function cupToBooru(cupName:string) {
   let words = cupName.split(" ");
   return words[0] + "_" + words[2];
 }
-export async function getBooru(tag) {
-  return await fetch(`https://isthisliv.com/booru/api/posts/?query=${tag}`, {
+export async function api(url: string, body?: object) {
+	return await fetch(
+		`${CONFIG.api}${url}`,
+		body == undefined
+			? {}
+			: {
+					method: 'post',
+					headers: {
+						'Content-Type': 'application/json'
+					},
+					body: JSON.stringify(body)
+			  }
+	).then(async (result) => {
+		return await result.json();
+	});
+}
+
+export async function getBooru(tag:string) {
+  return await fetch(`${CONFIG.booru}/api/posts/?query=${tag}`, {
     method: "get",
     headers: {
       "Content-Type": "application/json",

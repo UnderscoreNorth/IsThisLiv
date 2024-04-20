@@ -10,7 +10,7 @@
 	import MatchAdd from '$lib/matches/MatchAdd.svelte';
 	import TeamModal from '$lib/team/teamModal.svelte';
 	import { browser } from '$app/environment';
-	import { api } from '$lib/constants';
+	import { api } from '$lib/helper';
 	import { goto } from '$app/navigation';
 	import TeamIcon from '$lib/teamIcon.svelte';
 	import Gallery from '$lib/gallery.svelte'

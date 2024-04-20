@@ -1,6 +1,6 @@
 <script>
 	import { page } from '$app/stores';
-	import { api } from '$lib/constants';
+	import { api } from '$lib/helper';
 	import TeamIcon from '$lib/teamIcon.svelte';
 	let filter = 'All';
 	let sort = '';

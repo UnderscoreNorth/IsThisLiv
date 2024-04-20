@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { afterNavigate } from '$app/navigation';
-	import { api } from '$lib/constants';
+	import { api } from '$lib/helper';
 	let width: any;
 	let data = [];
 	let search = '';

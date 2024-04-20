@@ -1,6 +1,6 @@
 <script lang="ts">
 import { page } from '$app/stores';
-	import { api } from '$lib/constants';
+	import { api } from '$lib/helper';
 	import { cupShort, cupToBooru, getBooru, teamLink } from '$lib/helper';
 	import Gallery from '$lib/gallery.svelte'
 	//let data;	

@@ -1,4 +1,4 @@
-import { api } from '$lib/constants';
+import { api } from '$lib/helper';
 import { User } from '$lib/user.js';
 
 export async function load({ fetch, params }) {

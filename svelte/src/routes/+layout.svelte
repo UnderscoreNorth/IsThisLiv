@@ -7,7 +7,6 @@
 	import UserModal from '$lib/userModal.svelte';
 	import { User } from '$lib/user';
 	import { DeepSet } from '$lib/deepSet';
-	import { api } from '$lib/constants';
 	export let data;
 	let width: any;
 	let drawerHidden = true;
@@ -25,6 +24,7 @@
 		['/records', 'Records'],
 		//['/misc', 'Misc Stats'],
 		//['/ff', 'Fantasy Football'],
+		['/files','Files'],
 		['/booru','Booru'],
 		['https://implyingrigged.info/', 'Wiki'],
 		['https://cytu.be/r/the4chancup', 'Stream'],

@@ -1,6 +1,6 @@
 <script>
 	import { page } from '$app/stores';
-	import { api } from '$lib/constants';
+	import { api } from '$lib/helper';
 	let data = api('/misc/' + $page.params.slug);
 </script>
 
