@@ -15,8 +15,6 @@ export async function load({ fetch, params }) {
 				}
 			}
 		} catch (error) {
-			console.log(error);
-			alert(error);
 			localStorage.removeItem('user');
 		}
 	}
