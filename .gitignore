@@ -1,4 +1,4 @@
-express/config.json
+**/config.json
 express/node_modules/
 express/package-lock.json
 express/cache/
@@ -6,5 +6,4 @@ express/uploads/
 svelte/package-lock.json
 svelte/.svelte-kit/
 svelte/node_modules/
-svelte/src/config.json
 svelte/src/lib/config.json

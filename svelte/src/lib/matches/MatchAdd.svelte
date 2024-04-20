@@ -1,51 +1,54 @@
-<script>
+<script lang='ts'>
 	import { api } from '$lib/constants';
-	export let toggleModal;
-	export let cupID;
-	export let hasMatches;
+	import Modal from '$lib/modal.svelte';
+	export let toggleModal:Function;
+	export let cupID:number;
+	let data = {cupID,homeTeam:'',awayTeam:'',round:'',utcTime:'',official:true,valid:true};
+	let rounds = api('/sql/rounds');
+	let adding = false;
+	let added =false;
+	let home:HTMLInputElement;
+	async function addMatch(){
+		if(!(data.homeTeam && data.awayTeam && data.round && data.utcTime)) return;
+		adding = true;		
+		await api('/sql/addMatch',data);
+		adding = false;
+		added = true;
+		if(home) home.focus();
+		data.homeTeam = '';
+		data.awayTeam = '';
+	}
+	function closeModal(){
+		if(added){
+			location.reload();
+		} else {
+			toggleModal();
+		}
+	}
 </script>
-
-<!-- svelte-ignore a11y-click-events-have-key-events -->
-<!-- svelte-ignore a11y-no-static-element-interactions -->
-<closeout on:click={toggleModal}>
-	<!-- svelte-ignore a11y-no-static-element-interactions -->
-	<container
-		class="c-2"
-		on:click={(e) => {
-			e.stopPropagation();
-		}}
-	>
-		<h3>Match Add</h3>
-
-		
-	</container>
-</closeout>
+<Modal close={closeModal} title={'Match Add'}>
+	{#await rounds then rounds}
+	<table>
+		<tr><th>Home</th><th>Away</th><th>Round</th><th>Date</th><th>Official</th><th>Valid</th></tr>
+		<tr>
+			<td><input bind:this={home} bind:value={data.homeTeam}/></td>
+			<td><input bind:value={data.awayTeam}/></td>
+			<td><select bind:value={data.round}>
+				{#each rounds as round}
+					<option>{round.round}</option>
+				{/each}
+			</select></td>
+			<td><input bind:value={data.utcTime} type='datetime-local'/></td>
+			<td><input type='checkbox' bind:checked={data.official}/></td>
+			<td><input type='checkbox' bind:checked={data.valid}/></td>
+		</tr>
+	</table>
+	<button disabled={adding} on:click={()=>{addMatch()}}>{adding ? 'Adding' : 'Add'}</button>	
+	{/await}
+</Modal>
 
 <style>
-	container {
-		position: fixed;
-		top: 3rem;
-		width: 38rem;
-		left: calc(50% - 20rem);
-		z-index: 3;
-		padding: 1rem;
-		text-align: center;
-		box-shadow: 0 0.5rem 0.5rem black;
-	}
-	closeout {
-		position: fixed;
-		height: 100%;
-		width: 100%;
-		z-index: 2;
-		top: 0;
-		left: 0;
-	}
-	groupsContainer {
-		display: grid;
-		grid-template-columns: 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr;
-		width: 100%;
-	}
-	groupsContainer input {
-		width: calc(100% - 1rem);
+	input:not([type='datetime-local']){
+		width:3rem;
 	}
 </style>

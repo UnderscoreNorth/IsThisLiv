@@ -9,11 +9,10 @@
 		return returnObject;
 	})();
 </script>
-<Modal close={clear}>
+<Modal close={clear} title={`/${team}/`}>
     {#await data}
         Loading...
     {:then data} 
-        <h3>/{team}/</h3>
         <table>
         {#each data as p}
             <tr>

@@ -1,7 +1,7 @@
 import { NextFunction, Request, Response } from "express";
 import { db } from "../db";
 import fs from "fs/promises";
-export const pageExpiry = 86400000; //;
+export const pageExpiry = 1; //86400000; //;
 
 export async function rebuild(whitelist = []) {
   console.log("rebuild");
@@ -215,4 +215,14 @@ export async function deleteFile(id: number, type: "Cup") {
         await fs.unlink("cache/" + file);
     }
   }
+}
+
+export function formatEventTime({
+  regTime,
+  injTime,
+}: {
+  regTime: number;
+  injTime: number;
+}) {
+  return regTime + (injTime >= 0 ? `+${injTime}'` : `'`);
 }

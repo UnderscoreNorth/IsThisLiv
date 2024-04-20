@@ -95,6 +95,7 @@ export async function getMatches(options?: {
       )
     )
     .orderBy(
+      Cup.start,
       Round.order,
       Round.round,
       options?.sort == "desc" ? desc(Match.utcTime) : asc(Match.utcTime),
@@ -161,6 +162,7 @@ export async function getPlayers(options: {
   team?: string;
   getFriendlies?: boolean;
   linkID?: number | null;
+  playerID?: number | null;
   like?: string;
 }) {
   const where = and(
@@ -170,7 +172,8 @@ export async function getPlayers(options: {
     options.linkID ? eq(Player.linkID, options.linkID) : undefined,
     options.like
       ? or(like(Player.name, options.like), like(PlayerLink.name, options.like))
-      : undefined
+      : undefined,
+    options.playerID ? eq(Player.playerID, options.playerID) : undefined
   );
 
   return await db

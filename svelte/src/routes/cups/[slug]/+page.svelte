@@ -66,7 +66,8 @@
 	let select:HTMLSelectElement;
 	async function getData(slug:string){
 		data = api('/cups/' + slug).then((data)=>{
-			imgs = getBooru(cupToBooru(data.cupName))
+			if(data.cupName)
+				imgs = getBooru(cupToBooru(data.cupName))
 			return data;
 		});
 			
@@ -119,6 +120,7 @@
 	</contents>
 </container>
 {:then data}
+	{#if data.cupName}
 	{#if displayAddMatchModal}
 		<MatchAdd
 			cupID={data.cupID}
@@ -291,6 +293,15 @@
 			<Gallery {imgs} />
 		</contents>
 	</container>
+	{:else}
+	<container>
+	<vertNav class="c-1" />
+	<contents>
+		<h1>Cup not found</h1>
+	</contents>
+</container>
+	{/if}
+	
 {/await}
 
 <style>

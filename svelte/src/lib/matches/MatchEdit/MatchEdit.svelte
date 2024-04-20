@@ -24,7 +24,7 @@
 		return returnObject;
 	})();
 </script>
-<Modal close={close}>
+<Modal close={close} title={'Match Edit'}>
 	{#await data}
 		Loading...
 	{:then data}		

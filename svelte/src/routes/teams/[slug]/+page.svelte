@@ -62,6 +62,9 @@ import { page } from '$app/stores';
 {#await data}
 	<h2>Loading...</h2>
 {:then data}
+	{#if !data.html}
+		<h2>Team not found</h2>
+	{:else}
 	<div>
 		{#if data.date}
 			<div id="pageModifiedTime">Last updated - {data.date}</div>
@@ -116,6 +119,8 @@ import { page } from '$app/stores';
 		<h2 id='gallery'>Gallery</h2>
 		<Gallery {imgs} />
 	</container>
+	{/if}
+	
 {:catch}
 	<h2>Error</h2>
 	Thank you, spaghetti code

@@ -1,17 +1,21 @@
 <script lang='ts'>
     export let close:Function;
+	export let title:string;
 </script>
 <!-- svelte-ignore a11y-click-events-have-key-events -->
+<!-- svelte-ignore a11y-no-static-element-interactions -->
 <closeout on:click={() => {
     close();
 }}>
+    <!-- svelte-ignore a11y-no-static-element-interactions -->
     <container class="c-2" on:click={(e)=>{e.stopPropagation()}}>
         <!-- svelte-ignore a11y-click-events-have-key-events -->
-			<x
-            on:click={() => {
-                close();
-            }}>X</x
-        >
+			<!-- svelte-ignore a11y-no-static-element-interactions -->
+			<header><span>{title}</span><x
+				on:click={() => {
+					close();
+				}}>X</x></header>
+			<hr/>
 	<slot />
 </container>
 </closeout>
@@ -39,13 +43,9 @@
         justify-content: center;
 	}
 	x {
-		position:absolute;
-        right:0.5rem;
-        top:0.5rem;
-		width: 2rem;
-		height: 2rem;
+		padding:5px;
+		margin-left:5px;
 		text-align: center;
-		line-height: 2rem;
 		cursor: pointer;
 		border-radius: 0.25rem;
 		background: rgb(145, 3, 3);
@@ -53,5 +53,14 @@
 	}
 	x:hover {
 		background: rgb(95, 8, 8);
+	}
+	header{
+		font-size:larger;
+		font-weight: bold;
+		display:flex;
+		align-items: center;
+	}
+	header span{
+		flex-grow: 1;
 	}
 </style>

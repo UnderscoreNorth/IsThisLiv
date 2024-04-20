@@ -67,6 +67,7 @@ export async function cupDetails(req: Request) {
   let goalies = {};
   let motms = {};
   let cards = {};
+  if (!cupMeta) return {};
   /*sql = await DB.query(
     "SELECT * FROM MatchDB INNER JOIN RoundOrder ON MatchDB.sRound = RoundOrder.sRound WHERE iCupID=? ORDER BY iOrder,RoundOrder.sRound,dUTCTime",
     [cupID]

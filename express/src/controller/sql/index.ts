@@ -7,6 +7,9 @@ import { linkPlayer } from "./linkPlayer";
 import user from "./user";
 import { clearCache } from "./clearCache";
 import { matchSave } from "./matchSave";
+import { db } from "../../db";
+import { Round } from "../../db/schema";
+import { matchAdd } from "./matchAdd";
 
 const router = express.Router();
 router.use("/user", user);
@@ -29,5 +32,11 @@ router.use("/clearCache", async (req, res, next) => {
 });
 router.use("/matchSave", async (req, res, next) => {
   res.send(await matchSave(req));
+});
+router.use("/rounds", async (req, res, next) => {
+  res.send(await db.select().from(Round).orderBy(Round.round));
+});
+router.use("/addMatch", async (req, res, next) => {
+  res.send(await matchAdd(req));
 });
 export default router;

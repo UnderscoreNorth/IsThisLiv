@@ -25,8 +25,10 @@
 	{:then data}
 		{#if data.date}
 			<div id="pageModifiedTime">Last updated - {data.date}</div>
+			{@html data.html}
+		{:else}
+			<h2>Player not found</h2>
 		{/if}
-		{@html data.html}
 	{:catch}
 		<h2>Error</h2>
 		Thank you, spaghetti code

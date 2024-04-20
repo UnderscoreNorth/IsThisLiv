@@ -36,3 +36,4 @@ export async function getBooru(tag) {
     return (await result.json()).results;
   });
 }
+

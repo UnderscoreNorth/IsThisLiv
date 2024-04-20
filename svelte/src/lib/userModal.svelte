@@ -31,8 +31,8 @@
 	};
 </script>
 {#if error !== ''}
-<Modal close={()=>{error=''}}>
-	<br><br>{error}
+<Modal close={()=>{error=''}} title={'Error'}>
+	{error}
 </Modal>
 {/if}
 <modal class="c-1">

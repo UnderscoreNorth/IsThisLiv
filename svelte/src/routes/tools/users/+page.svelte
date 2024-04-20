@@ -15,8 +15,7 @@
 </script>
 <container>
     {#if newPassword}
-        <Modal close={()=>{newPassword=''}}>
-            <br/><br/>
+        <Modal close={()=>{newPassword=''}} title={'Password'}>
             User's new password is {newPassword}
         </Modal>
     {/if}

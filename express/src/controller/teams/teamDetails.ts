@@ -24,6 +24,7 @@ export async function teamDetails(req: Request) {
     getVoided: true,
     getUnofficial: true,
   });
+  if (!matchData.length) return {};
   let Btemplate = {
     gd: 0,
     results: [],

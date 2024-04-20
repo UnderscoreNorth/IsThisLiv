@@ -25,8 +25,9 @@ export async function playerDetails(req: Request) {
   let pName = "";
 
   let linkID = parseInt(req.params.linkID.split("-")[0]);
-
+  if (!linkID) return {};
   let playerData = await getPlayers({ linkID });
+  if (!playerData[0]) return {};
   team = playerData[0].playerlink.team;
   pName = playerData[0].playerlink.name;
 
