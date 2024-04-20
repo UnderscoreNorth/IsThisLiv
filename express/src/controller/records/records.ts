@@ -489,10 +489,10 @@ async function dayEvent({
   date: Date;
 }) {
   let customDate = sql`DATE(utcTime)`;
-  let customSum = sql<number>`SUM(CASE WHEN Event.eventType IN (${eventType.join(
+  let customSum = sql<number>`SUM(CASE WHEN event.eventType IN (${eventType.join(
     ","
   )}) THEN 1 ELSE 0 END)`;
-  let customCount = sql<number>`COUNT(DISTINCT(Match.matchID))`;
+  let customCount = sql<number>`COUNT(DISTINCT(match.matchID))`;
   let result = await db
     .select({
       cup: min(Cup.cupName),
