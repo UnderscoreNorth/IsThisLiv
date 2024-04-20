@@ -7,7 +7,7 @@
 	import SideBar from '$lib/sideBar.svelte';
 	
 	let links = new DeepSet([
-		['clear_cache', 'Clear Cache'],
+		['cache', 'Cache'],
 		['upload', 'Upload Edit File'],
 		['unlinked_players', 'Unlinked Players'],
 		['groupstage', 'Groupstage'],

@@ -1,6 +1,5 @@
 <script>
-	import { api } from "$lib/constants";
-	import { cupShort } from "$lib/helper";
+	import { cupShort,api } from "$lib/helper";
 
     const data = api('/players/getUnlinked');
     let linked = new Set();

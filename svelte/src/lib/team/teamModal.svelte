@@ -1,5 +1,5 @@
 <script lang='ts'>
-	import { api } from "$lib/constants";
+	import { api } from "$lib/helper";
 	import Modal from "$lib/modal.svelte";
     export let cupID:number;
     export let team:string;

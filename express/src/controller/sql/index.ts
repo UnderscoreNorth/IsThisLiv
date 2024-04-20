@@ -10,6 +10,7 @@ import { matchSave } from "./matchSave";
 import { db } from "../../db";
 import { Round } from "../../db/schema";
 import { matchAdd } from "./matchAdd";
+import { calcAllCups } from "../records/records";
 
 const router = express.Router();
 router.use("/user", user);
@@ -29,6 +30,9 @@ router.use("/playerLink/", async (req, res, next) => {
 });
 router.use("/clearCache", async (req, res, next) => {
   res.send(await clearCache());
+});
+router.use("/rebuildCupRecords", async (req, res, next) => {
+  res.send(await calcAllCups());
 });
 router.use("/matchSave", async (req, res, next) => {
   res.send(await matchSave(req));

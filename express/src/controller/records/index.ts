@@ -3,7 +3,10 @@ import { saveMiddleWare } from "../../lib/helper";
 import { mainRecords } from "./records";
 
 const router = express.Router();
+router.use("/cups/*", async (req, res, next) => {
+  res.send({});
+});
 router.use("/*", async (req, res, next) => {
-  res.send(await mainRecords(req));
+  saveMiddleWare(req, res, mainRecords);
 });
 export default router;

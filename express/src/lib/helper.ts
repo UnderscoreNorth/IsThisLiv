@@ -1,7 +1,7 @@
 import { NextFunction, Request, Response } from "express";
 import { db } from "../db";
 import fs from "fs/promises";
-export const pageExpiry = 1; //86400000; //;
+export const pageExpiry = 86400000; //;
 
 export async function rebuild(whitelist = []) {
   console.log("rebuild");

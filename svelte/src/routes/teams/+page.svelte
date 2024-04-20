@@ -1,5 +1,5 @@
 <script>
-	import { api } from "$lib/constants";
+	import { api } from "$lib/helper";
 
 	let data = api('/teams');
 </script>

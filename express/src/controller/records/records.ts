@@ -4,8 +4,11 @@ import {
   formatEventTime,
   goalTypes,
   playerLink,
+  redCardTypes,
   teamLink,
+  yellowCardTypes,
 } from "../../lib/helper";
+import fs from "fs/promises";
 import {
   and,
   asc,
@@ -22,6 +25,7 @@ import {
   max,
   min,
   not,
+  sql,
   SQL,
   SQLWrapper,
   sum,
@@ -36,87 +40,601 @@ import {
   PlayerLink,
 } from "../../db/schema";
 import { db } from "../../db";
-import { getPlayers } from "../../db/commonFn";
+import { getCups, getPlayers } from "../../db/commonFn";
 import { MySqlColumn } from "drizzle-orm/mysql-core";
 
-export async function mainRecords(req: Request) {
-  let html = "";
-  const url = req.baseUrl.toLowerCase();
-  if (url.includes("match-individual")) {
-    html = `<h2>Match Records</h2>
-    <h3>Individual</h3>
-    ${await indEvent("Most Goals Scored", goalTypes)}
-    ${await indEvent(
-      "Most Goals Scored In the First Half",
-      goalTypes,
-      lte(Event.regTime, 45)
-    )}
-    ${await indEvent(
-      "Most Goals Scored In the Second Half",
-      goalTypes,
-      and(lte(Event.regTime, 90), gt(Event.regTime, 45))
-    )}
-    ${await indEvent(
-      "Most Goals Scored In Extra Time",
-      goalTypes,
-      gte(Event.regTime, 90)
-    )}
-      ${await indEvent("Most Assists", assistTypes)}
-      ${await indPerf(
-        "Most Saves",
-        sum(Performance.saves),
-        desc,
-        gt(Performance.saves, 0)
-      )}
-      ${await indPerf("Highest Rating", max(Performance.rating), desc)}
-      ${await hatTrick("Quickest Brace", 2)}
-      ${await hatTrick("Quickest Hat Trick", 3)}
-      ${await hatTrick("Quickest Double Brace", 4)}
-      ${await hatTrick("Quickest Glut", 5)}
-      ${await hatTrick("Quickest Double Hat Trick", 6)}
-      `;
-    return { html };
-  } else if (url.includes("match-team")) {
-    html = `<h2>Match Records</h2>
-    <h3>Team</h3>
-    ${await teamStat("Most Shots", max(MatchStat.shots))}
-    ${await teamStat("Most Shots on Target", max(MatchStat.shotsOT))}
-    ${await teamStat(
-      "Most Shots all on Target",
-      max(MatchStat.shotsOT),
-      eq(MatchStat.shots, MatchStat.shotsOT)
-    )}
-    ${await teamStat("Most Fouls", max(MatchStat.fouls))}
-    ${await teamStat("Most Offsides", max(MatchStat.offsides))}
-    ${await teamStat("Most Free Kicks", max(MatchStat.freeKicks))}
-    ${await teamStat("Most Passes Made (Pes18+)", max(MatchStat.passMade))}
-    ${await teamStat("Most Crosses", max(MatchStat.crosses))}
-    ${await teamStat("Most Interceptions", max(MatchStat.interceptions))}
-    ${await teamStat("Most Tackles", max(MatchStat.tackles))}
-    ${await teamStat("Most Saves", max(MatchStat.saves))}
-    ${await teamPerf("Highest Avg Rating", Performance.rating, desc)}
-    ${await teamPerf("Lowest Avg Rating", Performance.rating, asc)}
-    ${await teamPerf("Highest Avg Condition", Performance.cond, desc)}
-    ${await teamPerf("Lowest Avg Condition", Performance.cond, asc)}
-    
-    `;
-  }
+const recordTypes = [
+  "match-team",
+  "match-individual",
+  "match-day",
+  "match-match",
+] as const;
 
-  return { html };
+export async function mainRecords(req: Request) {
+  const url = req.baseUrl.toLowerCase();
+  let date = new Date();
+  date.setDate(date.getDate() + 1);
+  if (url.includes("match-individual")) {
+    return await calcRecords(["match-individual"], date);
+  } else if (url.includes("match-team")) {
+    return await calcRecords(["match-team"], date);
+  } else if (url.includes("match-day")) {
+    return await calcRecords(["match-day"], date);
+  } else if (url.includes("match-match")) {
+    return await calcRecords(["match-match"], date);
+  }
 }
-function cupPlayerHeader(x: InferSelectModel<typeof PlayerLink>) {
-  return `${teamLink(x.team)}</td><td>${x.name}`;
+export async function calcAllCups() {
+  const cups = await getCups({ excludeFriendlies: true, asc: true });
+  for (const cup of cups) {
+    let date = new Date(cup.end);
+    date.setDate(date.getDate() + 1);
+    const data = await calcRecords([...recordTypes], date, cup.cupID);
+    await fs.writeFile(
+      "cache/__api__records__cups__" + cup.cupID + ".json",
+      JSON.stringify(data)
+    );
+    console.log(cup.cupName + " records rebuilt");
+  }
+  return {};
+}
+
+async function calcRecords(
+  types: Array<(typeof recordTypes)[number]>,
+  date: Date,
+  cupID?: number
+) {
+  let data: Record<
+    string,
+    Record<
+      string,
+      {
+        header: Array<{ header: string; colspan?: number }>;
+        rows: Array<Array<string | number>>;
+        numbered: boolean;
+      }
+    >
+  > = {};
+  if (types.includes("match-individual")) {
+    const title = "Match - Individual";
+    data[title] = {};
+    data[title]["Most Goals Scored"] = await indEvent({
+      eventTypes: goalTypes,
+      date,
+      cupID,
+    });
+    data[title]["Most Goals Scored In the First Half"] = await indEvent({
+      eventTypes: goalTypes,
+      date,
+      cupID,
+      wheres: lte(Event.regTime, 45),
+    });
+    data[title]["Most Goals Scored In the Second Half"] = await indEvent({
+      eventTypes: goalTypes,
+      date,
+      cupID,
+      wheres: and(lte(Event.regTime, 90), gt(Event.regTime, 45)),
+    });
+    data[title]["Most Goals Scored In Extra Time"] = await indEvent({
+      eventTypes: goalTypes,
+      date,
+      cupID,
+      wheres: gte(Event.regTime, 90),
+    });
+    data[title]["Most Assists"] = await indEvent({
+      eventTypes: assistTypes,
+      date,
+      cupID,
+    });
+    data[title]["Most Saves"] = await indPerf({
+      stat: sum(Performance.saves),
+      dir: desc,
+      date,
+      cupID,
+      wheres: gt(Performance.saves, 0),
+    });
+    data[title]["Highest Rating"] = await indPerf({
+      stat: max(Performance.rating),
+      dir: desc,
+      date,
+      cupID,
+    });
+    data[title]["Quickest Brace"] = await hatTrick({ num: 2, date, cupID });
+    data[title]["Quickest Hat Trick"] = await hatTrick({ num: 3, date, cupID });
+    data[title]["Quickest Double Brace"] = await hatTrick({
+      num: 4,
+      date,
+      cupID,
+    });
+    data[title]["Quickest Glut"] = await hatTrick({ num: 5, date, cupID });
+  }
+  if (types.includes("match-team")) {
+    const title = "Match - Team";
+    data[title] = {};
+    data[title]["Most Shots"] = await teamStat({
+      stat: max(MatchStat.shots),
+      date,
+      cupID,
+    });
+    data[title]["Most Shots on Target"] = await teamStat({
+      stat: max(MatchStat.shotsOT),
+      date,
+      cupID,
+    });
+    data[title]["Most Shots all on Target"] = await teamStat({
+      stat: max(MatchStat.shotsOT),
+      date,
+      where: eq(MatchStat.shots, MatchStat.shotsOT),
+      cupID,
+    });
+    data[title]["Most Fouls"] = await teamStat({
+      cupID,
+      stat: max(MatchStat.fouls),
+      date,
+    });
+    data[title]["Most Offsides"] = await teamStat({
+      cupID,
+      stat: max(MatchStat.offsides),
+      date,
+    });
+    data[title]["Most Free Kicks"] = await teamStat({
+      cupID,
+      stat: max(MatchStat.freeKicks),
+      date,
+    });
+    data[title]["Most Passes Made (Pes18+)"] = await teamStat({
+      cupID,
+      stat: max(MatchStat.passMade),
+      date,
+    });
+    data[title]["Most Crosses"] = await teamStat({
+      cupID,
+      stat: max(MatchStat.crosses),
+      date,
+    });
+    data[title]["Most Interceptions"] = await teamStat({
+      cupID,
+      stat: max(MatchStat.interceptions),
+      date,
+    });
+    data[title]["Most Tackles"] = await teamStat({
+      cupID,
+      stat: max(MatchStat.tackles),
+      date,
+    });
+    data[title]["Most Saves"] = await teamStat({
+      cupID,
+      stat: max(MatchStat.saves),
+      date,
+    });
+    data[title]["Highest Avg Rating"] = await teamPerf({
+      cupID,
+      stat: Performance.rating,
+      dir: desc,
+      date,
+    });
+    data[title]["Lowest Avg Rating"] = await teamPerf({
+      cupID,
+      stat: Performance.rating,
+      dir: asc,
+      date,
+    });
+    data[title]["Highest Avg Condition"] = await teamPerf({
+      cupID,
+      stat: Performance.cond,
+      dir: desc,
+      date,
+    });
+    data[title]["Lowest Avg Condition"] = await teamPerf({
+      cupID,
+      stat: Performance.cond,
+      dir: asc,
+      date,
+    });
+  }
+  if (types.includes("match-day")) {
+    const title = "Match - Day";
+    data[title] = {};
+    data[title]["Most Shots"] = await dayMatchStat({
+      stat: sum(MatchStat.shots),
+      dir: desc,
+      cupID,
+      date,
+    });
+    data[title]["Least Shots"] = await dayMatchStat({
+      stat: sum(MatchStat.shots),
+      dir: asc,
+      cupID,
+      date,
+    });
+    data[title]["Most Shots On Target"] = await dayMatchStat({
+      stat: sum(MatchStat.shotsOT),
+      dir: desc,
+      cupID,
+      date,
+    });
+    data[title]["Least Shots On Target"] = await dayMatchStat({
+      stat: sum(MatchStat.shotsOT),
+      dir: asc,
+      cupID,
+      date,
+    });
+    data[title]["Most Fouls"] = await dayMatchStat({
+      stat: sum(MatchStat.fouls),
+      dir: desc,
+      cupID,
+      date,
+    });
+    data[title]["Least Fouls"] = await dayMatchStat({
+      stat: sum(MatchStat.fouls),
+      dir: asc,
+      cupID,
+      date,
+    });
+    data[title]["Most Offsides"] = await dayMatchStat({
+      stat: sum(MatchStat.offsides),
+      dir: desc,
+      cupID,
+      date,
+    });
+    data[title]["Least Offsides"] = await dayMatchStat({
+      stat: sum(MatchStat.offsides),
+      dir: asc,
+      cupID,
+      date,
+    });
+    data[title]["Most Free Kicks"] = await dayMatchStat({
+      stat: sum(MatchStat.freeKicks),
+      dir: desc,
+      cupID,
+      date,
+    });
+    data[title]["Least Free Kicks"] = await dayMatchStat({
+      stat: sum(MatchStat.freeKicks),
+      dir: asc,
+      cupID,
+      date,
+    });
+    data[title]["Most Passes Made (Pes18+)"] = await dayMatchStat({
+      stat: sum(MatchStat.passMade),
+      dir: desc,
+      cupID,
+      date,
+    });
+    data[title]["Most Crosses"] = await dayMatchStat({
+      stat: sum(MatchStat.crosses),
+      dir: desc,
+      cupID,
+      date,
+    });
+    data[title]["Least Crosses"] = await dayMatchStat({
+      stat: sum(MatchStat.crosses),
+      dir: asc,
+      cupID,
+      date,
+    });
+    data[title]["Most Interceptions"] = await dayMatchStat({
+      stat: sum(MatchStat.interceptions),
+      dir: desc,
+      cupID,
+      date,
+    });
+    data[title]["Least Interceptions"] = await dayMatchStat({
+      stat: sum(MatchStat.interceptions),
+      dir: asc,
+      cupID,
+      date,
+    });
+    data[title]["Most Tackles"] = await dayMatchStat({
+      stat: sum(MatchStat.tackles),
+      dir: desc,
+      cupID,
+      date,
+    });
+    data[title]["Least Tackles"] = await dayMatchStat({
+      stat: sum(MatchStat.tackles),
+      dir: asc,
+      cupID,
+      date,
+    });
+    data[title]["Most Saves"] = await dayMatchStat({
+      stat: sum(MatchStat.saves),
+      dir: desc,
+      cupID,
+      date,
+    });
+    data[title]["Least Saves"] = await dayMatchStat({
+      stat: sum(MatchStat.saves),
+      dir: asc,
+      cupID,
+      date,
+    });
+    data[title]["Most Cards"] = await dayEvent({
+      eventType: [...yellowCardTypes, ...redCardTypes],
+      cupID,
+      date,
+      dir: desc,
+    });
+    data[title]["Most Goals"] = await dayEvent({
+      eventType: goalTypes,
+      cupID,
+      date,
+      dir: desc,
+    });
+    data[title]["Least Goals"] = await dayEvent({
+      eventType: goalTypes,
+      cupID,
+      date,
+      dir: asc,
+    });
+  }
+  if (types.includes("match-match")) {
+    const title = "Match - Day";
+    data[title] = {};
+    const matchStatShort = async (
+      statTitle: string,
+      stat: MySqlColumn,
+      both = false
+    ) => {
+      data[title][`Most ${statTitle}`] = await matchStat({
+        cupID,
+        date,
+        dir: desc,
+        stat: sum(stat),
+      });
+      if (both)
+        data[title][`Least ${statTitle}`] = await matchStat({
+          cupID,
+          date,
+          dir: asc,
+          stat: sum(stat),
+        });
+    };
+    await matchStatShort("Shots", MatchStat.shots, true);
+    await matchStatShort("Shots on Target", MatchStat.shotsOT, true);
+    await matchStatShort("Fouls", MatchStat.fouls);
+    await matchStatShort("Offsides", MatchStat.offsides);
+    await matchStatShort("Free Kicks", MatchStat.freeKicks);
+    await matchStatShort("Passes Made (Pes18+)", MatchStat.passMade);
+    await matchStatShort("Crosses", MatchStat.crosses);
+    await matchStatShort("Interceptions", MatchStat.interceptions);
+    await matchStatShort("Tackles", MatchStat.tackles);
+    await matchStatShort("Saves", MatchStat.saves);
+  }
+  for (let k in data) {
+    for (let j in data[k]) {
+      if (!data[k][j].rows.length) delete data[k][j];
+    }
+    if (!Object.keys(data[k]).length) delete data[k];
+  }
+  return {
+    data,
+    date: new Date(),
+  };
+}
+
+async function matchStat({
+  stat,
+  date,
+  dir,
+  cupID,
+}: {
+  stat: SQL<string | number>;
+  date: Date;
+  dir: typeof desc;
+  cupID?: number;
+}) {
+  let result = await db
+    .select({
+      home: Match.homeTeam,
+      away: Match.awayTeam,
+      cup: Cup.cupName,
+      round: Match.round,
+      sum: stat,
+      date: Match.utcTime,
+      row: Match.round,
+      cupID: Match.cupID,
+    })
+    .from(MatchStat)
+    .innerJoin(Match, eq(Match.matchID, MatchStat.matchID))
+    .innerJoin(Cup, eq(Cup.cupID, Match.cupID))
+    .where(
+      and(
+        eq(Match.valid, 1),
+        eq(Match.official, 1),
+        eq(MatchStat.finalPeriod, true),
+        lte(Cup.end, date)
+      )
+    )
+    .groupBy(Match.matchID)
+    .orderBy(dir(stat), desc(Match.utcTime))
+    .limit(25);
+  result = placeMaker(result, "sum");
+  return {
+    header: getHeaders(
+      [{ header: "Record" }, { header: "Match", colspan: 3 }],
+      cupID
+    ),
+    rows: result
+      .filter((x) => x.cupID == cupID || !cupID)
+      .map((x) => [
+        ...(cupID ? [x.row] : []),
+        ...[
+          x.sum,
+          `${!cupID ? x.cup + " " : ""}${x.round}`,
+          `${teamLink(x.home)} - ${teamLink(x.away)}`,
+        ],
+      ]),
+    numbered: false,
+  };
+}
+
+async function dayEvent({
+  eventType,
+  dir,
+  cupID,
+  date,
+}: {
+  eventType: number[];
+  dir: typeof desc;
+  cupID?: number;
+  date: Date;
+}) {
+  let customDate = sql`DATE(utcTime)`;
+  let customSum = sql<number>`SUM(CASE WHEN Event.eventType IN (${eventType.join(
+    ","
+  )}) THEN 1 ELSE 0 END)`;
+  let customCount = sql<number>`COUNT(DISTINCT(Match.matchID))`;
+  let result = await db
+    .select({
+      cup: min(Cup.cupName),
+      cupID: min(Cup.cupID),
+      count: customCount,
+      sum: customSum,
+      row: sql<number>`0`,
+      date: customDate,
+      day: sql<number>`0`,
+    })
+    .from(Match)
+    .where(and(eq(Match.valid, 1), eq(Match.official, 1), lte(Cup.end, date)))
+    .innerJoin(Cup, eq(Match.cupID, Cup.cupID))
+    .leftJoin(Event, eq(Event.matchID, Match.matchID))
+    .groupBy(customDate)
+    .orderBy(dir(customSum), desc(customDate))
+    .limit(25);
+  result = placeMaker(result, "count");
+  for (let row of result) {
+    row.day =
+      (
+        await db
+          .select({ date: customDate })
+          .from(Match)
+          .where(eq(Match.cupID, row.cupID))
+          .groupBy(customDate)
+          .orderBy(customDate)
+      )
+        .map((x) => x.date)
+        .indexOf(row.date) + 1;
+  }
+  return {
+    header: getHeaders(
+      [{ header: "Per Match" }, { header: "Total" }, { header: "Day" }],
+      cupID
+    ),
+    rows: result
+      .filter((x) => x.cupID == cupID || !cupID)
+      .map((x) => [
+        ...(cupID ? [x.row] : []),
+        ...[
+          Math.round((x.sum / x.count) * 100) / 100,
+          x.sum,
+          (!cupID ? x.cup + " " : "") + "Day " + x.day,
+        ],
+      ]),
+    numbered: false,
+  };
+}
+
+async function dayMatchStat({
+  stat,
+  dir,
+  cupID,
+  date,
+}: {
+  stat: SQL<string | number>;
+  dir: typeof desc;
+  cupID?: number;
+  date: Date;
+}) {
+  let customDate = sql`DATE(utcTime)`;
+  let result = await db
+    .select({
+      cupID: Cup.cupID,
+      row: Cup.cupName,
+      count: count(),
+      sum: stat,
+      date: customDate,
+      cup: Cup.cupName,
+      day: sql`0`,
+    })
+    .from(MatchStat)
+    .innerJoin(Match, eq(MatchStat.matchID, Match.matchID))
+    .innerJoin(Cup, eq(Cup.cupID, Match.cupID))
+    .where(
+      and(
+        eq(Match.valid, 1),
+        eq(Match.official, 1),
+        lte(Cup.end, date),
+        eq(MatchStat.finalPeriod, true)
+      )
+    )
+    .groupBy(customDate, Cup.cupID)
+    .orderBy(dir(stat), desc(customDate))
+    .limit(25);
+
+  result = placeMaker(result, "sum");
+  for (let row of result) {
+    row.day =
+      (
+        await db
+          .select({ date: customDate })
+          .from(Match)
+          .where(eq(Match.cupID, row.cupID))
+          .groupBy(customDate)
+          .orderBy(customDate)
+      )
+        .map((x) => x.date)
+        .indexOf(row.date) + 1;
+  }
+  return {
+    header: getHeaders(
+      [{ header: "Per Match" }, { header: "Total" }, { header: "Day" }],
+      cupID
+    ),
+    rows: result
+      .filter((x) => x.cupID == cupID || !cupID)
+      .map((x) => [
+        ...(cupID ? [x.row] : []),
+        ...[
+          Math.round(((x.sum as number) / x.count) * 100) / 100,
+          x.sum,
+          (!cupID ? x.cup + " " : "") + "Day " + x.day,
+        ],
+      ]),
+    numbered: false,
+  };
+}
+function cupPlayerHeader(x, displayCup = false) {
+  return [
+    teamLink(x.team),
+    x.name,
+    `${displayCup ? x.cup + " " : ""}${x.round}`,
+    `${teamLink(x.home)} - ${teamLink(x.away)}`,
+  ];
 }
 function cupMatchHeader(x) {
   return `${x.cup} ${x.round}</td>
   <td>${teamLink(x.home)} - ${teamLink(x.away)}`;
 }
-function teamMatchHeader(x) {
-  return `${teamLink(x.team)}</td><td>${x.cup} ${x.round}</td>
-  <td>${teamLink(x.home)} - ${teamLink(x.away)}`;
+function teamMatchHeader(x, displayCup = false) {
+  return [
+    teamLink(x.team),
+    `${displayCup ? x.cup + " " : ""}${x.round}`,
+    `${teamLink(x.home)} - ${teamLink(x.away)}`,
+  ];
 }
-async function teamPerf(title: string, stat: MySqlColumn, dir: typeof desc) {
-  const result = (
+async function teamPerf({
+  stat,
+  date,
+  dir,
+  cupID,
+}: {
+  stat: MySqlColumn;
+  dir: typeof desc;
+  date: Date;
+  cupID?: number;
+}) {
+  let result = (
     await db
       .select({
         home: Match.homeTeam,
@@ -125,6 +643,9 @@ async function teamPerf(title: string, stat: MySqlColumn, dir: typeof desc) {
         round: Match.round,
         avg: avg(stat),
         team: Player.team,
+        date: Match.utcTime,
+        cupID: Match.cupID,
+        row: Match.round,
       })
       .from(Performance)
       .innerJoin(Match, eq(Match.matchID, Performance.matchID))
@@ -138,55 +659,83 @@ async function teamPerf(title: string, stat: MySqlColumn, dir: typeof desc) {
     x.avg = (Math.round(parseFloat(x.avg) * 100) / 100).toString();
     return x;
   });
-  return createTable(
-    [
-      { header: "Record", sql: "avg" },
-      { header: "Match", colspan: 3, custom: teamMatchHeader },
-    ],
-    result,
-    false,
-    title
-  );
+  result = placeMaker(result, "avg");
+  return {
+    header: [{ header: "Record" }, { header: "Match", colspan: 3 }],
+    rows: result
+      .filter((x) => x.cupID == cupID || !cupID)
+      .map((x) => [
+        ...(cupID ? [x.row] : []),
+        ...[x.avg, ...teamMatchHeader(x, cupID ? true : false)],
+      ]),
+    numbered: false,
+  };
 }
-async function teamStat(
-  title: string,
-  stat: SQL<string | number>,
-  where?: SQLWrapper
-) {
-  const result = await db
+async function teamStat({
+  stat,
+  date,
+  where,
+  cupID,
+}: {
+  stat: SQL<string | number>;
+  date: Date;
+  where?: SQLWrapper;
+  cupID?: number;
+}) {
+  let result = await db
     .select({
       home: Match.homeTeam,
       away: Match.awayTeam,
       cup: Cup.cupName,
       round: Match.round,
       sum: stat,
+      date: Match.utcTime,
       team: MatchStat.team,
+      row: Match.round,
+      cupID: Match.cupID,
     })
     .from(MatchStat)
     .innerJoin(Match, eq(Match.matchID, MatchStat.matchID))
     .innerJoin(Cup, eq(Cup.cupID, Match.cupID))
     .where(
-      and(eq(Match.valid, 1), eq(Match.official, 1), where ? where : undefined)
+      and(
+        eq(Match.valid, 1),
+        eq(Match.official, 1),
+        where ? where : undefined,
+        lte(Cup.end, date)
+      )
     )
     .groupBy(Match.matchID, MatchStat.team)
     .orderBy(desc(stat), desc(Match.utcTime))
     .limit(25);
-  return createTable(
-    [
-      { header: "Record", sql: "sum" },
-      { header: "Match", colspan: 3, custom: teamMatchHeader },
-    ],
-    result,
-    false,
-    title
-  );
+  result = placeMaker(result, "sum");
+  return {
+    header: getHeaders(
+      [{ header: "Record" }, { header: "Match", colspan: 3 }],
+      cupID
+    ),
+    rows: result
+      .filter((x) => x.cupID == cupID || !cupID)
+      .map((x) => [
+        ...(cupID ? [x.row] : []),
+        ...[x.sum, ...teamMatchHeader(x, cupID ? true : false)],
+      ]),
+    numbered: false,
+  };
 }
-async function indPerf(
-  title: string,
-  stat: SQL<string | number>,
-  dir: Function,
-  wheres?: SQLWrapper
-) {
+async function indPerf({
+  stat,
+  dir,
+  date,
+  cupID,
+  wheres,
+}: {
+  stat: SQL<string | number>;
+  dir: Function;
+  date: Date;
+  cupID?: number;
+  wheres?: SQLWrapper;
+}) {
   const selects = {
     name: PlayerLink.name,
     team: PlayerLink.team,
@@ -194,9 +743,11 @@ async function indPerf(
     home: Match.homeTeam,
     away: Match.awayTeam,
     cup: Cup.cupName,
+    cupID: Cup.cupID,
     round: Match.round,
+    row: Match.round,
   };
-  const result = await db
+  let result = await db
     .select({ ...selects, count: stat })
     .from(Performance)
     .innerJoin(Match, eq(Match.matchID, Performance.matchID))
@@ -207,6 +758,7 @@ async function indPerf(
       and(
         eq(Match.valid, 1),
         eq(Match.official, 1),
+        lte(Cup.end, date),
         not(eq(PlayerLink.name, "Unknown Player")),
         wheres !== undefined ? wheres : undefined
       )
@@ -214,22 +766,36 @@ async function indPerf(
     .groupBy(Match.matchID, PlayerLink.linkID)
     .orderBy(dir(stat), desc(Match.utcTime))
     .limit(25);
-  return createTable(
-    [
-      { header: "Record", sql: "count" },
-      { header: "Player", colspan: 2, custom: cupPlayerHeader },
-      { header: "Match", colspan: 2, custom: cupMatchHeader },
-    ],
-    result,
-    false,
-    title
-  );
+  result = placeMaker(result, "count");
+  return {
+    header: getHeaders(
+      [
+        { header: "Record" },
+        { header: "Player", colspan: 2 },
+        { header: "Match", colspan: 2 },
+      ],
+      cupID
+    ),
+    rows: result
+      .filter((x) => x.cupID == cupID || !cupID)
+      .map((x) => [
+        ...(cupID ? [x.row] : []),
+        ...[x.count, ...cupPlayerHeader(x, cupID ? true : false)],
+      ]),
+    numbered: false,
+  };
 }
-async function indEvent(
-  title: string,
-  eventTypes: number[],
-  wheres?: SQLWrapper
-) {
+async function indEvent({
+  eventTypes,
+  date,
+  wheres,
+  cupID,
+}: {
+  eventTypes: number[];
+  date: Date;
+  wheres?: SQLWrapper;
+  cupID?: number;
+}) {
   const selects = {
     name: PlayerLink.name,
     team: PlayerLink.team,
@@ -237,9 +803,11 @@ async function indEvent(
     home: Match.homeTeam,
     away: Match.awayTeam,
     cup: Cup.cupName,
+    cupID: Cup.cupID,
+    row: Cup.cupName,
     round: Match.round,
   };
-  const result = await db
+  let result = await db
     .select({ ...selects, count: count() })
     .from(Event)
     .innerJoin(Match, eq(Match.matchID, Event.matchID))
@@ -251,6 +819,7 @@ async function indEvent(
         inArray(Event.eventType, eventTypes),
         eq(Match.valid, 1),
         eq(Match.official, 1),
+        lte(Cup.end, date),
         not(eq(PlayerLink.name, "Unknown Player")),
         wheres !== undefined ? wheres : undefined
       )
@@ -258,18 +827,34 @@ async function indEvent(
     .groupBy(Match.matchID, PlayerLink.linkID)
     .orderBy(desc(count()), desc(Match.utcTime))
     .limit(25);
-  return createTable(
-    [
-      { header: "Record", sql: "count" },
-      { header: "Player", colspan: 2, custom: cupPlayerHeader },
-      { header: "Match", colspan: 2, custom: cupMatchHeader },
-    ],
-    result,
-    false,
-    title
-  );
+  result = placeMaker(result, "count");
+  return {
+    header: getHeaders(
+      [
+        { header: "Record" },
+        { header: "Player", colspan: 2 },
+        { header: "Match", colspan: 2 },
+      ],
+      cupID
+    ),
+    rows: result
+      .filter((x) => x.cupID == cupID || !cupID)
+      .map((x) => [
+        ...(cupID ? [x.row] : []),
+        ...[x.count, ...cupPlayerHeader(x, cupID ? true : false)],
+      ]),
+    numbered: false,
+  };
 }
-async function hatTrick(title: string, num: number) {
+async function hatTrick({
+  num,
+  date,
+  cupID,
+}: {
+  num: number;
+  date: Date;
+  cupID?: number;
+}) {
   const records = await db
     .select({
       playerID: Event.playerID,
@@ -277,6 +862,7 @@ async function hatTrick(title: string, num: number) {
       utcTime: Match.utcTime,
       round: Match.round,
       cupName: Cup.cupName,
+      cupID: Cup.cupID,
     })
     .from(Event)
     .innerJoin(Match, eq(Event.matchID, Match.matchID))
@@ -289,6 +875,7 @@ async function hatTrick(title: string, num: number) {
         eq(Match.valid, 1),
         isNotNull(Player.linkID),
         gt(Event.regTime, 0),
+        lte(Cup.end, date),
         not(eq(Player.name, "Unknown Player"))
       )
     )
@@ -303,8 +890,10 @@ async function hatTrick(title: string, num: number) {
     time: number;
     cupName: string;
     round: string;
+    cupID: number;
+    row: string;
   }> = [];
-  for (const { playerID, matchID, utcTime, cupName, round } of records) {
+  for (const { playerID, matchID, utcTime, cupName, round, cupID } of records) {
     const goals = await db
       .select()
       .from(Event)
@@ -320,7 +909,6 @@ async function hatTrick(title: string, num: number) {
       let goalsArray: Array<{ regTime: number; injTime: number }> = [];
       for (let j = i; j < i + num; j++) {
         const { regTime, injTime } = goals[j];
-        const injTimeAdd = injTime >= 0 ? injTime : 0;
         goalsArray.push({ regTime, injTime });
       }
       const lastGoal = goalsArray[num - 1];
@@ -338,6 +926,8 @@ async function hatTrick(title: string, num: number) {
         utcTime,
         cupName,
         round,
+        cupID,
+        row: "",
       });
     }
   }
@@ -349,72 +939,76 @@ async function hatTrick(title: string, num: number) {
     return 0;
   });
   let rowArray = [];
+  let p = 0;
+  let n = -1;
   for (let i = 0; i < Math.min(...[25, times.length]); i++) {
     const { playerID, goals, time, cupName, round } = times[i];
     const player = (await getPlayers({ playerID, getFriendlies: true }))[0];
-    rowArray.push(`<tr>
-      <td>${time}</td>
-      <td>${formatEventTime(goals[0])}</td>
-      <td>${formatEventTime(goals[num - 1])}</td>
-      <td>${teamLink(player.player.team)}</td>
-      <td>${
+    let x = times[i];
+    if (x.time !== n) {
+      n = x.time;
+      p = i + 1;
+    }
+    x.row = p.toString();
+    if (p == 1) x.row += "st";
+    if (p == 2) x.row += "nd";
+    if (p == 3) x.row += "rd";
+    if (p > 3) x.row += "th";
+    if (cupID && times[i].cupID !== cupID) continue;
+    rowArray.push([
+      ...(cupID ? [x.row] : []),
+      ...[
+        time,
+        formatEventTime(goals[0]),
+        formatEventTime(goals[num - 1]),
+        teamLink(player.player.team),
+
         player.playerlink
           ? await playerLink([player.playerlink.linkID, player.playerlink.name])
-          : player.player.name
-      }</td>
-      <td>${cupName} ${round}</td>
-    </tr>`);
+          : player.player.name,
+        `${cupName} ${round}`,
+      ],
+    ]);
   }
-  return `
-  <table>
-  <tr><th colspan=7 >${title}</th></tr>
-	<tr><th>Min</th><th>From</th><th>To</th><th colspan=2 >Player</th><th colspan=2 >Match</th></tr>
-  ${rowArray.join(" ")}
-  </table>
-  `;
+  return {
+    header: getHeaders(
+      [
+        { header: "Min" },
+        { header: "From" },
+        { header: "To" },
+        { header: "Player", colspan: 2 },
+        { header: "Match", colspan: 2 },
+      ],
+      cupID
+    ),
+    rows: rowArray,
+    numbered: false,
+  };
 }
-
-function createTable(
-  cols: { colspan?: number; header: string; custom?: Function; sql?: string }[],
-  rows: Array<Record<string, string | number>>,
-  numbered = true,
-  title = ""
+function placeMaker(result, key) {
+  let i = 0;
+  let n = -1;
+  return result.map((x, p) => {
+    if (x[key] !== n) {
+      n = x[key] as number;
+      i = p + 1;
+    }
+    x.row = i.toString();
+    if (i == 1 || (i % 10 == 1 && i > 20)) {
+      x.row += "st";
+    } else if (i == 2 || (i % 10 == 2 && i > 20)) {
+      x.row += "nd";
+    } else if (i == 3 || (i % 10 == 3 && i > 20)) {
+      x.row += "rd";
+    } else if (i > 3) {
+      x.row += "th";
+    }
+    return x;
+  });
+}
+function getHeaders(
+  array: Array<{ header: string; colspan?: number }>,
+  cupID?: number
 ) {
-  let colspan = 0;
-  for (let col of cols) {
-    colspan += col.colspan ?? 1;
-  }
-  let html = `
-          <table>
-              ${
-                title !== ""
-                  ? `<tr>
-                  <th colspan=${colspan}>${title}</th>
-              </tr>`
-                  : ""
-              }
-              <tr>
-                  ${cols
-                    .map((x) => {
-                      return `<th colspan=${x.colspan ?? 1}>${x.header}</th>`;
-                    })
-                    .join(" ")}
-              </tr>
-              ${rows
-                .map((x, i) => {
-                  let text = "<tr>";
-                  if (numbered) text += `<td>${i + 1}</td>`;
-                  for (let col of cols) {
-                    if (col.custom !== undefined) {
-                      text += `<td>${col.custom(x)}</td>`;
-                    } else {
-                      text += `<td>${x[col.sql]}</td>`;
-                    }
-                  }
-                  text += "</tr>";
-                  return text;
-                })
-                .join(" ")}
-          </table>`;
-  return html;
+  return [...(cupID ? [{ header: "#" }] : []), ...array];
 }

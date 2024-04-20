@@ -4,6 +4,8 @@
 	// @ts-ignore
 	import MdAddBox from 'svelte-icons/md/MdAddBox.svelte';
 	import { cupShort, cupToBooru, getBooru, teamLink } from '$lib/helper';
+	import MdAdd from 'svelte-icons/md/MdAdd.svelte'
+	import MdRemove from 'svelte-icons/md/MdRemove.svelte'
 	import MatchEdit from '$lib/matches/MatchEdit/MatchEdit.svelte';
 	import MatchDisplay from '$lib/matches/matchDisplay.svelte';
 	import Brackets from '$lib/brackets.svelte';
@@ -14,8 +16,9 @@
 	import { goto } from '$app/navigation';
 	import TeamIcon from '$lib/teamIcon.svelte';
 	import Gallery from '$lib/gallery.svelte'
+	import Records from '$lib/records.svelte';
 	let matchID = 0;
-	let data:{
+	let data:Promise<{
 		teams: string[];
 		cupID: number;
 		cupName: string;
@@ -52,8 +55,8 @@
 		goalies: any[];
 		cards: any[];
 		date:Date;
-		};
-	let imgs;
+	}>;
+	let imgs:Promise<any>;
 	function editMatch(ID:number) {
 		matchID = ID;
 	}
@@ -64,14 +67,17 @@
 	let displayTeam = '';
 	let cupsData = api('/cups/list');
 	let select:HTMLSelectElement;
+	let recordData:Promise<any>;
 	async function getData(slug:string){
 		data = api('/cups/' + slug).then((data)=>{
-			if(data.cupName)
+			if(data.cupName){
 				imgs = getBooru(cupToBooru(data.cupName))
+				recordData = api('/records/cups/' + data.cupID);
+			}
 			return data;
 		});
 			
-	}
+	}	
 	page.subscribe(async(p)=>{
 		if(p.params.slug){
 			if(!p.url.pathname.includes('cup')) return;
@@ -109,7 +115,9 @@
 	{#await data}
 		<title>Loading...</title>
 	{:then data}
+		{#if data?.cupName}
 		<title>{data.cupName} - IsThisLiv</title>
+		{/if}
 	{/await}
 </svelte:head>
 {#await data}
@@ -120,7 +128,7 @@
 	</contents>
 </container>
 {:then data}
-	{#if data.cupName}
+	{#if data?.cupName}
 	{#if displayAddMatchModal}
 		<MatchAdd
 			cupID={data.cupID}
@@ -168,7 +176,7 @@
 			<a style="padding-left:1rem" href="#assists">Assists</a>
 			<a style="padding-left:1rem" href="#saves">Saves</a>
 			<a style="padding-left:1rem" href="#cards">Cards</a>
-			<a href="#Stats">Fantasy Football</a>
+			<a href="#Records">Records</a>
 			<a href="#Gallery">Gallery</a>
 		</vertNav>
 		<contents>
@@ -289,6 +297,14 @@
 					{/if}
 				{/each}
 			</div>
+			<h2 id='Records'>Records</h2>
+			<div id='recordsContainer' style="padding:0 2rem">
+				{#await recordData then records}
+					{#if records.data}
+						<Records res={records.data}/>
+					{/if}
+				{/await}
+			</div>
 			<h2 id='Gallery'>Gallery</h2>
 			<Gallery {imgs} />
 		</contents>
@@ -396,5 +412,33 @@
 			grid-template-columns: 1fr;
 			font-size: 65%;
 		}
+	}
+	#recordsContainer{
+		display:flex;
+		flex-wrap: wrap;
+		flex-direction: column;
+		gap:1rem;
+	}
+	:global(#recordsContainer table){
+		max-width: fit-content;
+		border-collapse: collapse;
+	}
+	:global(#recordsContainer td:not(:first-child):not(:last-child)){
+		border-right:solid 1px var(--fg-color);
+		border-left:solid 1px var(--fg-color);
+	}
+	:global(#recordsContainer th:not(:first-child):not(:last-child)){
+		border-right:solid 1px var(--fg-color);
+		border-left:solid 1px var(--fg-color);
+	}
+	:global(#recordsContainer table tr:first-child th){
+		padding:0 3px;
+		border-bottom:solid 1px var(--fg-color);
+	}
+	:global(#recordsContainer h3){
+		margin-bottom: 0;
+	}
+	:global(#recordsContainer h4){
+		margin: 5px;
 	}
 </style>

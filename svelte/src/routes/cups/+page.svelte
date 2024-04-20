@@ -32,9 +32,11 @@
 			>
 		{/if}
 	</h1>
+	{#if displayCupModal}
 	<Modal close={toggleCupModal} title={'New Cup'}>
 		<CupModal />
 	</Modal>
+	{/if}
 	{#await data}
 		<p>Loading...</p>
 	{:then data}

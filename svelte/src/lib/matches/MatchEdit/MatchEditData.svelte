@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { browser } from "$app/environment";
-	import { api } from "$lib/constants";
+	import { api } from "$lib/helper";
 	export let data: MatchStat;
     export let close:Function;
     type Event = {
