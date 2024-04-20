@@ -2,7 +2,9 @@
     export let imgs
 </script>
 <div id='images'>
-    {#await imgs then imgs}
+    {#await imgs}
+        <h3>Loading</h3>
+    {:then imgs}
         {#each imgs as img}
         <div>
             <a target='_blank' href='https://isthisliv.com/booru/post/{img.id}' auto>Post #{img.id}</a><br>

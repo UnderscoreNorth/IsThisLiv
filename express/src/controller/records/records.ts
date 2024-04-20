@@ -40,7 +40,7 @@ import {
   PlayerLink,
 } from "../../db/schema";
 import { db } from "../../db";
-import { getCups, getPlayers } from "../../db/commonFn";
+import { getCup, getCups, getPlayers } from "../../db/commonFn";
 import { MySqlColumn } from "drizzle-orm/mysql-core";
 
 const recordTypes = [
@@ -63,6 +63,14 @@ export async function mainRecords(req: Request) {
   } else if (url.includes("match-match")) {
     return await calcRecords(["match-match"], date);
   }
+}
+export async function cupRecords(req: Request) {
+  const cupID = parseInt(req.params.cupID);
+  const cup = await getCup(cupID);
+  if (!cup?.cupName) return {};
+  const date = new Date(cup.end);
+  date.setDate(date.getDate() + 1);
+  return await calcRecords([...recordTypes], date, cup.cupID);
 }
 export async function calcAllCups() {
   const cups = await getCups({ excludeFriendlies: true, asc: true });
@@ -661,12 +669,15 @@ async function teamPerf({
   });
   result = placeMaker(result, "avg");
   return {
-    header: [{ header: "Record" }, { header: "Match", colspan: 3 }],
+    header: getHeaders(
+      [{ header: "Record" }, { header: "Match", colspan: 3 }],
+      cupID
+    ),
     rows: result
       .filter((x) => x.cupID == cupID || !cupID)
       .map((x) => [
         ...(cupID ? [x.row] : []),
-        ...[x.avg, ...teamMatchHeader(x, cupID ? true : false)],
+        ...[x.avg, ...teamMatchHeader(x, cupID ? false : true)],
       ]),
     numbered: false,
   };
@@ -718,7 +729,7 @@ async function teamStat({
       .filter((x) => x.cupID == cupID || !cupID)
       .map((x) => [
         ...(cupID ? [x.row] : []),
-        ...[x.sum, ...teamMatchHeader(x, cupID ? true : false)],
+        ...[x.sum, ...teamMatchHeader(x, cupID ? false : true)],
       ]),
     numbered: false,
   };
@@ -780,7 +791,7 @@ async function indPerf({
       .filter((x) => x.cupID == cupID || !cupID)
       .map((x) => [
         ...(cupID ? [x.row] : []),
-        ...[x.count, ...cupPlayerHeader(x, cupID ? true : false)],
+        ...[x.count, ...cupPlayerHeader(x, cupID ? false : true)],
       ]),
     numbered: false,
   };
@@ -841,7 +852,7 @@ async function indEvent({
       .filter((x) => x.cupID == cupID || !cupID)
       .map((x) => [
         ...(cupID ? [x.row] : []),
-        ...[x.count, ...cupPlayerHeader(x, cupID ? true : false)],
+        ...[x.count, ...cupPlayerHeader(x, cupID ? false : true)],
       ]),
     numbered: false,
   };
@@ -863,6 +874,8 @@ async function hatTrick({
       round: Match.round,
       cupName: Cup.cupName,
       cupID: Cup.cupID,
+      home: Match.homeTeam,
+      away: Match.awayTeam,
     })
     .from(Event)
     .innerJoin(Match, eq(Event.matchID, Match.matchID))
@@ -892,8 +905,19 @@ async function hatTrick({
     round: string;
     cupID: number;
     row: string;
+    home: string;
+    away: string;
   }> = [];
-  for (const { playerID, matchID, utcTime, cupName, round, cupID } of records) {
+  for (const {
+    playerID,
+    matchID,
+    utcTime,
+    cupName,
+    round,
+    cupID,
+    home,
+    away,
+  } of records) {
     const goals = await db
       .select()
       .from(Event)
@@ -928,6 +952,8 @@ async function hatTrick({
         round,
         cupID,
         row: "",
+        home,
+        away,
       });
     }
   }
@@ -942,7 +968,7 @@ async function hatTrick({
   let p = 0;
   let n = -1;
   for (let i = 0; i < Math.min(...[25, times.length]); i++) {
-    const { playerID, goals, time, cupName, round } = times[i];
+    const { playerID, goals, time, cupName, round, home, away } = times[i];
     const player = (await getPlayers({ playerID, getFriendlies: true }))[0];
     let x = times[i];
     if (x.time !== n) {
@@ -966,7 +992,8 @@ async function hatTrick({
         player.playerlink
           ? await playerLink([player.playerlink.linkID, player.playerlink.name])
           : player.player.name,
-        `${cupName} ${round}`,
+        `${cupID ? "" : cupName} ${round}`,
+        `${teamLink(home)} - ${teamLink(away)}`,
       ],
     ]);
   }

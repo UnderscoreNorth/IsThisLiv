@@ -299,7 +299,9 @@
 			</div>
 			<h2 id='Records'>Records</h2>
 			<div id='recordsContainer' style="padding:0 2rem">
-				{#await recordData then records}
+				{#await recordData}
+					<h3>Loading...</h3>
+				 {:then records}
 					{#if records.data}
 						<Records res={records.data}/>
 					{/if}

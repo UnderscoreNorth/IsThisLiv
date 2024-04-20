@@ -11,7 +11,7 @@
 {#each Object.entries(res) as [title,data]}
     <h3>{title}<hr/></h3>
     {#each Object.entries(data) as [name,table]}
-        <div>
+        <div class='recordContainer'>
             <h4>{name}</h4>
             <table>
                 <tr>

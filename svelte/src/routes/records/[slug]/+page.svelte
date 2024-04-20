@@ -55,13 +55,16 @@
 	#pageModifiedTime {
 		float: right;
 	}
-	:global(table){
+	:global(.recordContainer){
+		padding:1rem;
 		border: solid 1px grey;
 		background: rgba(0, 0, 0, 0.1);
-		margin:2rem;
+		margin:1rem;
 		display:inline-block;
 		max-width:50rem;
 		vertical-align:top
 	}
     :global(th){text-align:center}
+	:global(h4){margin:10px 0}
+
 </style>
