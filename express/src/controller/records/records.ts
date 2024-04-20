@@ -53,15 +53,16 @@ const recordTypes = [
 export async function mainRecords(req: Request) {
   const url = req.baseUrl.toLowerCase();
   let date = new Date();
+  const calcAll = true;
   date.setDate(date.getDate() + 1);
   if (url.includes("match-individual")) {
-    return await calcRecords({ types: ["match-individual"], date });
+    return await calcRecords({ types: ["match-individual"], date, calcAll });
   } else if (url.includes("match-team")) {
-    return await calcRecords({ types: ["match-team"], date });
+    return await calcRecords({ types: ["match-team"], date, calcAll });
   } else if (url.includes("match-day")) {
-    return await calcRecords({ types: ["match-day"], date });
+    return await calcRecords({ types: ["match-day"], date, calcAll });
   } else if (url.includes("match-match")) {
-    return await calcRecords({ types: ["match-match"], date });
+    return await calcRecords({ types: ["match-match"], date, calcAll });
   }
 }
 export async function cupRecords(req: Request) {
@@ -106,9 +107,8 @@ async function calcRecords({
   types: Array<(typeof recordTypes)[number]>;
   date: Date;
   cupID?: number;
-  calcAll?: boolean;
+  calcAll: boolean;
 }) {
-  if (calcAll == undefined) calcAll = true;
   const len = calcAll ? 25 : 10;
   let data: Record<
     string,
@@ -306,7 +306,7 @@ async function calcRecords({
     });
   }
   if (types.includes("match-match")) {
-    const title = "Match - Day";
+    const title = "Match";
     data[title] = {};
     const matchStatShort = async (
       statTitle: string,
