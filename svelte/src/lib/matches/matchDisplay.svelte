@@ -1,14 +1,14 @@
 <script>
 	export let editMatch, match;
-	import { teamLink } from '$lib/helper';
 	//@ts-ignore
 	import MdEdit from 'svelte-icons/md/MdEdit.svelte';
 	import { User } from '$lib/user';
 	import TeamIcon from '$lib/teamIcon.svelte';
+	import TeamLink from '$lib/teamLink.svelte';
 </script>
 
 <leftInfo>{match.date}<br />{match.time}</leftInfo>
-<homeInfo>{@html teamLink(match.home)}<TeamIcon team={match.home}/></homeInfo>
+<homeInfo><TeamLink team={match.home}/><TeamIcon team={match.home}/></homeInfo>
 <scoreInfo>
 	{#if match.official && !match.valid}	
 	<i>
@@ -19,7 +19,7 @@
 	{match.homeg}–{match.awayg}
 	{/if}
 </scoreInfo>
-<awayInfo><TeamIcon team={match.away}/>{@html teamLink(match.away)}</awayInfo>
+<awayInfo><TeamIcon team={match.away}/><TeamLink team={match.away}/></awayInfo>
 <rightInfo>
 	{#if $User.user}
 		<!-- svelte-ignore a11y-click-events-have-key-events -->

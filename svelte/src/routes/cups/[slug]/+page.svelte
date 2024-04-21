@@ -3,7 +3,7 @@
 	import { User } from '$lib/user';
 	// @ts-ignore
 	import MdAddBox from 'svelte-icons/md/MdAddBox.svelte';
-	import { cupShort, cupToBooru, getBooru, teamLink } from '$lib/helper';	
+	import { cupShort, cupToBooru, getBooru} from '$lib/helper';	
 	import MatchEdit from './MatchEdit.svelte';
 	import MatchAdd from './MatchAdd.svelte';
 	import TeamModal from './teamModal.svelte';
@@ -16,6 +16,7 @@
 	import Matches from './matches.svelte';
 	import Section from './section.svelte';
 	import Stats from './stats.svelte';
+	import TeamLink from '$lib/teamLink.svelte';
 	let matchID = 0;
 	let data:Promise<MainRes>;
 	let imgs:Promise<any>;
@@ -118,7 +119,7 @@
 			{#each data.teams as teamData}
 				<!-- svelte-ignore a11y-click-events-have-key-events -->
 				<!-- svelte-ignore a11y-no-static-element-interactions -->
-				<teamBox on:click={()=>displayTeam=teamData} class="c-2"><TeamIcon team={teamData}/>{@html teamLink(teamData)}</teamBox>
+				<teamBox on:click={()=>displayTeam=teamData} class="c-2"><TeamIcon team={teamData}/><TeamLink team={teamData}/></teamBox>
 			{/each}
 		</teamsContainer>
 		<Matches {data} {editMatch}/>
