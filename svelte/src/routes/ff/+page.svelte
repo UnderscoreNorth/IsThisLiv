@@ -5,7 +5,7 @@
 	import FFNav from '$lib/fantasyFootball/FFNav.svelte';
 	import { api } from '$lib/helper';
 	let currentCup = 0;
-	const loadData = async () => {
+	/*const loadData = async () => {
 		let result = await api('/lists/cups',{order:'dStart',dir:'DESC'});
 		currentCup = result[0].iID;
 		ffStore.update((r) => {
@@ -15,12 +15,6 @@
 		return result;
 	};
 	let data = loadData();
-</script>
-
-<svelte:head>
-	<title>FF - IsThisLiv</title>
-</svelte:head>
-<div id="ffContainer">
 	{#await data}
 		Loading...
 	{:then data}
@@ -36,7 +30,15 @@
 		<div id="ffContent">
 			<FFCupStats {currentCup} />
 		</div>
-	{/await}
+	{/await}	
+	*/
+</script>
+
+<svelte:head>
+	<title>FF - IsThisLiv</title>
+</svelte:head>
+<div id="ffContainer">
+	Soon
 </div>
 
 <style>

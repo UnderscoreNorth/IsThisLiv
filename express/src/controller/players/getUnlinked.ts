@@ -7,6 +7,8 @@ export async function getUnlinked(req: Request) {
   const unlinkedPlayers = players
     .filter((x) => !x?.player?.linkID)
     .sort((a, b) => {
+      if (a.player.team > b.player.team) return -1;
+      if (a.player.team < b.player.team) return 1;
       if (a.cup.cupID > b.cup.cupID) return -1;
       else if (a.cup.cupID < b.cup.cupID) return 1;
       return 0;
