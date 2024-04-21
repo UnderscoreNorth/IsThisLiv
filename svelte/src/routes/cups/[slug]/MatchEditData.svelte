@@ -90,8 +90,61 @@
     }
     let ratingsOnly = false;
     let condOnly = false;
-    let subOnly = false;
+    let subOnly = false;    
+    const sI = ['Home','Away'];
+    let errors:string[] = [];
+    checkChange();
+    function checkChange(){
+        errors = [];
+        for(const i of [0,1]){
+            let statSaves = 0;
+            let finalPeriod = 0;
+            for(const j of [0,1,2]){
+                if(data.matchStats?.[j]?.[i]){
+                    for(const row of data.matchStats[j][i]){
+                        if(row.name == 'Saves' && parseInt(row.value) > statSaves){
+                            statSaves = parseInt(row.value);
+                            finalPeriod = j;
+                        }
+                    }
+                }
+            }
+            let perfSaves = 0;
+            let playTime = 0;
+            for(const perf of data.performances[i]){
+                if(perf?.performance?.saves && perf.performance.saves > 0){
+                    perfSaves += perf.performance.saves
+                }
+                if(typeof perf?.performance?.subOn == 'number' && typeof perf?.performance?.subOff == 'number'){
+                    playTime += perf.performance.subOff - perf.performance.subOn;
+                }
+            }
+            let goals:string[] = [];
+            for(const event of data.events[i]){
+                if(typeof event?.event?.eventType !== 'undefined' && [1,4].includes(event.event.eventType)){
+                    goals.push(event.event.regTime?.toString() + event.event.injTime?.toString())
+                }
+            }
+            for(const event of data.events[i]){
+                if(typeof event?.event?.eventType !== 'undefined' && [2].includes(event.event.eventType)){
+                    let str = event.event.regTime?.toString() + event.event.injTime?.toString();
+                    if(!goals.includes(str)) errors.push(`${sI[i]} has assist without goal at ${event.event.regTime}`)
+                }
+            }
+            if(playTime % (finalPeriod == 2 ? 120 : 90) !== 0) errors.push(`${sI[i]} sub on/off times has inconsistencies`)
+            if(statSaves !== perfSaves) errors.push(`${sI[i]} saves don't add up to stat card`);
+            
+        }
+    }
 </script>
+{#if errors.length}
+<div id='errors'>
+    <b>Errors</b><hr>
+    {#each errors as error}
+        <div>{error}</div>
+    {/each}
+</div>
+{/if}
 <div id='matchContainer'>
 <div id='matchMeta'>
     <table style="margin-left:auto;margin-right:auto;">
@@ -164,6 +217,7 @@
                         <td
                             ><input
                                 bind:value={data.matchStats[i][0][j].value}
+                                on:change={()=>{checkChange()}}
                                 disabled={row.name == 'SQL ID' ||
                                 (data.version >= 2018 && row.name == 'Pass completed (%)') ||
                                 (data.version < 2018 && row.name == 'Passes') ||
@@ -176,6 +230,7 @@
                         <td
                             ><input
                                 bind:value={data.matchStats[i][1][j].value}
+                                on:change={()=>{checkChange()}}
                                 disabled={row.name == 'SQL ID' ||
                                 (data.version >= 2018 && row.name == 'Pass completed (%)') ||
                                 (data.version < 2018 && row.name == 'Passes') ||
@@ -235,13 +290,13 @@
                                 <input bind:value={data.performances[i][j].performance.rating} type='number' step='0.5' disabled={condOnly || subOnly}/>
                             </td>
                             <td>
-                                <input bind:value={data.performances[i][j].performance.saves} type='number' step='1' disabled={ratingsOnly || condOnly || subOnly}/>
+                                <input on:change={()=>{checkChange()}} bind:value={data.performances[i][j].performance.saves} type='number' step='1' disabled={ratingsOnly || condOnly || subOnly}/>
                             </td>
                             <td>
-                                <input bind:value={data.performances[i][j].performance.subOn} type='number' disabled={ratingsOnly || condOnly}/>
+                                <input on:change={()=>{checkChange()}} bind:value={data.performances[i][j].performance.subOn} type='number' disabled={ratingsOnly || condOnly}/>
                             </td>
                             <td>
-                                <input bind:value={data.performances[i][j].performance.subOff} type='number' disabled={ratingsOnly || condOnly} />
+                                <input on:change={()=>{checkChange()}} bind:value={data.performances[i][j].performance.subOff} type='number' disabled={ratingsOnly || condOnly} />
                             </td>
                             <td>
                                 <input bind:group={data.motm} type='radio' value={data.performances[i][j].player.playerID} disabled={ratingsOnly || condOnly || subOnly}/>
@@ -278,14 +333,14 @@
                                 {/each}
                             </select>
                         </td>
-                        <td><select bind:value={event.eventType}>
+                        <td><select on:change={()=>{checkChange()}} bind:value={event.eventType}>
                             <option></option>
                             {#each Object.keys(data.eventType) as i}
                                 <option value={parseInt(i)}>{data.eventType[parseInt(i)]}</option>
                             {/each}
                         </select></td>
-                        <td><input on:change={()=>{addNewEvent(i)}} bind:value={event.regTime}/></td>
-                        <td><input bind:value={event.injTime}/></td>
+                        <td><input on:change={()=>{addNewEvent(i);checkChange()}} bind:value={event.regTime}/></td>
+                        <td><input on:change={()=>{checkChange()}} bind:value={event.injTime}/></td>
                     </tr>
                 {/each}
                 <tr>
@@ -298,7 +353,6 @@
         {/each}
     </scorecards>
 </div>
-
 <div id='matchPenalties'>
     <h3>Penalties</h3>
     <scorecards>
@@ -392,4 +446,13 @@
 		text-align: center;
         padding:0 0.25rem;
 	}
+    #errors{
+        position:fixed;
+        top:3rem;
+        left:3rem;
+        background:#AA0000AA;
+        padding:1rem;
+        text-align: left;
+        pointer-events: none
+    }
 </style>
