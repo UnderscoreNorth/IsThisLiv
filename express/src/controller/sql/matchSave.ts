@@ -36,7 +36,7 @@ export async function matchSave(req: Request) {
       performance: InferSelectModel<typeof Performance>;
     }[]) {
       for (let i in p.performance) {
-        if (p.performance[i] == "") p.performance[i] = null;
+        if (p.performance[i] === "") p.performance[i] = null;
       }
       const perfData = {
         matchID: data.matchID,
