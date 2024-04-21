@@ -6,7 +6,7 @@
 	function close() {
 		matchID = 0;
 	}
-	let data = (async () => {
+	async function getData(){
 		let returnObject = await api('/sql/matchDisplay/' + matchID);
 		returnObject.matchID = matchID;
 		let tzOffset = new Date().getTimezoneOffset() * 60000;
@@ -20,15 +20,15 @@
 				}
 			}
 		}
-		console.log(returnObject);
 		return returnObject;
-	})();
+	}
+	let data = getData();
 </script>
 <Modal close={close} title={'Match Edit'}>
 	{#await data}
 		Loading...
 	{:then data}		
-		<MatchEditData {data} {close} />
+		<MatchEditData {data} {close} {getData}/>
 	{/await}
 </Modal>
 

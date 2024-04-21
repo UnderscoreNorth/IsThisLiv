@@ -3,6 +3,7 @@
 	import { api } from "$lib/helper";
 	export let data: MatchStat;
     export let close:Function;
+    export let getData:Function;
     type Event = {
         eventID?:number;
         matchID?:number;
@@ -83,10 +84,8 @@
     const saveData = async()=>{
         saving = true;
         const result = await api('/sql/matchSave/',{data});               
-        if(browser){
-            location.reload();
-        }
-        if(!result.error) close();         
+        data = await getData();
+        saving = false;
     }
     let ratingsOnly = false;
     let condOnly = false;
