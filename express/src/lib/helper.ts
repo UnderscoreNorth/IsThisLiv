@@ -129,7 +129,7 @@ export function dateFormat(
       "-" +
       (dateString.getMonth() + 1).toString().padStart(2, "0") +
       "-" +
-      dateString.getDate().toString().padStart(2, "0")
+      dateString.getUTCDate().toString().padStart(2, "0")
     );
   return dateString.toLocaleString("en-US", options);
 }

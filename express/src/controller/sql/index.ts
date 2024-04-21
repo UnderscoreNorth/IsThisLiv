@@ -12,6 +12,9 @@ import { Round } from "../../db/schema";
 import { matchAdd } from "./matchAdd";
 import { calcAllCups } from "../records/records";
 import { newCup } from "./newCup";
+import { processManager } from "./processManager";
+import { updateCupTeam } from "./updateCupTeam";
+import { updateLinkName } from "./updateLinkName";
 
 const router = express.Router();
 router.use("/user", user);
@@ -46,5 +49,14 @@ router.use("/addMatch", async (req, res, next) => {
 });
 router.use("/newCup", async (req, res, next) => {
   res.send(await newCup(req));
+});
+router.use("/processManager", async (req, res, next) => {
+  res.send(await processManager(req));
+});
+router.use("/updateCupTeam", async (req, res, next) => {
+  res.send(await updateCupTeam(req));
+});
+router.use("/updateLinkName", async (req, res, next) => {
+  res.send(await updateLinkName(req));
 });
 export default router;

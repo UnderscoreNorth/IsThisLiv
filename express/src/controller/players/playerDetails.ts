@@ -248,11 +248,11 @@ export async function playerDetails(req: Request) {
   overallHtml += `<tr><th colspan=2>Aliases</th></tr>${Array.from(aliases)
     .map((x) => `<tr><td colspan=2>${x}</td></tr>`)
     .join("")}`;
-  let headerHtml = `<h2>${teamLink(team)} - ${pName}</h2>`;
-  html = headerHtml + overallHtml + `</table>` + totalMatchHtml + `</table>`;
+  html = overallHtml + `</table>` + totalMatchHtml + `</table>`;
   html += `<STYLE>table{display:inline-block;vertical-align:top;margin:1rem}</STYLE>`;
   return {
     html,
+    linkID,
     playerName: pName,
     playerTeam: team,
     date: new Date().toLocaleString("en-us", {

@@ -3,8 +3,7 @@
 	import { User } from '$lib/user';
 	// @ts-ignore
 	import MdAddBox from 'svelte-icons/md/MdAddBox.svelte';
-	import { cupShort, cupToBooru, getBooru, teamLink } from '$lib/helper';
-	
+	import { cupShort, cupToBooru, getBooru, teamLink } from '$lib/helper';	
 	import MatchEdit from './MatchEdit.svelte';
 	import MatchAdd from './MatchAdd.svelte';
 	import TeamModal from './teamModal.svelte';

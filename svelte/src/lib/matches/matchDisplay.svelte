@@ -1,6 +1,7 @@
 <script>
 	export let editMatch, match;
 	import { teamLink } from '$lib/helper';
+	//@ts-ignore
 	import MdEdit from 'svelte-icons/md/MdEdit.svelte';
 	import { User } from '$lib/user';
 	import TeamIcon from '$lib/teamIcon.svelte';

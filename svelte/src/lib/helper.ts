@@ -1,15 +1,4 @@
 import CONFIG from '$lib/config.json'
-export function teamLink(team:string) {
-  if (team != "draw") {
-    if (team) {
-      return `<a href='/teams/${team}'>/${team}/</a>`;
-    } else {
-      return "TBD";
-    }
-  } else {
-    return team;
-  }
-}
 export function cupShort(cupName:string) {
   let cupWords = cupName.split(" ");
   let shortName = "";
