@@ -3,6 +3,7 @@ import { db } from "../../db";
 import { PlayerLink } from "../../db/schema";
 import { eq } from "drizzle-orm";
 import fs from "fs/promises";
+import { deleteFile } from "../../lib/helper";
 
 export async function updateLinkName(req: Request) {
   const { linkID, name } = req.body;
@@ -11,6 +12,6 @@ export async function updateLinkName(req: Request) {
     .update(PlayerLink)
     .set({ name })
     .where(eq(PlayerLink.linkID, linkID));
-  fs.unlink(`cache/__api__players__${linkID}.json`);
+  await deleteFile(linkID, "players");
   return {};
 }

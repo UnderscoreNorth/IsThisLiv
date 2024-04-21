@@ -21,6 +21,6 @@ export async function matchAdd(req: Request) {
     valid,
     official,
   });
-  await deleteFile(cupID, "Cup");
+  await deleteFile(cupID, "cups");
   return {};
 }

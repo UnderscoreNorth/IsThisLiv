@@ -3,16 +3,6 @@ import { db } from "../db";
 import fs from "fs/promises";
 export const pageExpiry = 86400000; //;
 
-export async function rebuild(whitelist = []) {
-  console.log("rebuild");
-  const directory = "../express/build/";
-  const files = await fs.readdir(directory);
-  for (const file of files) {
-    if (!whitelist.includes(file)) {
-      await fs.unlink(directory + file);
-    }
-  }
-}
 export function teamIcon(team: string) {
   if (team.length == 0) return "";
   return `<img class='teamIcon' src='/icons/team-small/38px-${
@@ -181,7 +171,11 @@ export const goalTypes = [1, 4];
 export const goalTypesOG = [3];
 export const assistTypes = [2];
 export const yellowCardTypes = [5];
-export const redCardTypes = [6, 8];
+export const secondYellowType = [8];
+export const straightRedType = [6];
+export const redCardTypes = [...secondYellowType, ...straightRedType];
+export const missedPenType = [9];
+export const savedPenType = [10];
 
 export async function saveMiddleWare(
   req: Request,
@@ -217,14 +211,11 @@ export class DeepSet extends Set {
   }
 }
 
-export async function deleteFile(id: number, type: "Cup") {
+export async function deleteFile(id: number, type: "cups" | "players") {
   let files = await fs.readdir("cache/");
-
-  if (type == "Cup") {
-    for (const file of files) {
-      if (parseInt(file.split("__api__cups__")?.[1]?.split("-")?.[0]) == id)
-        await fs.unlink("cache/" + file);
-    }
+  for (const file of files) {
+    if (parseInt(file.split(`__api__${type}__`)?.[1]?.split("-")?.[0]) == id)
+      await fs.unlink("cache/" + file);
   }
 }
 

@@ -199,6 +199,6 @@ export async function matchSave(req: Request) {
         )
       );
   }
-  await deleteFile(data.cupID, "Cup");
+  await deleteFile(data.cupID, "cups");
   return {};
 }

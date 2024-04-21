@@ -15,6 +15,7 @@ import { newCup } from "./newCup";
 import { processManager } from "./processManager";
 import { updateCupTeam } from "./updateCupTeam";
 import { updateLinkName } from "./updateLinkName";
+import { groupStage } from "./groupStage";
 
 const router = express.Router();
 router.use("/user", user);
@@ -58,5 +59,8 @@ router.use("/updateCupTeam", async (req, res, next) => {
 });
 router.use("/updateLinkName", async (req, res, next) => {
   res.send(await updateLinkName(req));
+});
+router.use("/groupstage", async (req, res, next) => {
+  res.send(await groupStage(req));
 });
 export default router;
