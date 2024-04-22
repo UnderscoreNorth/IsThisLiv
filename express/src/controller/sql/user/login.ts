@@ -123,15 +123,15 @@ function signToken(payload: {
     return false;
   }
 }
-function createPassword() {
+export function createPassword() {
   return crypto.AES.encrypt(Math.random().toString(), CONFIG.salt)
     .toString()
     .slice(-12);
 }
-function encrypt(text: string) {
+export function encrypt(text: string) {
   return crypto.AES.encrypt(text, CONFIG.salt).toString();
 }
-function checkPassword(text: string, hash: string) {
+export function checkPassword(text: string, hash: string) {
   return (
     text == crypto.AES.decrypt(hash, CONFIG.salt).toString(crypto.enc.Utf8)
   );

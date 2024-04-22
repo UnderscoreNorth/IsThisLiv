@@ -8,6 +8,7 @@ import players from "../controller/players";
 import sql from "../controller/sql";
 import managers from "../controller/managers";
 import records from "../controller/records";
+import ff from "../controller/ff";
 
 /*import cupModels from "../../controller/cupModels.js";
 import teamModels from "../../controller/teamModels.js";
@@ -38,6 +39,7 @@ import shot_conversion from "../../controller/misc/shot_conversion.js";*/
 
 const router = express.Router();
 router.use("/sql", sql);
+router.use("/ff", ff);
 router.use("/*", loadCache);
 router.use("/cups", cups);
 router.use("/teams", teams);

@@ -143,6 +143,30 @@ export const User = mysqlTable("user", {
   access: int("access"),
   hash: varchar("hash", { length: 100 }),
 });
+export const Fantasy = mysqlTable("fantasy", {
+  teamID: int("teamID").autoincrement().primaryKey(),
+  cupID: int("cupID").references(() => Cup.cupID),
+  name: varchar("name", { length: 100000 }),
+  prv: varchar("prv", { length: 8 }),
+  pub: varchar("pub", { length: 3000 }),
+});
+export const FantasyPlayer = mysqlTable("fantasyp", {
+  fID: int("fID").autoincrement().primaryKey(),
+  teamID: int("teamID"),
+  playerID: int("playerID"),
+  start: tinyint("start"),
+  cap: tinyint("cap"),
+  r1: int("r1"),
+  r2: int("r2"),
+  r3: int("r3"),
+  r4: int("r4"),
+  ro16: int("ro16"),
+  qf: int("qf"),
+  sf: int("sf"),
+  fn: int("fn"),
+  tot: int("tot"),
+  stage: int("stage"),
+});
 
 export const cupRelations = relations(Cup, ({ many }) => ({
   Match: many(Match),

@@ -24,7 +24,7 @@
 		['/players', 'Players'],
 		['/managers', '>Managers'],
 		['/records', 'Records/Stats'],
-		//['/ff', 'Fantasy League'],
+		['/ff', 'Fantasy League'],
 		['/files','Files'],
 		['/booru','Booru'],
 		['https://implyingrigged.info/', 'Wiki'],

@@ -164,7 +164,7 @@
             <td>
                 <input
                     id="matchDate"
-                    value={data.date}
+                    bind:value={data.date}
                     type="datetime-local"
                     style='width:11rem'
                 />

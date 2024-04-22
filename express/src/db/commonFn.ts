@@ -137,6 +137,8 @@ export async function getPerformances(options: {
   team?: string;
   getFriendlies?: boolean;
   linkID?: number;
+  playerID?: number;
+  motm?: boolean;
 }) {
   const where = and(
     options.getVoided ? undefined : eq(Match.valid, 1),
@@ -144,7 +146,9 @@ export async function getPerformances(options: {
     options.matchID ? eq(Match.matchID, options.matchID) : undefined,
     options.team ? eq(Player.team, options.team) : undefined,
     options.getFriendlies ? undefined : lte(Cup.cupType, 3),
-    options.linkID ? eq(Player.linkID, options.linkID) : undefined
+    options.linkID ? eq(Player.linkID, options.linkID) : undefined,
+    options.playerID ? eq(Player.playerID, options.playerID) : undefined,
+    options.motm ? eq(Performance.motm, options.motm) : undefined
   );
 
   return await db
