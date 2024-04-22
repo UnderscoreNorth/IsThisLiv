@@ -149,12 +149,14 @@ export async function cupDetails(req: Request) {
         cards[e.player.linkID] = cards[e.player.linkID] || 0;
         cards[e.player.linkID]++;
       }
-      matches[roundType][match.round].table[oTeam].data[7] =
-        matches[roundType][match.round].table[oTeam].data[5] -
-        matches[roundType][match.round].table[oTeam].data[6];
-      matches[roundType][match.round].table[aTeam].data[7] =
-        matches[roundType][match.round].table[aTeam].data[5] -
-        matches[roundType][match.round].table[aTeam].data[6];
+      if (matches[roundType][match.round].table[oTeam])
+        matches[roundType][match.round].table[oTeam].data[7] =
+          matches[roundType][match.round].table[oTeam].data[5] -
+          matches[roundType][match.round].table[oTeam].data[6];
+      if (matches[roundType][match.round].table[aTeam])
+        matches[roundType][match.round].table[aTeam].data[7] =
+          matches[roundType][match.round].table[aTeam].data[5] -
+          matches[roundType][match.round].table[aTeam].data[6];
     }
     for (let team of teams) {
       matches[roundType][match.round].table[team].data[1]++;
