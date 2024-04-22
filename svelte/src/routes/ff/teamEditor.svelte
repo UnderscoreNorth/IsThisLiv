@@ -48,6 +48,11 @@
             if(filters.team.size && !filters.team.has(p.team)) return false;
             if(filters.pos.size && !filters.pos.has(p.regPos)) return false;
             return true;
+        }).sort((a,b)=>{
+            if(a.team > b.team) return 1;
+            if(a.team < b.team) return -1;
+            if(a.name > b.name) return 1;
+            return -1;
         })
     }
     function addPlayer(player:Player){
