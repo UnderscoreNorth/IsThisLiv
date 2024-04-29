@@ -60,7 +60,7 @@ export async function matchSave(req: Request) {
           .where(eq(Performance.perfID, p.performance.perfID));
       } else if (!p?.performance?.perfID && p.player.playerID) {
         for (let i in p.performance) {
-          if (p.performance[i] == "") p.performance[i] = null;
+          if (p.performance[i] === "") p.performance[i] = null;
         }
         await db.insert(Performance).values(perfData);
       }
@@ -72,7 +72,7 @@ export async function matchSave(req: Request) {
       event: InferSelectModel<typeof Event>;
     }[]) {
       for (let i in e.event) {
-        if (e.event[i] == "") e.event[i] = null;
+        if (e.event[i] === "") e.event[i] = null;
       }
       const eventData = {
         eventType: e.event.eventType,
@@ -100,7 +100,7 @@ export async function matchSave(req: Request) {
       penalty: InferSelectModel<typeof Penalty>;
     }[]) {
       for (let i in e.penalty) {
-        if (e.penalty[i] == "") e.penalty[i] = null;
+        if (e.penalty[i] === "") e.penalty[i] = null;
       }
       const penaltyData = {
         goal: e.penalty.goal,

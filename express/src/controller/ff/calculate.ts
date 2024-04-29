@@ -18,7 +18,7 @@ import {
   Performance,
   Player,
 } from "../../db/schema";
-import { and, count, eq, like, lt, not, or } from "drizzle-orm";
+import { and, count, eq, gt, like, lt, not, or } from "drizzle-orm";
 
 export default async function calculate(req: Request) {
   const cupID = req.body.cupID;
@@ -29,118 +29,122 @@ export default async function calculate(req: Request) {
     MID: ["DMF", "CMF", "AMF", "LMF", "RMF"],
     FWD: ["LWF", "RWF", "SS", "CF"],
   };
+  const posTypeLookUp: Record<string, string> = {};
+  for (let posType in posTypes) {
+    for (let pos of posTypes[posType]) {
+      posTypeLookUp[pos] = posType;
+    }
+  }
   const playerQ = await getPlayers({ cupID });
-  if (1 == 1) {
-    for (const p of playerQ) {
-      const { playerID, team } = p.player;
-      const perfQ = await getPerformances({ playerID });
+  for (const p of playerQ) {
+    const { playerID, team } = p.player;
+    const perfQ = await getPerformances({ playerID });
 
-      for (const perf of perfQ) {
-        let tempP = 0;
-        const matchID = perf.match.matchID;
-        const motmRating =
-          (await getPerformances({ matchID, motm: true }))?.[0]?.performance
-            ?.rating || 20;
-        const eventQ = await getEvents({ matchID });
-        let ag = 0;
-        let agd = 0;
-        for (const e of eventQ) {
-          if (e.player.playerID == playerID) {
-            if (goalTypes.includes(e.event.eventType)) {
-              if (p.rosterorder.order >= 10) {
-                tempP += 4; //Fwd goal
-              } else if (p.rosterorder.order >= 5) {
-                tempP += 5; //Mid goal
-              } else {
-                tempP += 6; //def/gk goal
-              }
-            } else if (assistTypes.includes(e.event.eventType)) {
-              tempP += 3; //assist
-            } else if (missedPenType.includes(e.event.eventType)) {
-              tempP -= 2; //missed pen
-            } else if (savedPenType.includes(e.event.eventType)) {
-              if (
-                p.rosterorder.order == 1 &&
-                e.event.regTime > perf.performance.subOn &&
-                e.event.regTime < perf.performance.subOff
-              ) {
-                tempP += 5; //GK saved pen
-              } else {
-                tempP -= 2; //shooter saved pen
-              }
-            } else if (goalTypesOG.includes(e.event.eventType)) {
-              tempP -= 2; //own goal
-            } else if (yellowCardTypes.includes(e.event.eventType)) {
-              tempP -= 1; //yellow card
-            } else if (straightRedType.includes(e.event.eventType)) {
-              tempP -= 3; //red card
-            } else if (secondYellowType.includes(e.event.eventType)) {
-              tempP -= 4; //2nd yellow
-            }
-          }
-          if (
-            (goalTypes.includes(e.event.eventType) && e.player.team !== team) ||
-            (goalTypesOG.includes(e.event.eventType) && e.player.team == team)
-          ) {
-            ag++;
-            if (
-              e.event.regTime >= perf.performance.subOn &&
-              e.event.regTime <= perf.performance.subOff
-            ) {
-              agd++;
-            }
-          }
-        }
-        if (ag == 0) {
-          if (p.rosterorder.order < 5) {
-            if (perf.performance.subOff - perf.performance.subOn >= 60) {
-              tempP += 4; //def/gk clean sheet
+    for (const perf of perfQ) {
+      let tempP = 0;
+      const matchID = perf.match.matchID;
+      const motmRating =
+        (await getPerformances({ matchID, motm: true }))?.[0]?.performance
+          ?.rating || 20;
+      const eventQ = await getEvents({ matchID });
+      let ag = 0;
+      let agd = 0;
+      for (const e of eventQ) {
+        if (e.player.playerID == playerID) {
+          if (goalTypes.includes(e.event.eventType)) {
+            if (p.rosterorder.order >= 10) {
+              tempP += 4; //Fwd goal
+            } else if (p.rosterorder.order >= 5) {
+              tempP += 5; //Mid goal
             } else {
-              tempP == 3; //def/gk partial clean sheet
+              tempP += 6; //def/gk goal
             }
-          } else if (
-            p.rosterorder.order < 10 &&
-            perf.performance.subOff - perf.performance.subOn >= 60
+          } else if (assistTypes.includes(e.event.eventType)) {
+            tempP += 3; //assist
+          } else if (missedPenType.includes(e.event.eventType)) {
+            tempP -= 2; //missed pen
+          } else if (savedPenType.includes(e.event.eventType)) {
+            if (
+              p.rosterorder.order == 1 &&
+              e.event.regTime > perf.performance.subOn &&
+              e.event.regTime < perf.performance.subOff
+            ) {
+              tempP += 5; //GK saved pen
+            } else {
+              tempP -= 2; //shooter saved pen
+            }
+          } else if (goalTypesOG.includes(e.event.eventType)) {
+            tempP -= 2; //own goal
+          } else if (yellowCardTypes.includes(e.event.eventType)) {
+            tempP -= 1; //yellow card
+          } else if (straightRedType.includes(e.event.eventType)) {
+            tempP -= 3; //red card
+          } else if (secondYellowType.includes(e.event.eventType)) {
+            tempP -= 4; //2nd yellow
+          }
+        }
+        if (
+          (goalTypes.includes(e.event.eventType) && e.player.team !== team) ||
+          (goalTypesOG.includes(e.event.eventType) && e.player.team == team)
+        ) {
+          ag++;
+          if (
+            e.event.regTime >= perf.performance.subOn &&
+            e.event.regTime <= perf.performance.subOff
           ) {
-            tempP += 1; //mid clean sheet
-          }
-        } else if (ag >= 2 && p.rosterorder.order < 5) {
-          tempP -= Math.floor(agd / 2); //def/gk goals against
-        }
-        if (perf.performance.rating > 0) {
-          let rating = Math.floor(perf.performance.rating - 4);
-          switch (p.player.regPos) {
-            case "CB":
-            case "LB":
-            case "RB":
-            case "GK":
-              rating *= 3;
-              break;
-            case "DMF":
-            case "LMF":
-            case "CMF":
-            case "AMF":
-            case "RMF":
-              rating *= 2;
-              break;
-          }
-          tempP += rating; //rating points
-          if (perf.performance.motm) {
-            tempP += 3; //Man of the match
-          } else if (perf.performance.rating >= motmRating) {
-            tempP += 2; //Equaling MotM Rating
-          } else if (perf.performance.rating + 0.5 >= motmRating) {
-            tempP += 1; //Almost equalling MotM Rating
+            agd++;
           }
         }
-        if (perf.performance.saves > 0) {
-          tempP += Math.floor(perf.performance.saves / 2); //saves
-        }
-        await db
-          .update(Performance)
-          .set({ ff: tempP })
-          .where(eq(Performance.playerID, playerID));
       }
+      if (ag == 0) {
+        if (p.rosterorder.order < 5) {
+          if (perf.performance.subOff - perf.performance.subOn >= 60) {
+            tempP += 4; //def/gk clean sheet
+          } else {
+            tempP == 3; //def/gk partial clean sheet
+          }
+        } else if (
+          p.rosterorder.order < 10 &&
+          perf.performance.subOff - perf.performance.subOn >= 60
+        ) {
+          tempP += 1; //mid clean sheet
+        }
+      } else if (ag >= 2 && p.rosterorder.order < 5) {
+        tempP -= Math.floor(agd / 2); //def/gk goals against
+      }
+      if (perf.performance.rating > 0) {
+        let rating = Math.floor(perf.performance.rating - 4);
+        switch (p.player.regPos) {
+          case "CB":
+          case "LB":
+          case "RB":
+          case "GK":
+            rating *= 3;
+            break;
+          case "DMF":
+          case "LMF":
+          case "CMF":
+          case "AMF":
+          case "RMF":
+            rating *= 2;
+            break;
+        }
+        tempP += rating; //rating points
+        if (perf.performance.motm) {
+          tempP += 3; //Man of the match
+        } else if (perf.performance.rating >= motmRating) {
+          tempP += 2; //Equaling MotM Rating
+        } else if (perf.performance.rating + 0.5 >= motmRating) {
+          tempP += 1; //Almost equalling MotM Rating
+        }
+      }
+      if (perf.performance.saves > 0) {
+        tempP += Math.floor(perf.performance.saves / 2); //saves
+      }
+      await db
+        .update(Performance)
+        .set({ ff: tempP })
+        .where(eq(Performance.perfID, perf.performance.perfID));
     }
   }
   const teamQ = await db
@@ -149,7 +153,7 @@ export default async function calculate(req: Request) {
     .innerJoin(FantasyPlayer, eq(Fantasy.teamID, FantasyPlayer.teamID))
     .where(eq(Fantasy.cupID, cupID))
     .groupBy(Fantasy.teamID)
-    .having(lt(count(), 1));
+    .having(gt(count(), 1));
   const tList = [];
   for (const { team } of teamQ) {
     const tName = team.name;
@@ -267,12 +271,12 @@ export default async function calculate(req: Request) {
       for (let i = 0; i < 17; i++) {
         const ii = start + i;
         const player = roster[ii];
-        if (player[round] != undefined && player.cap == 2) {
+        if (player[round] !== undefined && player.cap == 2) {
           cap = true;
           if (player[round] > 0) player[round] *= 2;
         }
-        if (player[round] == undefined && i < 11) {
-          unplayed[player.pos]++;
+        if (player[round] === undefined && i < 11) {
+          unplayed[posTypeLookUp[player.pos]]++;
         }
       }
       for (let pos in unplayed) {
@@ -291,14 +295,14 @@ export default async function calculate(req: Request) {
             return 0;
           });
           if (unplayed[pos] == 1) {
-            if (subScores[1]) roster[subScores[1].index][round] = "";
+            if (subScores[1]) roster[subScores[1].index][round] = null;
           }
         } else {
           for (let i = 11; i < 17; i++) {
             const ii = start + i;
             const player = roster[ii];
             if (posTypes[pos].includes(player.pos)) {
-              player[round] = "";
+              player[round] = null;
             }
           }
         }
@@ -307,7 +311,7 @@ export default async function calculate(req: Request) {
         for (let i = 0; i < 17; i++) {
           const ii = start + i;
           const player = roster[ii];
-          if (player[round] != undefined && player.cap == 1) {
+          if (player[round] !== undefined && player.cap == 1) {
             cap = true;
             if (player[round] > 0) player[round] *= 2;
           }
@@ -315,7 +319,8 @@ export default async function calculate(req: Request) {
       }
       for (let i = 0; i < 34; i++) {
         const player = roster[i];
-        player.tot += player[round] || 0;
+        player.tot += parseInt(player[round]) > -99 ? player[round] : 0;
+        if (player.playerID == 49080) console.log(player, round, i);
       }
     }
     for (let i = 0; i < 34; i++) {

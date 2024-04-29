@@ -358,6 +358,7 @@ export async function teamDetails(req: Request) {
     { text: "R", sort: "rating" },
   ]);
   let i = 0;
+  if (cupsSet.size == 0) return {};
   let cups = Array.from(cupsSet)
     .map((x) => {
       return { year: x.substring(0, 4), season: x.substring(4) };

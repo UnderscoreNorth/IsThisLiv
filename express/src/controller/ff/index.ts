@@ -4,12 +4,13 @@ import { teamList } from "./teamList";
 import { login, register } from "./access";
 import { getData } from "./getData";
 import { saveTeam } from "./saveTeam";
+import calculate from "./calculate";
 const router = express.Router();
 router.use("/cup", async (req, res, next) => {
   //res.send(await getCups());
 });
-router.use("/calculate", (req, res, next) => {
-  //saveMiddleWare(req, res, cupDetails);
+router.use("/calculate", async (req, res, next) => {
+  res.send(await calculate(req));
 });
 router.use("/teamList", async (req, res, next) => {
   res.send(await teamList(req));

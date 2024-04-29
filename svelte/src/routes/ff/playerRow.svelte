@@ -11,7 +11,7 @@
     <td>{player.regPos}</td>
     <td>{player.medal}</td>
     <td>{player.name}</td> 
-    {#if showPt}<td>0</td>{/if}
+    {#if showPt}<td></td>{/if}
 </tr>
 <style>
     .board{white-space: nowrap;}

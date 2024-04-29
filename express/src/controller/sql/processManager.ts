@@ -8,7 +8,13 @@ export async function processManager(req: Request) {
   if (!end) end = null;
   console.log(start);
   if (action == "add") {
-    await db.insert(Manager).values({ team: board, start, end, name: manager });
+    try {
+      await db
+        .insert(Manager)
+        .values({ team: board, start, end, name: manager });
+    } catch (err) {
+      console.log(err);
+    }
   } else if (action == "update") {
     await db
       .update(Manager)

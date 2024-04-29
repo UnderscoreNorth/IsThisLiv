@@ -65,7 +65,6 @@
     }
 	#ffTeamLogin {
 		width: 30rem;
-		margin: auto;
         margin-top:4rem;
 		padding: 0.5rem;
 	}
