@@ -22,7 +22,9 @@
 		"vite": "^5.2.9"
 	},
 	"dependencies": {
+		"date-picker-svelte": "^2.12.0",
 		"flowbite-svelte": "^0.45.0",
+		"moment": "^2.30.1",
 		"svelte-icons": "^2.1.0"
 	}
 }

@@ -7,3 +7,4 @@ export const User = writable({
 	access: 0,
 	init: false
 });
+export const LocalTime = writable(false)

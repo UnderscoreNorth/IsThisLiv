@@ -1,6 +1,6 @@
 <script>
-	import { User } from './user';
-	import Modal from './modal.svelte';
+	import { User,LocalTime } from '../lib/user';
+	import Modal from '../lib/modal.svelte';
 	import { browser } from '$app/environment';
 	import { api } from '$lib/helper';
 	
@@ -22,13 +22,20 @@
 			accesstoken: '',
 			refreshtoken: '',
 			expiry: '',
-			access:0
+			access:0,
+			init:true
 		});
 		localStorage.removeItem('user');
 		if(browser){
 			window.location.replace('/')
 		}
 	};
+	function toggleDarkMode() {
+		localStorage.setItem(
+			'theme',
+			document.documentElement.classList.toggle('dark-mode') ? '1' : '0'
+		);
+	}
 </script>
 {#if error !== ''}
 <Modal close={()=>{error=''}} title={'Error'}>
@@ -46,6 +53,10 @@
 		<hr />
 		<button on:click={login}>Login</button>
 	{/if}
+	<hr />
+	<button on:click={toggleDarkMode}>Dark Mode</button>
+	<hr />
+	<button on:click={()=>{$LocalTime = !$LocalTime}}>Toggle to {$LocalTime ? 'UTC Time' : 'Local Time'}</button>
 </modal>
 
 <style>
@@ -65,5 +76,6 @@
 	}
 	button {
 		width: 100%;
+		padding: 0.5rem 0;
 	}
 </style>

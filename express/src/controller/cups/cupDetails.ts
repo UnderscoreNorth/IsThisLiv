@@ -22,8 +22,7 @@ type Matches = Record<
     name: string;
     matches: [
       {
-        date: string;
-        time: string;
+        utcTime: Date;
         stadium: string;
         attendance: number;
         home: string;
@@ -172,8 +171,7 @@ export async function cupDetails(req: Request) {
     }
 
     matches[roundType][match.round].matches.push({
-      date: match.utcTime.toLocaleDateString(),
-      time: match.utcTime.toLocaleTimeString(),
+      utcTime: match.utcTime,
       stadium: match.stadium,
       attendance: match.attendance,
       home: match.homeTeam,

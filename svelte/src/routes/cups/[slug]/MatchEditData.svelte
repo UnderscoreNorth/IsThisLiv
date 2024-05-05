@@ -1,9 +1,11 @@
 <script lang="ts">
 	import { browser } from "$app/environment";
 	import { api } from "$lib/helper";
+    import {DateInput} from 'date-picker-svelte'
 	export let data: MatchStat;
     export let close:Function;
     export let getData:Function;
+    let datePicker
     type Event = {
         eventID?:number;
         matchID?:number;
@@ -83,7 +85,8 @@
     let saving = false;
     const saveData = async()=>{
         saving = true;
-        const result = await api('/sql/matchSave/',{data});               
+        let formattedDate = datePicker?.['$$']?.ctx?.[0];
+        const result = await api('/sql/matchSave/',{data:Object.assign(data,{date:formattedDate})});               
         data = await getData();
         saving = false;
     }
@@ -162,12 +165,7 @@
                 </select>
             </td>
             <td>
-                <input
-                    id="matchDate"
-                    bind:value={data.date}
-                    type="datetime-local"
-                    style='width:11rem'
-                />
+                <DateInput bind:this={datePicker} bind:value={data.date} format={'yyyy-MM-dd HH:mm:ss'} placeholder='' valid={true} />                
             </td>
             <td>
                 <input id="stadium" bind:value={data.stadium} placeholder="Stadium" list="stadiumlist" style='width:5rem' />

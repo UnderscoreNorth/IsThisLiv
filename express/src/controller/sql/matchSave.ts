@@ -18,6 +18,10 @@ export async function matchSave(req: Request) {
     await db.select().from(Match).where(eq(Match.matchID, data.matchID))
   )[0];
   if (!currentMatch) return {};
+  const dA = (data.date as unknown as string)
+    .replace(/-/gm, " ")
+    .replace(/:/gm, " ")
+    .split(" ");
   await db
     .update(Match)
     .set({
@@ -27,7 +31,15 @@ export async function matchSave(req: Request) {
       official: data.off,
       valid: data.valid,
       stadium: data.stadium,
-      utcTime: new Date(data.date),
+      utcTime: new Date(
+        Date.UTC(
+          parseInt(dA[0]),
+          parseInt(dA[1]) - 1,
+          parseInt(dA[2]),
+          parseInt(dA[3]),
+          parseInt(dA[4])
+        )
+      ),
     })
     .where(eq(Match.matchID, data.matchID));
   for (const performances of data.performances) {

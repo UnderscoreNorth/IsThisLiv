@@ -83,7 +83,7 @@ router.use("/", async (req, res, next) => {
           mObj[key].stats.w++;
         } else if (match.winningTeam == "draw") {
           mObj[key].stats.d++;
-        } else {
+        } else if (match.winningTeam?.length >= 1) {
           mObj[key].stats.l++;
         }
       }

@@ -10,8 +10,7 @@
 		let returnObject = await api('/sql/matchDisplay/' + matchID);
 		returnObject.matchID = matchID;
 		let tzOffset = new Date().getTimezoneOffset() * 60000;
-		returnObject.date = new Date(returnObject.date);
-		returnObject.date = new Date(returnObject.date - tzOffset).toISOString().replace('Z','');
+		returnObject.date = new Date(new Date(returnObject.date).getTime() + tzOffset);
 		for(let i in returnObject.performances){
 			for(let j = 0;j<15;j++){
 				returnObject.performances[i][j] = returnObject.performances[i][j] || {player:{},performance:{subOn:0,subOff:90}};

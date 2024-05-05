@@ -1,13 +1,22 @@
-<script>
+<script lang='ts'>
 	export let editMatch, match;
 	//@ts-ignore
 	import MdEdit from 'svelte-icons/md/MdEdit.svelte';
-	import { User } from '$lib/user';
+	import moment from 'moment'
+	import type {Moment} from 'moment'
+	import { User,LocalTime } from '$lib/user';
 	import TeamIcon from '$lib/teamIcon.svelte';
 	import TeamLink from '$lib/teamLink.svelte';
+	let datetime = moment.utc(match.utcTime);
+	function formatDate(m:Moment){
+		return m.format('D/MM/YYYY')
+	}
+	function formatTime(m:Moment){
+		return m.format('HH:mm:ss')
+	}
 </script>
 
-<leftInfo>{match.date}<br />{match.time}</leftInfo>
+<leftInfo>{$LocalTime ? formatDate(datetime.clone().local()) : formatDate(datetime)}<br />{$LocalTime ? formatTime(datetime.clone().local()) : formatTime(datetime)}</leftInfo>
 <homeInfo><TeamLink team={match.home}/><TeamIcon team={match.home}/></homeInfo>
 <scoreInfo>
 	{#if match.official && !match.valid}	

@@ -3,10 +3,10 @@
 	import { sineIn } from 'svelte/easing';
 	import { Drawer } from 'flowbite-svelte';
 	//@ts-ignore
-	import MdPerson from 'svelte-icons/md/MdPerson.svelte';
+	import MdSettings from 'svelte-icons/md/MdSettings.svelte';
 	//@ts-ignore
 	import MdMenu from 'svelte-icons/md/MdMenu.svelte';
-	import UserModal from '$lib/userModal.svelte';
+	import SettingsModal from './settingsModal.svelte';
 	import { User } from '$lib/user';
 	import { DeepSet } from '$lib/deepSet';
 	export let data;
@@ -37,16 +37,9 @@
 		links.add(['/tools', 'Tools']);
 	})
 
-	let loginFlag = false;
-	function toggleDarkMode() {
-		localStorage.setItem(
-			'theme',
-			document.documentElement.classList.toggle('dark-mode') ? '1' : '0'
-		);
-	}
-	//
-	function toggleLogin() {
-		loginFlag = !loginFlag;
+	let settingsFlag = false;
+	function toggleSettings() {
+		settingsFlag =!settingsFlag
 	}
 </script>
 
@@ -105,12 +98,11 @@
 		{/key}
 	{/if}
 	<div id="rightNav" style="float:right">
-		<button on:click={toggleDarkMode}>Dark Mode</button>
-		<icon on:click={toggleLogin}><MdPerson /></icon>
+		<icon on:click={toggleSettings}><MdSettings /></icon>
 	</div>
 </nav>
-{#if loginFlag}
-	<UserModal />
+{#if settingsFlag}
+	<SettingsModal />
 {/if}
 <div style="height:calc(100% - 2.5rem)">
 	<slot />
