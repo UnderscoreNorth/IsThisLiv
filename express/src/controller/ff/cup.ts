@@ -55,7 +55,7 @@ export async function getCup(req: Request) {
       teamData[round][start].push({
         team: player.team,
         pos: player.regPos,
-        player: await playerLink([player.playerID, player.name, player.team]),
+        player: await playerLink([player.linkID, player.name, player.team]),
         points: fantasyp,
         cap: fantasyp.cap,
         medal: player.medal,

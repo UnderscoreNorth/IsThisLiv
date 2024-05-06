@@ -76,7 +76,7 @@
             </tr>
             {/each}
             <tr><th colspan=2 /><th><u>Bench</u></th></tr>
-            {#each Array(5) as _,i}
+            {#each Array(6) as _,i}
             <tr  style:background='var(--bg-c1)'>
                 <Fantasyplayer player={team.group.bench[i]}/>
                 <td>{team.group.bench[i].points.r1 ?? '-'}</td>

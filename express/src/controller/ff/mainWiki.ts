@@ -7,7 +7,7 @@ import {
   Player,
   RosterOrder,
 } from "../../db/schema";
-import { eq } from "drizzle-orm";
+import { desc, eq } from "drizzle-orm";
 import { playerLink } from "../../lib/helper";
 
 export default async function mainWiki(req: Request) {
@@ -39,7 +39,11 @@ export default async function mainWiki(req: Request) {
       .innerJoin(Player, eq(FantasyPlayer.playerID, Player.playerID))
       .innerJoin(RosterOrder, eq(Player.regPos, RosterOrder.pos))
       .where(eq(FantasyPlayer.teamID, team.teamID))
-      .orderBy(FantasyPlayer.stage, FantasyPlayer.start, RosterOrder.order);
+      .orderBy(
+        FantasyPlayer.stage,
+        desc(FantasyPlayer.start),
+        RosterOrder.order
+      );
     const teamData = {
       team: team.name,
       group: { start: [], bench: [] },

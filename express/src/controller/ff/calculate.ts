@@ -18,7 +18,7 @@ import {
   Performance,
   Player,
 } from "../../db/schema";
-import { and, count, eq, gt, like, lt, not, or } from "drizzle-orm";
+import { and, count, desc, eq, gt, like, lt, not, or } from "drizzle-orm";
 
 export default async function calculate(req: Request) {
   const cupID = req.body.cupID;
@@ -172,7 +172,8 @@ export default async function calculate(req: Request) {
       .select()
       .from(FantasyPlayer)
       .innerJoin(Player, eq(Player.playerID, FantasyPlayer.playerID))
-      .where(eq(FantasyPlayer.teamID, tID));
+      .where(eq(FantasyPlayer.teamID, tID))
+      .orderBy(FantasyPlayer.stage, desc(FantasyPlayer.start));
     let cI = -1;
     for (let p of playerQ) {
       cI++;
@@ -283,7 +284,7 @@ export default async function calculate(req: Request) {
           cap = true;
           if (player[round] > 0) player[round] *= 2;
         }
-        if (player[round] === undefined && i < 11) {
+        if ([undefined, null].includes(player[round]) && i < 11) {
           unplayed[posTypeLookUp[player.pos]]++;
         }
       }
