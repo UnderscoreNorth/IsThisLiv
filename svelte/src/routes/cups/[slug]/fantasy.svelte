@@ -12,7 +12,7 @@
     let data = api('/ff/cup/' + cupID)
 </script>
 {#await data then data}
-    <table>
+    <table style:border-collapse='collapse'>
         <tr>
             <th colspan=3>Team</th>
             <th style:width='3rem'>R1</th>
@@ -59,7 +59,7 @@
         {#if team.group?.start?.length > 0}
             <tr><th colspan=2 /><th><u>Starting</u></th></tr>
             {#each Array(11) as _,i}
-            <tr>
+            <tr style:background='var(--bg-c1)'>
                 <Fantasyplayer player={team.group.start[i]}/>
                 <td>{team.group.start[i].points.r1 ?? '-'}</td>
                 <td>{team.group.start[i].points.r2 ?? '-'}</td>
@@ -77,7 +77,7 @@
             {/each}
             <tr><th colspan=2 /><th><u>Bench</u></th></tr>
             {#each Array(5) as _,i}
-            <tr>
+            <tr  style:background='var(--bg-c1)'>
                 <Fantasyplayer player={team.group.bench[i]}/>
                 <td>{team.group.bench[i].points.r1 ?? '-'}</td>
                 <td>{team.group.bench[i].points.r2 ?? '-'}</td>

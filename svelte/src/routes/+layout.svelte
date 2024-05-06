@@ -26,7 +26,7 @@
 		['/records', 'Records/Stats'],
 		['/ff', 'Fantasy League'],
 		['/files','Files'],
-		['/booru','Booru'],
+		['/booru/','Booru'],
 		['https://implyingrigged.info/', 'Wiki'],
 		['https://cytu.be/r/the4chancup', 'Stream'],
 		['https://implying.fun', 'VODs']
