@@ -216,19 +216,13 @@
 			padding: 0;
 		}
 	}
-	nav a,
-	nav button {
+	nav a{
 		color: white;
 		padding: 0 0.4rem !important;
 		margin: 0 !important;
 		text-decoration: none;
 		min-height: 2.5rem;
 		display: inline-block;
-	}
-	nav button {
-		background: none;
-		border: none;
-		cursor: pointer;
 	}
 	:global(icon) {
 		height: 2rem;
@@ -239,7 +233,6 @@
 		display: inline-block;
 	}
 	nav a:hover,
-	nav button:hover,
 	nav icon:hover {
 		background: #3a4050;
 		border-radius: 0;

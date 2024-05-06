@@ -135,8 +135,8 @@
             }
             if(playTime % (finalPeriod == 2 ? 120 : 90) !== 0) errors.push(`${sI[i]} sub on/off times has inconsistencies`)
             if(statSaves !== perfSaves) errors.push(`${sI[i]} saves don't add up to stat card`);
-            
         }
+        if(!(data.motm > 0)) errors.push('No MoTM')
     }
 </script>
 {#if errors.length}
@@ -268,7 +268,7 @@
                             <td>{data.performances[i][j]?.performance.perfID || ''}</td>
                             <td><select bind:value={data.performances[i][j].player.playerID} disabled={condOnly || subOnly}>
                                 <option></option>
-                                {#each Object.values(data.players[i]) as {player}}
+                                {#each Object.values(data.players[i]).filter((x)=>data.performances[i].map((y)=>y?.performance?.playerID).includes(x.player.playerID) === false || x.player.playerID === data.performances[i][j].player.playerID) as {player}}
                                     <option value={player.playerID}>{player.name}</option>
                                 {/each}
                                 </select>
@@ -325,7 +325,8 @@
                         <td>
                             <select bind:value={player.playerID}>
                                 <option></option>
-                                {#each Object.values(data.players[i]) as {player}}
+                                {#each Object.values(data.players[i]).filter((x)=>data.performances[i].map((y)=>y?.performance?.playerID).includes(x.player.playerID)
+                                )  as {player}}
                                     <option value={player.playerID}>{player.name}</option>
                                 {/each}
                             </select>

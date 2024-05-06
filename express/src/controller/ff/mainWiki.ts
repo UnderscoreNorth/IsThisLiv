@@ -76,9 +76,10 @@ export default async function mainWiki(req: Request) {
         {{sq ff${t} mid}}`;
       if (i == 17)
         teamText += `
-     {{sq ffk start}}`;
+    {{sq ffg end}}
+    {{sq ffk start}}`;
       teamText += `
-    	{{sq ff${t} `;
+    {{sq ff${t} `;
       teamText += player.medal.toLowerCase();
       if (player.medal.length == 0 && fantasyp.start == 1) teamText += "start";
       teamText += ` player |team=${player.team} |pos=${player.regPos} |name=${player.name} `;

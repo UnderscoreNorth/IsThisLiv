@@ -55,24 +55,6 @@
 <button on:click={submitCup}>Submit</button>
 
 <style>
-	container {
-		position: fixed;
-		top: 3rem;
-		width: 25rem;
-		left: calc(50% - 13rem);
-		z-index: 3;
-		padding: 1rem;
-		text-align: center;
-		box-shadow: 0 0.5rem 0.5rem black;
-	}
-	closeout {
-		position: fixed;
-		height: 100%;
-		width: 100%;
-		z-index: 2;
-		top: 0;
-		left: 0;
-	}
 	input {
 		width: 100%;
 	}

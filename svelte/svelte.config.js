@@ -1,4 +1,4 @@
-import adapter from '@sveltejs/adapter-auto';
+import adapter from '@sveltejs/adapter-static';
 import preprocess from 'svelte-preprocess';
 
 /** @type {import('@sveltejs/kit').Config} */
@@ -13,7 +13,17 @@ const config = {
 		handler(warning);
 	  },
 	kit: {
-		adapter: adapter()
+		adapter: adapter({strict:false}),
+		prerender: {
+			handleHttpError: ({ path, referrer, message }) => {
+				// ignore deliberate link to shiny 404 page
+				if (['/files','/booru/'].includes(path)) {
+					return;
+				}
+				// otherwise fail the build
+				throw new Error(message);
+			}
+		}
 	}
 };
 
