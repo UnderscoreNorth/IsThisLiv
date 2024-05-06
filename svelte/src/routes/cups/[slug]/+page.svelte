@@ -59,7 +59,7 @@
 		'Records':false,
 		'Gallery':false,
 		'Statistics':true,
-		'Fantasy Football':true
+		'Fantasy Football':false
 	}
 </script>
 
@@ -100,9 +100,6 @@
 		<Sidebar {data}/>
 	</vertNav>
 	<contents>
-		<Section {show} section='Fantasy Football'>
-			<Fantasy cupID={data.cupID} />
-		</Section>
 		<div id="pageModifiedTime">Last updated - {data.date}</div>
 		<h1 id="Top">				
 			{data.cupName}{#if $User.user}
