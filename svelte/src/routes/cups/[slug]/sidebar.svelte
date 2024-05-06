@@ -43,6 +43,7 @@
 <a style="padding-left:1rem" href="#Cards">Cards</a>
 <a href="#Records">Records</a>
 <a href="#Gallery">Gallery</a>
+<a href='#Fantasy Football'>Fantasy Football</a>
 <style>
     .element{
 		background: var(--bg-color);

@@ -20,6 +20,20 @@
             outputText = 'Something wrong happened'
         })
     }
+    let textArea = ''
+    async function getMainPage(){
+        outputText = 'Calculating...'
+        api('/ff/mainWiki',{cupID:cup}).then((d)=>{
+            if(d.error){
+                outputText = d.error;
+            } else {
+                outputText = ''
+                textArea = d.wiki;
+            }
+        }).catch(()=>{
+            outputText = 'Something wrong happened'
+        })
+    }
 </script>
 {#await cups then cups}
 <div>
@@ -32,7 +46,7 @@
     <button on:click={()=>{calculate();}}>
         Calculate
     </button>
-    <button>
+    <button on:click={()=>{getMainPage()}}>
         Main Wiki Page
     </button>
     <button>
@@ -40,7 +54,7 @@
     </button>
     <br>
     <div>{outputText}</div>
-    <textarea rows={10}></textarea>
+    <textarea rows={10}>{textArea}</textarea>
 </div>
 {/await}
 

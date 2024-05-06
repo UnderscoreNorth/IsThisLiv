@@ -5,9 +5,12 @@ import { login, register } from "./access";
 import { getData } from "./getData";
 import { saveTeam } from "./saveTeam";
 import calculate from "./calculate";
+import { getCup } from "./cup";
+import mainWiki from "./mainWiki";
+
 const router = express.Router();
-router.use("/cup", async (req, res, next) => {
-  //res.send(await getCups());
+router.use("/cup/:cupID", async (req, res, next) => {
+  res.send(await getCup(req));
 });
 router.use("/calculate", async (req, res, next) => {
   res.send(await calculate(req));
@@ -26,5 +29,8 @@ router.use("/getData", async (req, res, next) => {
 });
 router.use("/saveTeam", async (req, res, next) => {
   res.send(await saveTeam(req));
+});
+router.use("/mainWiki", async (req, res, next) => {
+  res.send(await mainWiki(req));
 });
 export default router;

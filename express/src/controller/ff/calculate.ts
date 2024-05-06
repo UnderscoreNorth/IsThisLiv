@@ -197,6 +197,14 @@ export default async function calculate(req: Request) {
         name: p.player.name,
         cap: p.fantasyp.cap,
         playerID: p.player.playerID,
+        r1: null,
+        r2: null,
+        r3: null,
+        r4: null,
+        ro16: null,
+        qf: null,
+        sf: null,
+        fn: null,
         tot: 0,
       };
     }
@@ -280,7 +288,7 @@ export default async function calculate(req: Request) {
         }
       }
       for (let pos in unplayed) {
-        if (unplayed[pos]) {
+        if (unplayed[pos] > 0) {
           let subScores = [];
           for (let i = 11; i < 17; i++) {
             const ii = start + i;
@@ -294,8 +302,8 @@ export default async function calculate(req: Request) {
             if (a.score < b.score) return -1;
             return 0;
           });
-          if (unplayed[pos] == 1) {
-            if (subScores[1]) roster[subScores[1].index][round] = null;
+          if (unplayed[pos] == 1 && subScores.length == 2) {
+            roster[subScores[1].index][round] = null;
           }
         } else {
           for (let i = 11; i < 17; i++) {
@@ -317,10 +325,10 @@ export default async function calculate(req: Request) {
           }
         }
       }
-      for (let i = 0; i < 34; i++) {
-        const player = roster[i];
+      for (let i = 0; i < 17; i++) {
+        const ii = start + i;
+        const player = roster[ii];
         player.tot += parseInt(player[round]) > -99 ? player[round] : 0;
-        if (player.playerID == 49080) console.log(player, round, i);
       }
     }
     for (let i = 0; i < 34; i++) {

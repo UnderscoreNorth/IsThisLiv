@@ -17,6 +17,7 @@
 	import Section from './section.svelte';
 	import Stats from './stats.svelte';
 	import TeamLink from '$lib/teamLink.svelte';
+	import Fantasy from './fantasy.svelte';
 	let matchID = 0;
 	let data:Promise<MainRes>;
 	let imgs:Promise<any>;
@@ -57,7 +58,8 @@
 	let show = {
 		'Records':false,
 		'Gallery':false,
-		'Statistics':true
+		'Statistics':true,
+		'Fantasy Football':true
 	}
 </script>
 
@@ -98,6 +100,9 @@
 		<Sidebar {data}/>
 	</vertNav>
 	<contents>
+		<Section {show} section='Fantasy Football'>
+			<Fantasy cupID={data.cupID} />
+		</Section>
 		<div id="pageModifiedTime">Last updated - {data.date}</div>
 		<h1 id="Top">				
 			{data.cupName}{#if $User.user}
@@ -140,7 +145,9 @@
 		<Section {show} section='Gallery'>
 			<Gallery {imgs} />
 		</Section>
-		
+		<Section {show} section='Fantasy Football'>
+			<Fantasy cupID={data.cupID} />
+		</Section>
 	</contents>
 	{:else}
 		<vertNav class="c-1" />

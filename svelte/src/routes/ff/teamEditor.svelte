@@ -121,7 +121,7 @@
         }
         for(let type of ['starting','bench'] as const){
             for(let playerID of Array.from($ffStore[type])){
-                const {team,regPos,medal} = data.players[playerID];
+                const {regPos,medal} = data.players[playerID];
                 roster[type][data.posOrder[regPos]]++;
                 if(medal !== '')
                     roster[type][medal]++;
@@ -131,6 +131,11 @@
                 if(type =='bench' && medal !== '') benchMedal++;
                 counts[type]++;
             }
+        }
+        for(let pos in $ffStore.groupsFormation){
+            let num = $ffStore.groupsFormation[pos]
+            if(num > 0 && roster.starting[pos as 'DEF' | 'MID' | 'FWD'] !== num)
+                errorsArr.push(`You need to have exactly ${num} ${pos}`)
         }
         for(const type in rosterLimits){
             for(let pos in rosterLimits[type]){
@@ -145,6 +150,11 @@
         if(counts.bench < 6) errorsArr.push(`Need at least ${(6 - counts.bench)} more bench players`);
         if($ffStore.cap == 0) errorsArr.push('Need a captain');
         if($ffStore.vice == 0) errorsArr.push('Need a vice captain');
+        for(const required of $ffStore.required){
+            if(!($ffStore.starting.has(required) || $ffStore.bench.has(required))){
+                errorsArr.push(`Need to have /${data.players[required].team}/ - ${data.players[required].name} in your roster`)
+            }
+        }
         errors = errorsArr.join(', ');
     }
     function checkLimits(player:Player){
