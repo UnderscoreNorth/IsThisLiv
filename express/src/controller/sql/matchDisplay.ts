@@ -102,7 +102,7 @@ export async function matchDisplay(req: Request) {
     .where(eq(MatchStat.matchID, matchID))
     .orderBy(MatchStat.period, MatchStat.home);
   for (let i in sql) {
-    data.matchStats[sql[i].period - 1][sql[i].home ? 1 : 0] = formatStats(
+    data.matchStats[sql[i].period - 1][sql[i].home ? 0 : 1] = formatStats(
       sql[i]
     );
   }
