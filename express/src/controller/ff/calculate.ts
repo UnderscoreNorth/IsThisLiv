@@ -275,6 +275,7 @@ export default async function calculate(req: Request) {
     for (let round of rounds) {
       let cap = false;
       let unplayed = { GK: 0, DEF: 0, MID: 0, FWD: 0 };
+      let unplayedMedals = { "2": 0, "3": 0, "4": 0 };
       let subbers = [];
       let start = ["r1", "r2", "r3", "r4"].includes(round) ? 0 : 17;
       for (let i = 0; i < 17; i++) {
@@ -286,6 +287,7 @@ export default async function calculate(req: Request) {
         }
         if ([undefined, null].includes(player[round]) && i < 11) {
           unplayed[posTypeLookUp[player.pos]]++;
+          if (parseInt(player.medal) > 1) unplayedMedals[player.medal]++;
         }
       }
       for (let pos in unplayed) {
@@ -294,13 +296,15 @@ export default async function calculate(req: Request) {
           for (let i = 11; i < 17; i++) {
             const ii = start + i;
             const player = roster[ii];
+            if (parseInt(player.medal) > 1 && unplayedMedals[player.medal] == 0)
+              player[round] = null;
             if (posTypes[pos].includes(player.pos)) {
               subScores.push({ index: ii, score: player[round] });
             }
           }
           subScores.sort((a, b) => {
-            if (a.score > b.score) return 1;
-            if (a.score < b.score) return -1;
+            if (a.score > b.score) return -1;
+            if (a.score < b.score) return 1;
             return 0;
           });
           if (unplayed[pos] == 1 && subScores.length == 2) {
