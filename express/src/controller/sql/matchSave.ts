@@ -158,7 +158,7 @@ export async function matchSave(req: Request) {
         tackles: -1,
         saves: -1,
         period: parseInt(period) + 1,
-        home: teamIndex == "1" ? true : false,
+        home: teamIndex == "0" ? true : false,
         finalPeriod: false,
       };
       if (statObj.passMade >= 0 && statObj.passTot > 0) {
