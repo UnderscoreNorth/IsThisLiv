@@ -104,7 +104,7 @@
             for(const j of [0,1,2]){
                 if(data.matchStats?.[j]?.[i]){
                     for(const row of data.matchStats[j][i]){
-                        if(row.name == 'Saves' && parseInt(row.value) > statSaves){
+                        if(row.name == 'Saves' && parseInt(row.value) >= statSaves){
                             statSaves = parseInt(row.value);
                             finalPeriod = j;
                         }

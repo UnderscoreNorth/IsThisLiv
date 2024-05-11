@@ -115,7 +115,7 @@ export async function matchSave(req: Request) {
         if (e.penalty[i] === "") e.penalty[i] = null;
       }
       const penaltyData = {
-        goal: e.penalty.goal,
+        goal: e.penalty.goal ? true : false,
         playerID: e.player.playerID,
         user: "",
         matchID: data.matchID,
