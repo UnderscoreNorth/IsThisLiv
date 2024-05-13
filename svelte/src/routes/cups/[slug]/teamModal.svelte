@@ -76,14 +76,28 @@
         <table>
             <tr>
                 <th>Starting</th>
-                <th>Player</th>
                 <th>Medal</th>
                 <th>Pos</th>
                 <th>#</th>
             </tr>
-        {#each data as p}
+        {#each data.players.filter(x=>x.player.starting) as p}
+            <tr class={p.player.medal}>
+                <td>{p.player.name}</td>
+                <td>{p.player.medal}{p.player.captain ? '(C)' : ''}</td>
+                <td>{p.player.regPos}</td>
+                <td>{p.player.shirtNumber}</td>
+            </tr>
+        {/each}
+        </table>
+        <table>
             <tr>
-                <td><input type='checkbox' disabled bind:checked={p.player.starting} ></td>
+                <th>Bench</th>
+                <th>Medal</th>
+                <th>Pos</th>
+                <th>#</th>
+            </tr>
+        {#each data.players.filter(x=>!x.player.starting) as p}
+            <tr  class={p.player.medal}>
                 <td>{p.player.name}</td>
                 <td>{p.player.medal}{p.player.captain ? '(C)' : ''}</td>
                 <td>{p.player.regPos}</td>
@@ -100,5 +114,9 @@
     }
     td{
         text-align: left;
+    }
+    table{
+        display:inline-block;
+        vertical-align: top;
     }
 </style>
