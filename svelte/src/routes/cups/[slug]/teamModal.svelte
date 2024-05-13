@@ -1,6 +1,7 @@
 <script lang='ts'>
 	import { api } from "$lib/helper";
 	import Modal from "$lib/modal.svelte";
+	import Pos from "$lib/pos.svelte";
 	import { User } from "$lib/user";
     export let cupID:number;
     export let team:string;
@@ -75,33 +76,29 @@
         {:else}
         <table>
             <tr>
-                <th>Starting</th>
-                <th>Medal</th>
-                <th>Pos</th>
                 <th>#</th>
+                <th>Pos</th>
+                <th>Starting</th>
             </tr>
         {#each data.players.filter(x=>x.player.starting) as p}
             <tr class={p.player.medal}>
-                <td>{p.player.name}</td>
-                <td>{p.player.medal}{p.player.captain ? '(C)' : ''}</td>
-                <td>{p.player.regPos}</td>
                 <td>{p.player.shirtNumber}</td>
+                <td><Pos pos={p.player.regPos}/></td>
+                <td>{p.player.name} {p.player.captain ? '(C)' : ''}</td>
             </tr>
         {/each}
         </table>
         <table>
             <tr>
                 <th>Bench</th>
-                <th>Medal</th>
                 <th>Pos</th>
                 <th>#</th>
             </tr>
         {#each data.players.filter(x=>!x.player.starting) as p}
             <tr  class={p.player.medal}>
-                <td>{p.player.name}</td>
-                <td>{p.player.medal}{p.player.captain ? '(C)' : ''}</td>
-                <td>{p.player.regPos}</td>
                 <td>{p.player.shirtNumber}</td>
+                <td><Pos pos={p.player.regPos}/></td>
+                <td>{p.player.name} {p.player.captain ? '(C)' : ''}</td>
             </tr>
         {/each}
         </table>
