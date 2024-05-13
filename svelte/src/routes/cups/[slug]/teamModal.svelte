@@ -90,9 +90,9 @@
         </table>
         <table>
             <tr>
-                <th>Bench</th>
-                <th>Pos</th>
                 <th>#</th>
+                <th>Pos</th>
+                <th>Bench</th>
             </tr>
         {#each data.players.filter(x=>!x.player.starting) as p}
             <tr  class={p.player.medal}>
