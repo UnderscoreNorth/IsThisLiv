@@ -47,7 +47,7 @@ export async function leaderboards(req: Request) {
   data.mostAssists = await mostEvents(assistTypes);
   data.mostSaves = await mostPerf(Performance.saves);
   data.mostMinutes = await mostPerf(
-    sql`Performance.subOff - Performance.subOn`,
+    sql`performance.subOff - performance.subOn`,
     false
   );
   data.mostMotm = await mostPerf(Performance.motm, false);
