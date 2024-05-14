@@ -5,7 +5,13 @@ import {
   getPerformances,
   getPlayers,
 } from "../../db/commonFn";
-import { cupShort, dateFormat, teamLink } from "../../lib/helper";
+import {
+  cupShort,
+  dateFormat,
+  goalTypes,
+  goalTypesOG,
+  teamLink,
+} from "../../lib/helper";
 
 export async function playerDetails(req: Request) {
   let html = "";
@@ -42,6 +48,7 @@ export async function playerDetails(req: Request) {
                 <th>Round</th>
                 <th>Date</th>
                 <th>Team</th>
+                <th>Score</th>
                 <th>Play Time</th>
                 <th>Cond</th>
                 <th>Rating</th>
@@ -72,6 +79,8 @@ export async function playerDetails(req: Request) {
       let yellows: string[] = [];
       let reds: string[] = [];
       let saves = performance.saves >= 0 ? performance.saves : 0;
+      let matchGoals = 0;
+      let matchAGoals = 0;
       if (performance.motm) {
         events.push("Man of the Match");
         if (match.valid) motm++;
@@ -80,8 +89,17 @@ export async function playerDetails(req: Request) {
         events.push("Saves: " + saves);
         if (match.valid) totalSaves += saves;
       }
-      const eventData = await getEvents({ linkID, matchID: match.matchID });
-      for (const { event } of eventData) {
+      const eventData = await getEvents({ matchID: match.matchID });
+      for (const { event, player } of eventData) {
+        if (goalTypes.includes(event.eventType) && player.team == team)
+          matchGoals++;
+        if (goalTypes.includes(event.eventType) && player.team !== team)
+          matchAGoals++;
+        if (goalTypesOG.includes(event.eventType) && player.team == team)
+          matchAGoals++;
+        if (goalTypesOG.includes(event.eventType) && player.team !== team)
+          matchGoals++;
+        if (player.linkID !== linkID) continue;
         switch (event.eventType) {
           case 1:
           case 4:
@@ -157,6 +175,8 @@ export async function playerDetails(req: Request) {
         rating: performance.rating,
         events: events,
         mNum: match.valid ? matches : "",
+        matchGoals,
+        matchAGoals,
       });
     }
     let matchHtml = "";
@@ -178,7 +198,13 @@ export async function playerDetails(req: Request) {
         matchHtml += `
                         <td class='${match.result}'>${match.round}</td>
                         <td class='${match.result}'>${match.date}</td>
-                        <td class='${match.result}'>/${match.team}/</td>
+                        <td class='${match.result}'>${teamLink(
+          match.team,
+          "left"
+        )}</td>
+                        <td class='${match.result} nowrap'>${
+          match.matchGoals
+        } - ${match.matchAGoals}</td>
                         <td class='${match.result}'>${match.played}</td>
                         <td class='${match.result}'>${match.cond}</td>
                         <td class='${match.result}'>${match.rating}</td>
@@ -249,7 +275,7 @@ export async function playerDetails(req: Request) {
     .map((x) => `<tr><td colspan=2>${x}</td></tr>`)
     .join("")}`;
   html = overallHtml + `</table>` + totalMatchHtml + `</table>`;
-  html += `<STYLE>table{display:inline-block;vertical-align:top;margin:1rem}</STYLE>`;
+  html += `<STYLE>table{display:inline-block;vertical-align:top;margin:1rem} .nowrap{white-space:nowrap} td a{color:black}</STYLE>`;
   return {
     html,
     linkID,

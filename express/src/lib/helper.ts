@@ -1,7 +1,7 @@
 import { NextFunction, Request, Response } from "express";
 import { db } from "../db";
 import fs from "fs/promises";
-export const pageExpiry = 86400000; //;
+export const pageExpiry = 8640000000; //;
 
 export function teamIcon(team: string) {
   if (team.length == 0) return "";
@@ -56,7 +56,11 @@ export function cupShort(cupName) {
     if (parseInt(cupWord) && cupWord > 2000) {
       shortName += cupWord + " ";
     } else if (cupWord != "4chan") {
-      shortName += cupWord[0];
+      if (cupWord == "World") {
+        shortName += "S";
+      } else {
+        shortName += cupWord[0];
+      }
     }
   }
   return shortName;

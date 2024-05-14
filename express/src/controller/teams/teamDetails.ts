@@ -78,6 +78,7 @@ export async function teamDetails(req: Request) {
     if (match.valid) offMatches++;
     let matchT = {
       cup: cupShort(cup.cupName),
+      cupID: cup.cupID,
       round: match.round,
       date: dateFormat(match.utcTime, "short"),
       team: e,
@@ -251,7 +252,9 @@ export async function teamDetails(req: Request) {
           break;
         }
       }
-      matchesHtml += `<th style='background:var(--bg-color);color:var(--fg-color);vertical-align:top' rowspan=${cupNum}>${match.cup}</th>`;
+      matchesHtml += `<th style='background:var(--bg-color);color:var(--fg-color);vertical-align:top' rowspan=${cupNum}>${match.cup}<br><img src="/icons/cups/${match.cupID}.png" style="
+      width: 4rem;
+  "></th>`;
     }
     let scorers = [];
     for (let player of match.scorers) {

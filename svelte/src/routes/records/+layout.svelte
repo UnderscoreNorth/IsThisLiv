@@ -4,8 +4,7 @@
 	const links = new DeepSet([
 		{ Match: ['Individual', 'Team', 'Match', 'Day'] },
 		//{ Cup: ['Individual', 'Team', 'Cup'] },
-		//'Overall',
-		//'Leaderboards',
+		{Overall:['Leaderboards']},
 		//{ Rankings: ['Coefficient', 'Elo'] }
 	]);
 	const path='/records/';
