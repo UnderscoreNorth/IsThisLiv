@@ -2,6 +2,7 @@
 	import { api } from "$lib/helper";
 	import Modal from "$lib/modal.svelte";
 	import Pos from "$lib/pos.svelte";
+	import TeamRoster from "$lib/teamRoster.svelte";
 	import { User } from "$lib/user";
     export let cupID:number;
     export let team:string;
@@ -74,34 +75,7 @@
         </table>
         <button disabled={updating} on:click={()=>{update()}}>Update</button>
         {:else}
-        <table>
-            <tr>
-                <th>#</th>
-                <th>Pos</th>
-                <th>Starting</th>
-            </tr>
-        {#each data.players.filter(x=>x.player.starting) as p}
-            <tr class={p.player.medal}>
-                <td>{p.player.shirtNumber}</td>
-                <td><Pos pos={p.player.regPos}/></td>
-                <td>{p.player.name} {p.player.captain ? '(C)' : ''}</td>
-            </tr>
-        {/each}
-        </table>
-        <table>
-            <tr>
-                <th>#</th>
-                <th>Pos</th>
-                <th>Bench</th>
-            </tr>
-        {#each data.players.filter(x=>!x.player.starting) as p}
-            <tr  class={p.player.medal}>
-                <td>{p.player.shirtNumber}</td>
-                <td><Pos pos={p.player.regPos}/></td>
-                <td>{p.player.name} {p.player.captain ? '(C)' : ''}</td>
-            </tr>
-        {/each}
-        </table>
+        <TeamRoster roster={data.players} />
         {/if} 
     {/await}
 </Modal>

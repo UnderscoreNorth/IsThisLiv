@@ -1,7 +1,7 @@
 import { NextFunction, Request, Response } from "express";
 import { db } from "../db";
 import fs from "fs/promises";
-export const pageExpiry = 8640000000; //;
+export const pageExpiry = 1; //8640000000; //;
 
 export function teamIcon(team: string) {
   if (team.length == 0) return "";

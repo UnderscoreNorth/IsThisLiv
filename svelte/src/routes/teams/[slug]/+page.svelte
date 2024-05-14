@@ -3,6 +3,8 @@ import { page } from '$app/stores';
 	import { api } from '$lib/helper';
 	import { cupShort, cupToBooru, getBooru} from '$lib/helper';
 	import Gallery from '$lib/gallery.svelte'
+	import TeamRoster from '$lib/teamRoster.svelte';
+	import TeamIcon from '$lib/teamIcon.svelte';
 	//let data;	
 	let data = {};
 	let sortData;
@@ -62,7 +64,7 @@ import { page } from '$app/stores';
 {#await data}
 	<h2>Loading...</h2>
 {:then data}
-	{#if !data.html}
+	{#if !data.statsHtml}
 		<h2>Team not found</h2>
 	{:else}
 	<div>
@@ -70,54 +72,72 @@ import { page } from '$app/stores';
 			<div id="pageModifiedTime">Last updated - {data.date}</div>
 		{/if}
 		<h2 id="header">
-			/{$page.url.pathname.replace('/', '').substring(6)}/ - <a href="#stats">Stats</a>
+			<TeamIcon team={$page.url.pathname.replace('/', '').substring(6)}/> /{$page.url.pathname.replace('/', '').substring(6)}/ - <a href="#stats">Stats</a>
 			<a href="#matches">Matches</a>
-			<a href="#roster">Roster</a>
 			<a href='#gallery'>Gallery</a>
+			<a href="#roster">Roster Timeline</a>
 		</h2>
 	</div>
 	<container>
-		{@html data.html}
-		<h3 id="roster">Roster</h3>
-		<table id="tbl_roster">
-			{#each data.roster.header as headerRow}
-				<tr>
-					{#each headerRow as header}
-						<th
-							class={header.sort ? 'pointer' : ''}
-							colspan={header.colSpan || 1}
-							on:click={() => {
-								if (header.sort) sortTable(header.sort, header.dir);
-							}}
-						>
-							{header.text}
-						</th>
-					{/each}
-				</tr>
-			{/each}
-			{#each data.roster.data as player}
-				<tr class="playerRow">
-					<td title={player.truename}>{@html player.name}</td>
-					<td>{player.apps}</td>
-					<td>{player.cups}</td>
-					<td>{player.goals}</td>
-					<td>{player.assists}</td>
-					<td>{player.saves}</td>
-					<td>{player.rating}</td>
-					{#each data.roster.cups as cup}
-						<td
-							class={'rosterCell ' +
-								('t' + Math.floor(player[cup.year + cup.season]) || 'no') +
-								(player[cup.year + cup.season] % 1 > 0 ? ' cap' : '')}
-							>{player[cup.year + cup.season] ? '_' : ''}</td
-						>
-					{/each}
-				</tr>
-			{/each}
-			{@html data.roster.footer}
-		</table>
-		<h2 id='gallery'>Gallery</h2>
-		<Gallery {imgs} />
+		<grid>
+			<div>
+				<h3>Roster</h3>
+				<TeamRoster roster={data.latestRoster} />
+			</div>
+			<div>
+				<h3 id='stats'>Stats</h3>
+				{@html data.statsHtml}
+			</div>
+			<div>
+				<h3 id='matches'>Matches</h3>
+				{@html data.matchesHtml}
+			</div>
+			<div>
+				<h3 id='gallery'>Gallery</h3>
+				<Gallery {imgs} />
+			</div>
+		</grid>
+		<div >
+			<h3 id="roster">Roster Timeline</h3>
+			<table id="tbl_roster">
+				{#each data.roster.header as headerRow}
+					<tr>
+						{#each headerRow as header}
+							<th
+								class={header.sort ? 'pointer' : ''}
+								colspan={header.colSpan || 1}
+								on:click={() => {
+									if (header.sort) sortTable(header.sort, header.dir);
+								}}
+							>
+								{header.text}
+							</th>
+						{/each}
+					</tr>
+				{/each}
+				{#each data.roster.data as player}
+					<tr class="playerRow">
+						<td title={player.truename}>{@html player.name}</td>
+						<td>{player.apps}</td>
+						<td>{player.cups}</td>
+						<td>{player.goals}</td>
+						<td>{player.assists}</td>
+						<td>{player.saves}</td>
+						<td>{player.rating}</td>
+						{#each data.roster.cups as cup}
+							<td
+								class={'rosterCell ' +
+									('t' + Math.floor(player[cup.year + cup.season]) || 'no') +
+									(player[cup.year + cup.season] % 1 > 0 ? ' cap' : '')}
+								>{player[cup.year + cup.season] ? '_' : ''}</td
+							>
+						{/each}
+					</tr>
+				{/each}
+				{@html data.roster.footer}
+			</table>
+		</div>
+		{@html data.styleHtml}
 	</container>
 	{/if}
 	
@@ -161,11 +181,15 @@ import { page } from '$app/stores';
 		flex-shrink: 0;
 	}
 	container {
-		display: block;
 		flex-shrink: 1;
 		overflow-y: scroll;
 		padding: 1rem;
-	}	
+	}
+	grid{
+		display:grid;
+		grid-template-columns: auto 1fr;
+		gap:1rem;
+	}
 	container :global(table) {
 		border: solid 1px grey;
 		background: rgba(0, 0, 0, 0.1);

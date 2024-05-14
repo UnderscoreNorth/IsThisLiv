@@ -121,26 +121,26 @@ export async function teamDetails(req: Request) {
       if (gd > stats[cup.cupType].bWin.gd) {
         stats[cup.cupType].bWin.gd = gd;
         stats[cup.cupType].bWin.results = [
-          `${tg} - ${eg} /${e}/ ${dateFormat(match.utcTime)}`,
+          `${tg} - ${eg} ${teamLink(e, "left")} ${dateFormat(match.utcTime)}`,
         ];
       } else if (gd == stats[cup.cupType].bWin.gd) {
         stats[cup.cupType].bWin.results.push(
-          `${tg} - ${eg} /${e}/ ${dateFormat(match.utcTime)}`
+          `${tg} - ${eg} ${teamLink(e, "left")} ${dateFormat(match.utcTime)}`
         );
       }
       if (gd < stats[cup.cupType].bLose.gd) {
         stats[cup.cupType].bLose.gd = gd;
         stats[cup.cupType].bLose.results = [
-          `${tg} - ${eg} /${e}/ ${dateFormat(match.utcTime)}`,
+          `${tg} - ${eg} ${teamLink(e, "left")} ${dateFormat(match.utcTime)}`,
         ];
       } else if (gd == stats[cup.cupType].bLose.gd) {
         stats[cup.cupType].bLose.results.push(
-          `${tg} - ${eg} /${e}/ ${dateFormat(match.utcTime)}`
+          `${tg} - ${eg} ${teamLink(e, "left")} ${dateFormat(match.utcTime)}`
         );
       }
     }
   }
-  let statsHtml = `<h3 id='stats'>Stats</h3><table>
+  let statsHtml = `<table>
             <tr>
                 <th></th>
                 <th>App</th>
@@ -229,7 +229,7 @@ export async function teamDetails(req: Request) {
                 </tr>
             `;
   statsHtml += `</table>`;
-  let matchesHtml = `<h3 id='matches'>Matches</h3><table>
+  let matchesHtml = `<table>
     <tr>
       <th>Cup</th>
       <th>Round</th>
@@ -270,7 +270,7 @@ export async function teamDetails(req: Request) {
     matchesHtml += `
         <td>${match.round}</td>
         <td>${match.date}</td>
-        <td>${teamLink(match.team)}</td>
+        <td>${teamLink(match.team, "left")}</td>
         <td>${match.result}</td>
         <td>${scorers.join("<br>")}</td>
         <td style='background:var(--bg-color);color:var(--fg-color)'>${
@@ -298,7 +298,14 @@ export async function teamDetails(req: Request) {
   > = {};
   const cupsSet: Set<string> = new Set();
   const playerData = await getPlayers({ team });
+  let latestCupID = 0;
+  let latestRoster: typeof playerData = [];
   for (const p of playerData) {
+    if (latestCupID !== p.cup.cupID) {
+      latestCupID = p.cup.cupID;
+      latestRoster = [];
+    }
+    latestRoster.push(p);
     if (arr[p.player.linkID] == undefined) {
       const eventData = await getEvents({ linkID: p.player.linkID });
       const perfData = await getPerformances({ linkID: p.player.linkID });
@@ -390,10 +397,12 @@ export async function teamDetails(req: Request) {
   let rosterFooter = `<tr><td>Average Tenure</td><td></td><td>${avg(
     avgList
   )}</td></tr>`;
-  let html =
-    statsHtml +
-    matchesHtml +
-    `<STYLE>
+  latestRoster = latestRoster.sort((a, b) => {
+    if (a.rosterorder.order > b.rosterorder.order) return 1;
+    if (a.rosterorder.order < b.rosterorder.order) return -1;
+    return 0;
+  });
+  const styleHtml = `<STYLE>
       .t5{
         background:#E0C068;
         color:#E0C068;
@@ -429,13 +438,16 @@ export async function teamDetails(req: Request) {
       color: black !important;
     }</STYLE>`;
   return {
-    html,
+    statsHtml,
+    matchesHtml,
+    styleHtml,
     roster: {
       header: rosterHeader,
       footer: rosterFooter,
       data: players,
       cups,
     },
+    latestRoster,
     date: new Date().toLocaleString("en-us", {
       timeStyle: "short",
       dateStyle: "medium",
