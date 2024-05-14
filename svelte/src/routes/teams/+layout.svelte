@@ -60,6 +60,7 @@
 		'v',
 		'vg',
 		'vm',
+		'vmg',
 		'vp',
 		'vr',
 		'vrpg',
