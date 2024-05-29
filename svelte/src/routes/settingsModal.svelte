@@ -66,7 +66,7 @@
 		top: 2.5rem;
 		width: 10rem;
 		padding: 1rem;
-		z-index: 2;
+		z-index: 3;
 	}
 	input {
 		width: calc(100% - 0.5rem);

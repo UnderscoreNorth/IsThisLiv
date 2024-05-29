@@ -57,7 +57,7 @@
 			</icon>
 			<span style="margin-left:0.5rem"
 				>{Array.from(links)
-					.filter((x) => $page.url.pathname.includes(x[0]) && x[0] !== '/')
+					.filter((x) => $page.url.pathname.replace(path,'').includes(x[0]) && x[0] !== '/')
 					.map((x) => x[1])
 					.join('')}</span
 			>
@@ -113,6 +113,9 @@
 	</div>
 </div>
 <style>
+	vertNav{
+		overflow-y: auto;
+	}
 	#slotContainer{
 		overflow-y: auto;
 	}

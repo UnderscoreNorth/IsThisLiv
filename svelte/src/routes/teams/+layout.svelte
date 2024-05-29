@@ -1,5 +1,7 @@
 <script>
 	import { page } from '$app/stores';
+	import { DeepSet } from '$lib/deepSet';
+	import SideBar from '$lib/sideBar.svelte';
 	const links = [
 		'3',
 		'a',
@@ -73,61 +75,20 @@
 		'xs',
 		'y'
 	];
-	console.log($page.url.pathname);
+	const deepset = new DeepSet();
+	for(const link of links){
+		deepset.add([link,'/' + link + '/'])
+	}
+	const path = '/teams/';
 </script>
-
-<div id="container">
-	<vertNav class="c-1">
-		<div id="navTeams">
-			{#each links as link}
-				<a href="/teams/{link}" class="fuckyou">
-					<div class={$page.url.pathname == '/teams/' + link ? 'selectedPage' : 'unselectedPage'}>
-						/{link}/
-					</div>
-				</a>
-			{/each}
-		</div>
-	</vertNav>
+<SideBar links={deepset} {path}>
 	<div id="slotContainer">
-		<slot />
-	</div>
+	<slot/>
 </div>
-
+</SideBar>
 <style>
-	#slotContainer {
-		height: calc(100vh - 2.5rem);
-		display: flex;
-		flex-direction: column;
-		overflow-y: hidden;
-	}
-	#container {
-		display: grid;
-		grid-template-columns: 10rem 1fr;
-		position: relative;
-		height: 100%;
-	}
-	.selectedPage {
-		background: rgba(0, 0, 0, 0.5);
-		font-weight: bold;
-		padding: 0.25rem 0;
-		margin-right: -1rem;
-		margin-left: -0.25rem;
-		padding-left: 0.25rem;
-		padding-right: 1rem;
-	}
-	#navTeams {
-		overflow-x: hidden;
-		overflow-y: scroll;
-		margin-right: -1rem;
-	}
-	#navTeams {
-		height: calc(100vh - 3.5rem);
-		margin-top: -1rem;
-		margin-bottom: -1rem;
-		padding: 0.5rem 0rem;
-	}
-	.fuckyou {
-		display: inline-block;
-		width: 100%;
+	#slotContainer{
+		padding:1rem;
+		position:relative;
 	}
 </style>
