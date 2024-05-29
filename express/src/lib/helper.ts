@@ -3,7 +3,7 @@ import { db } from "../db";
 import fs from "fs/promises";
 import { InferSelectModel } from "drizzle-orm";
 import { Cup } from "../db/schema";
-export const pageExpiry = 864000000000; //;
+export const pageExpiry = 8640000000; //;
 
 export function teamIcon(team: string) {
   if (team.length == 0) return "";
