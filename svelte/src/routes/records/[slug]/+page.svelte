@@ -30,50 +30,55 @@
 		.map((x) => x.charAt(0).toUpperCase() + x.substring(1).toLowerCase())
 		.join(' ')} - IsThisLiv</title
 >
-<container>
+<div id='container'>
 	{#await res}
 		<h2>Loading...</h2>
 	{:then res}
 		{#if res.date}
 			<div id="pageModifiedTime">Last updated - {res.date}</div>
 			<h2>Records</h2>
-			<Records res={res.data}/>
+			<div id='recordContainer'>
+				<Records res={res.data}/>
+			</div>
 		{/if}
 	{:catch}
 		<h2>Error</h2>
 		Thank you, spaghetti code
 	{/await}
-</container>
+</div>
 
 <style>
-	container {
-		display: block;
+	#container {
 		padding: 1rem;
-		height: calc(100% - 2rem);
-		overflow-y: scroll;
 	}
 	#pageModifiedTime {
 		float: right;
 	}
-	:global(.recordContainer){
+	#recordContainer{		
+		display: flex;
+		flex-wrap: wrap;
+		flex-direction: row;
+	}
+	#recordContainer :global(h3){
+		width:100%
+	}
+	#recordContainer :global(.recordContainer){
 		padding:1rem;
 		border: solid 1px grey;
 		background: rgba(0, 0, 0, 0.1);
 		margin:1rem;
-		display:inline-block;
-		max-width:50rem;
 		vertical-align:top
 	}
-	:global(.recordContainer td){
+	#recordContainer :global(.recordContainer td){
 		max-width:15rem;
 	}
-	:global(.recordContainer img){
-		max-height:1rem;
+	#recordContainer :global(.recordContainer .teamIcon){
+		max-height: 1rem;
 	}
-	:global(.recordContainer a){
+	#recordContainer :global(.recordContainer a){
 		vertical-align: bottom;
 	}
-    :global(th){text-align:center}
-	:global(h4){margin:10px 0}
+    #recordContainer :global(th){text-align:center}
+	#recordContainer :global(h4){margin:10px 0}
 
 </style>

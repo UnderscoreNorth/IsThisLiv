@@ -27,7 +27,7 @@ export function teamLink(team: string, icon?: "left" | "right") {
 }
 export async function cupLink(
   cupID: number | InferSelectModel<typeof Cup>,
-  params: { logo: boolean; format: "long" | "med" | "short" } = {
+  params: { logo?: boolean; format?: "long" | "med" | "short" } = {
     logo: false,
     format: "long",
   }
@@ -62,7 +62,9 @@ export async function cupLink(
   if (logo)
     return `<a style='display:inline-block' href='/cups/${cupID}-${cupShortName}'>${
       logo
-        ? `<img style='height:2.5rem;vertical-align:middle;margin-right:5px' src='/icons/cups/${cupID}.png' />`
+        ? `<img style='${
+            format == "med" ? "" : "height:2.5rem;"
+          }vertical-align:middle;margin-right:5px' src='/icons/cups/${cupID}.png' />`
         : ""
     }<span style='vertical-align:middle'>${cupText}</span></a>`;
   return `<a href='/cups/${cupID}-${cupShortName}'>${cupText}</a>`;

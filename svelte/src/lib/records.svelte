@@ -42,5 +42,4 @@
         text-overflow: ellipsis;
         overflow:hidden;
     }
-    
 </style>

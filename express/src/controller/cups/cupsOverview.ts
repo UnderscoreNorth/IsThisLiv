@@ -89,7 +89,7 @@ export async function cupsOverview(req: Request) {
         : 0;
     };
     let row = [
-      await cupLink(cup.cupID, true),
+      await cupLink(cup.cupID, { logo: true }),
       teams.length,
       matches.length,
       first,
