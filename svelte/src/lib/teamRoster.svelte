@@ -12,7 +12,7 @@
     <tr class={p.player.medal}>
         <td>{p.player.shirtNumber}</td>
         <td><Pos pos={p.player.regPos}/></td>
-        <td>{p.player.name} {p.player.captain ? '(C)' : ''}</td>
+        <td><a target="_blank" href='/players/{p.player.linkID}-{p.player.name}'>{p.player.name} {p.player.captain ? '(C)' : ''}</a></td>
     </tr>
 {/each}
 </table>
@@ -26,7 +26,7 @@
     <tr  class={p.player.medal}>
         <td>{p.player.shirtNumber}</td>
         <td><Pos pos={p.player.regPos}/></td>
-        <td>{p.player.name} {p.player.captain ? '(C)' : ''}</td>
+        <td><a target="_blank" href='/players/{p.player.linkID}-{p.player.name}'>{p.player.name} {p.player.captain ? '(C)' : ''}</a></td>
     </tr>
 {/each}
 </table>

@@ -55,7 +55,12 @@ export async function playerDetails(req: Request) {
                 <th>Events</th>
             </tr>`;
   for (const cup of cups) {
-    const perfData = await getPerformances({ cupID: cup.cupID, linkID });
+    const perfData = await getPerformances({
+      cupID: cup.cupID,
+      linkID,
+      getFriendlies: true,
+      getVoided: true,
+    });
     let matchesPlayed = [];
     let pos = "";
     let medal = "";

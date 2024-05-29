@@ -1,8 +1,10 @@
 import { Request } from "express";
 import {
   assistTypes,
+  cupLink,
   formatEventTime,
   goalTypes,
+  goalTypesOG,
   playerLink,
   redCardTypes,
   teamLink,
@@ -21,6 +23,7 @@ import {
   inArray,
   InferSelectModel,
   isNotNull,
+  like,
   lte,
   max,
   min,
@@ -48,6 +51,9 @@ const recordTypes = [
   "match-individual",
   "match-day",
   "match-match",
+  "cup-individual",
+  "cup-team",
+  "cup-cup",
 ] as const;
 
 export async function mainRecords(req: Request) {
@@ -55,14 +61,10 @@ export async function mainRecords(req: Request) {
   let date = new Date();
   const calcAll = true;
   date.setDate(date.getDate() + 1);
-  if (url.includes("match-individual")) {
-    return await calcRecords({ types: ["match-individual"], date, calcAll });
-  } else if (url.includes("match-team")) {
-    return await calcRecords({ types: ["match-team"], date, calcAll });
-  } else if (url.includes("match-day")) {
-    return await calcRecords({ types: ["match-day"], date, calcAll });
-  } else if (url.includes("match-match")) {
-    return await calcRecords({ types: ["match-match"], date, calcAll });
+  for (const recordType of recordTypes) {
+    if (url.includes(recordType)) {
+      return await calcRecords({ types: [recordType], date, calcAll });
+    }
   }
   return {};
 }
@@ -335,6 +337,245 @@ async function calcRecords({
     await matchStatShort("Tackles", MatchStat.tackles);
     await matchStatShort("Saves", MatchStat.saves);
   }
+  if (types.includes("cup-individual")) {
+    const title = "Cup - Individual";
+    data[title] = {};
+    data[title]["Most Goals Scored"] = await indCupEvent({
+      eventTypes: goalTypes,
+    });
+    data[title]["Most Goals Scored (Group Stage)"] = await indCupEvent({
+      eventTypes: goalTypes,
+      wheres: like(Match.round, "%Group%"),
+    });
+    data[title]["Most Goals Scored (Knockout Stage)"] = await indCupEvent({
+      eventTypes: goalTypes,
+      wheres: not(like(Match.round, "%Group%")),
+    });
+    data[title]["Most Assists Scored"] = await indCupEvent({
+      eventTypes: assistTypes,
+    });
+    data[title]["Most Assists Scored (Group Stage)"] = await indCupEvent({
+      eventTypes: assistTypes,
+      wheres: like(Match.round, "%Group%"),
+    });
+    data[title]["Most Assists Scored (Knockout Stage)"] = await indCupEvent({
+      eventTypes: assistTypes,
+      wheres: not(like(Match.round, "%Group%")),
+    });
+    data[title]["Most Saves"] = await indCupPerf({
+      stat: sum(Performance.saves),
+      dir: desc,
+    });
+    data[title]["Most Saves (Group Stage)"] = await indCupPerf({
+      stat: sum(Performance.saves),
+      dir: desc,
+      wheres: like(Match.round, "%Group%"),
+    });
+    data[title]["Most Saves (Knockout Stage)"] = await indCupPerf({
+      stat: sum(Performance.saves),
+      dir: desc,
+      wheres: not(like(Match.round, "%Group%")),
+    });
+  }
+  if (types.includes("cup-team")) {
+    const title = "Cup - Team";
+    data[title] = {};
+    const matchStatShort = async (
+      statTitle: string,
+      stat: MySqlColumn,
+      both = false
+    ) => {
+      data[title][`Most ${statTitle}`] = await cupTeamMatchStat({
+        dir: desc,
+        stat: sum(stat),
+      });
+      if (both)
+        data[title][`Least ${statTitle}`] = await cupTeamMatchStat({
+          dir: asc,
+          stat: sum(stat),
+        });
+    };
+    await matchStatShort("Shots", MatchStat.shots, true);
+    await matchStatShort("Shots on Target", MatchStat.shotsOT, true);
+    await matchStatShort("Fouls", MatchStat.fouls, false);
+    await matchStatShort("Offsides", MatchStat.offsides, false);
+    await matchStatShort("Free Kicks", MatchStat.freeKicks, true);
+    await matchStatShort("Passes Made (PES18+)", MatchStat.passMade, true);
+    await matchStatShort("Interceptions", MatchStat.interceptions, false);
+    await matchStatShort("Tackles", MatchStat.tackles, false);
+    await matchStatShort("Crosses", MatchStat.crosses, false);
+    await matchStatShort("Saves", MatchStat.saves, false);
+    data[title]["Highest Avg Possession"] = await cupTeamMatchStat({
+      dir: desc,
+      stat: avg(MatchStat.poss),
+    });
+    data[title]["Lowest Avg Possession"] = await cupTeamMatchStat({
+      dir: asc,
+      stat: avg(MatchStat.poss),
+    });
+    let result = await db
+      .select()
+      .from(Match)
+      .innerJoin(Cup, eq(Match.cupID, Cup.cupID))
+      .innerJoin(Event, eq(Event.matchID, Match.matchID))
+      .innerJoin(Player, eq(Event.playerID, Player.playerID))
+      .where(
+        and(
+          eq(Match.valid, 1),
+          eq(Match.official, 1),
+          lte(Cup.end, date),
+          lte(Cup.cupType, 3)
+        )
+      );
+    let goals: Record<
+      string,
+      {
+        goals: number;
+        goalsAgainst: number;
+        goalsGroup: number;
+        goalsAgainstGroup: number;
+        cupID: number;
+        team: string;
+      }
+    > = {};
+    for (let row of result) {
+      const cupID = row.cup.cupID;
+      const home = row.player.team;
+      const away =
+        row.player.team == row.match.homeTeam
+          ? row.match.awayTeam
+          : row.match.homeTeam;
+      for (const team of [home, away]) {
+        if (goals[cupID + team] == undefined)
+          goals[cupID + team] = {
+            goals: 0,
+            goalsAgainst: 0,
+            goalsGroup: 0,
+            goalsAgainstGroup: 0,
+            team: team,
+            cupID: cupID,
+          };
+      }
+      if (goalTypes.includes(row.event.eventType)) {
+        goals[cupID + home].goals++;
+        goals[cupID + away].goalsAgainst++;
+        if (row.match.round.includes("Group")) {
+          goals[cupID + home].goalsGroup++;
+          goals[cupID + away].goalsAgainstGroup++;
+        }
+      } else if (goalTypesOG.includes(row.event.eventType)) {
+        goals[cupID + home].goalsAgainst++;
+        goals[cupID + away].goals++;
+        if (row.match.round.includes("Group")) {
+          goals[cupID + home].goalsAgainstGroup++;
+          goals[cupID + away].goalsGroup++;
+        }
+      }
+    }
+    let goalStat = async (
+      stat: (x: (typeof goals)[string]) => number,
+      desc = true
+    ) => {
+      const dir = desc ? -1 : 1;
+      return {
+        header: [
+          ...getHeaders([{ header: "Total" }, { header: "Team" }], cupID),
+          ...(cupID ? [] : [{ header: "Cup" }]),
+        ],
+        rows: await Promise.all(
+          Object.values(goals)
+            .sort((a, b) => {
+              if (stat(a) > stat(b)) return 1 * dir;
+              if (stat(a) < stat(b)) return -1 * dir;
+              if (a.cupID > b.cupID) return -1;
+              if (a.cupID < b.cupID) return 1;
+              return 0;
+            })
+            .filter((x, i) => i < len)
+            .filter((x) => x.cupID == cupID || !cupID)
+            .map(async (x) => [
+              ...(cupID ? [x.cupID] : []),
+              stat(x),
+              teamLink(x.team, "left"),
+              ...(cupID
+                ? []
+                : [await cupLink(x.cupID, { logo: true, format: "med" })]),
+            ])
+        ),
+        numbered: false,
+      };
+    };
+    data[title]["Most Goals Forward"] = await goalStat(
+      (x: (typeof goals)[string]) => x.goals
+    );
+    data[title]["Least Goals Forward"] = await goalStat(
+      (x: (typeof goals)[string]) => x.goals,
+      false
+    );
+    data[title]["Most Goals Against"] = await goalStat(
+      (x: (typeof goals)[string]) => x.goalsAgainst
+    );
+    data[title]["Least Goals Against"] = await goalStat(
+      (x: (typeof goals)[string]) => x.goalsAgainst,
+      false
+    );
+    data[title]["Highest Goal Difference"] = await goalStat(
+      (x: (typeof goals)[string]) => x.goals - x.goalsAgainst
+    );
+    data[title]["Lowest Goal Difference"] = await goalStat(
+      (x: (typeof goals)[string]) => x.goals - x.goalsAgainst,
+      false
+    );
+    data[title]["Most Goals Forward (Group Stage)"] = await goalStat(
+      (x: (typeof goals)[string]) => x.goalsGroup
+    );
+    data[title]["Least Goals Forward (Group Stage)"] = await goalStat(
+      (x: (typeof goals)[string]) => x.goalsGroup,
+      false
+    );
+    data[title]["Most Goals Against (Group Stage)"] = await goalStat(
+      (x: (typeof goals)[string]) => x.goalsAgainstGroup
+    );
+    data[title]["Least Goals Against (Group Stage)"] = await goalStat(
+      (x: (typeof goals)[string]) => x.goalsAgainstGroup,
+      false
+    );
+    data[title]["Highest Goal Difference (Group Stage)"] = await goalStat(
+      (x: (typeof goals)[string]) => x.goalsGroup - x.goalsAgainstGroup
+    );
+    data[title]["Lowest Goal Difference (Group Stage)"] = await goalStat(
+      (x: (typeof goals)[string]) => x.goalsGroup - x.goalsAgainstGroup,
+      false
+    );
+  }
+  if (types.includes("cup-cup")) {
+    const title = "Cup";
+    data[title] = {};
+    const matchStatShort = async (
+      statTitle: string,
+      stat: MySqlColumn,
+      both = false
+    ) => {
+      data[title][`Most ${statTitle}`] = await cupMatchStat({
+        dir: desc,
+        stat,
+      });
+      if (both)
+        data[title][`Least ${statTitle}`] = await cupMatchStat({
+          dir: asc,
+          stat,
+        });
+    };
+    await matchStatShort("Shots", MatchStat.shots, true);
+    await matchStatShort("Shots on Target", MatchStat.shotsOT, true);
+    await matchStatShort("Fouls", MatchStat.fouls, true);
+    await matchStatShort("Offsides", MatchStat.offsides, true);
+    await matchStatShort("Free Kicks", MatchStat.freeKicks, true);
+    await matchStatShort("Passes Made", MatchStat.passMade, true);
+    await matchStatShort("Crosses", MatchStat.crosses, true);
+    await matchStatShort("Interceptions", MatchStat.interceptions, true);
+    await matchStatShort("Tackles", MatchStat.tackles, true);
+  }
   for (let k in data) {
     for (let j in data[k]) {
       if (!data[k][j].rows.length) delete data[k][j];
@@ -345,6 +586,173 @@ async function calcRecords({
     data,
     date: new Date(),
   };
+  async function cupEvent({
+    eventTypes,
+    wheres,
+  }: {
+    eventTypes: number[];
+    wheres?: SQLWrapper;
+  }) {
+    const selects = {
+      cup: Cup.cupName,
+      cupID: Cup.cupID,
+      row: Cup.cupName,
+    };
+    let result = await db
+      .select({ ...selects, count: count() })
+      .from(Event)
+      .innerJoin(Match, eq(Match.matchID, Event.matchID))
+      .innerJoin(Player, eq(Event.playerID, Player.playerID))
+      .innerJoin(PlayerLink, eq(Player.linkID, PlayerLink.linkID))
+      .innerJoin(Cup, eq(Cup.cupID, Match.cupID))
+      .where(
+        and(
+          inArray(Event.eventType, eventTypes),
+          eq(Match.valid, 1),
+          eq(Match.official, 1),
+          lte(Cup.end, date),
+          not(eq(PlayerLink.name, "Unknown Player")),
+          wheres !== undefined ? wheres : undefined
+        )
+      )
+      .groupBy(Cup.cupID, PlayerLink.linkID)
+      .orderBy(desc(count()), desc(Cup.end))
+      .limit(len);
+    result = placeMaker(result, "count");
+    return {
+      header: getHeaders(
+        [
+          { header: "Record" },
+          { header: "Player", colspan: 2 },
+          { header: "Cup", colspan: 1 },
+        ],
+        cupID
+      ),
+      rows: await Promise.all(
+        result
+          .filter((x) => x.cupID == cupID || !cupID)
+          .map(async (x) => [
+            ...(cupID ? [x.row] : []),
+            ...[
+              x.count,
+              teamLink(x.team, "left"),
+              x.name,
+              await cupLink(x.cupID, { logo: true, format: "med" }),
+            ],
+          ])
+      ),
+      numbered: false,
+    };
+  }
+  async function cupMatchStat({
+    stat,
+    dir,
+  }: {
+    stat: MySqlColumn;
+    dir: typeof desc;
+  }) {
+    let result = await db
+      .select({
+        sum: sum(stat),
+        avg: avg(stat),
+        row: Cup.cupName,
+        cupID: Cup.cupID,
+      })
+      .from(MatchStat)
+      .innerJoin(Match, eq(Match.matchID, MatchStat.matchID))
+      .innerJoin(Cup, eq(Cup.cupID, Match.cupID))
+      .where(
+        and(
+          eq(Match.valid, 1),
+          eq(Match.official, 1),
+          eq(MatchStat.finalPeriod, true),
+          lte(Cup.end, date),
+          gte(Cup.year, 2012),
+          lte(Cup.cupType, 3)
+        )
+      )
+      .groupBy(Cup.cupID)
+      .orderBy(dir(avg(stat)), desc(Cup.end))
+      .having(and(gte(sum(stat), 0), gte(count(), 5)))
+      .limit(len);
+    result = placeMaker(result, "sum");
+    return {
+      header: [
+        ...getHeaders([{ header: "Per" }, { header: "Total" }], cupID),
+        ...(cupID ? [] : [{ header: "Cup" }]),
+      ],
+      rows: await Promise.all(
+        result
+          .filter((x) => x.cupID == cupID || !cupID)
+          .map(async (x) => [
+            ...(cupID ? [x.row] : []),
+            ...[
+              Math.floor(x.avg) +
+                "." +
+                Math.round((x.avg - Math.floor(x.avg)) * 100)
+                  .toString()
+                  .padEnd(2, "0"),
+              x.sum,
+              ...(cupID
+                ? []
+                : [await cupLink(x.cupID, { logo: true, format: "med" })]),
+            ],
+          ])
+      ),
+      numbered: false,
+    };
+  }
+  async function cupTeamMatchStat({
+    stat,
+    dir,
+  }: {
+    stat: SQL<string | number>;
+    dir: typeof desc;
+  }) {
+    let result = await db
+      .select({
+        team: MatchStat.team,
+        sum: stat,
+        row: Cup.cupName,
+        cupID: Cup.cupID,
+      })
+      .from(MatchStat)
+      .innerJoin(Match, eq(Match.matchID, MatchStat.matchID))
+      .innerJoin(Cup, eq(Cup.cupID, Match.cupID))
+      .where(
+        and(
+          eq(Match.valid, 1),
+          eq(Match.official, 1),
+          eq(MatchStat.finalPeriod, true),
+          lte(Cup.end, date),
+          gte(Cup.year, 2012),
+          lte(Cup.cupType, 3)
+        )
+      )
+      .groupBy(Cup.cupID, MatchStat.team)
+      .orderBy(dir(stat), desc(Cup.end))
+      .having(gte(stat, 0))
+      .limit(len);
+    result = placeMaker(result, "sum");
+    return {
+      header: [
+        ...getHeaders([{ header: "Record" }, { header: "Team" }], cupID),
+        ...(cupID ? [] : [{ header: "Cup" }]),
+      ],
+      rows: await Promise.all(
+        result
+          .filter((x) => x.cupID == cupID || !cupID)
+          .map(async (x) => [
+            ...(cupID ? [x.row] : []),
+            ...[Math.floor(x.sum), teamLink(x.team, "left")],
+            ...(cupID
+              ? []
+              : [await cupLink(x.cupID, { logo: true, format: "med" })]),
+          ])
+      ),
+      numbered: false,
+    };
+  }
   async function matchStat({
     stat,
     dir,
@@ -371,7 +779,8 @@ async function calcRecords({
           eq(Match.valid, 1),
           eq(Match.official, 1),
           eq(MatchStat.finalPeriod, true),
-          lte(Cup.end, date)
+          lte(Cup.end, date),
+          gte(Cup.year, 2012)
         )
       )
       .groupBy(Match.matchID)
@@ -383,16 +792,23 @@ async function calcRecords({
         [{ header: "Record" }, { header: "Match", colspan: 3 }],
         cupID
       ),
-      rows: result
-        .filter((x) => x.cupID == cupID || !cupID)
-        .map((x) => [
-          ...(cupID ? [x.row] : []),
-          ...[
-            x.sum,
-            `${!cupID ? x.cup + " " : ""}${x.round}`,
-            `${teamLink(x.home)} - ${teamLink(x.away)}`,
-          ],
-        ]),
+      rows: await Promise.all(
+        result
+          .filter((x) => x.cupID == cupID || !cupID)
+          .map(async (x) => [
+            ...(cupID ? [x.row] : []),
+            ...[
+              x.sum,
+              `${
+                !cupID
+                  ? (await cupLink(x.cupID, { logo: true, format: "med" })) +
+                    " "
+                  : ""
+              }${x.round}`,
+              `${teamLink(x.home, "left")} - ${teamLink(x.away, "right")}`,
+            ],
+          ])
+      ),
       numbered: false,
     };
   }
@@ -444,16 +860,22 @@ async function calcRecords({
         [{ header: "Per Match" }, { header: "Total" }, { header: "Day" }],
         cupID
       ),
-      rows: result
-        .filter((x) => x.cupID == cupID || !cupID)
-        .map((x) => [
-          ...(cupID ? [x.row] : []),
-          ...[
-            Math.round((x.sum / x.count) * 100) / 100,
-            x.sum,
-            (!cupID ? x.cup + " " : "") + "Day " + x.day,
-          ],
-        ]),
+      rows: await Promise.all(
+        result
+          .filter((x) => x.cupID == cupID || !cupID)
+          .map(async (x) => [
+            ...(cupID ? [x.row] : []),
+            ...[
+              Math.round((x.sum / x.count) * 100) / 100,
+              x.sum,
+              (!cupID
+                ? (await cupLink(x.cupID, { logo: true, format: "med" })) + " "
+                : "") +
+                "Day " +
+                x.day,
+            ],
+          ])
+      ),
       numbered: false,
     };
   }
@@ -483,7 +905,8 @@ async function calcRecords({
           eq(Match.valid, 1),
           eq(Match.official, 1),
           lte(Cup.end, date),
-          eq(MatchStat.finalPeriod, true)
+          eq(MatchStat.finalPeriod, true),
+          gte(Cup.year, 2012)
         )
       )
       .groupBy(customDate, Cup.cupID)
@@ -509,16 +932,22 @@ async function calcRecords({
         [{ header: "Per Match" }, { header: "Total" }, { header: "Day" }],
         cupID
       ),
-      rows: result
-        .filter((x) => x.cupID == cupID || !cupID)
-        .map((x) => [
-          ...(cupID ? [x.row] : []),
-          ...[
-            Math.round(((x.sum as number) / x.count) * 100) / 100,
-            x.sum,
-            (!cupID ? x.cup + " " : "") + "Day " + x.day,
-          ],
-        ]),
+      rows: await Promise.all(
+        result
+          .filter((x) => x.cupID == cupID || !cupID)
+          .map(async (x) => [
+            ...(cupID ? [x.row] : []),
+            ...[
+              Math.round(((x.sum as number) / x.count) * 100) / 100,
+              x.sum,
+              (!cupID
+                ? (await cupLink(x.cupID, { logo: true, format: "med" })) + " "
+                : "") +
+                "Day " +
+                x.day,
+            ],
+          ])
+      ),
       numbered: false,
     };
   }
@@ -567,12 +996,14 @@ async function calcRecords({
         [{ header: "Record" }, { header: "Match", colspan: 3 }],
         cupID
       ),
-      rows: result
-        .filter((x) => x.cupID == cupID || !cupID)
-        .map((x) => [
-          ...(cupID ? [x.row] : []),
-          ...[x.avg, ...teamMatchHeader(x, cupID ? false : true)],
-        ]),
+      rows: await Promise.all(
+        result
+          .filter((x) => x.cupID == cupID || !cupID)
+          .map(async (x) => [
+            ...(cupID ? [x.row] : []),
+            ...[x.avg, ...(await teamMatchHeader(x, cupID ? false : true))],
+          ])
+      ),
       numbered: false,
     };
   }
@@ -615,12 +1046,14 @@ async function calcRecords({
         [{ header: "Record" }, { header: "Match", colspan: 3 }],
         cupID
       ),
-      rows: result
-        .filter((x) => x.cupID == cupID || !cupID)
-        .map((x) => [
-          ...(cupID ? [x.row] : []),
-          ...[x.sum, ...teamMatchHeader(x, cupID ? false : true)],
-        ]),
+      rows: await Promise.all(
+        result
+          .filter((x) => x.cupID == cupID || !cupID)
+          .map(async (x) => [
+            ...(cupID ? [x.row] : []),
+            ...[x.sum, ...(await teamMatchHeader(x, cupID ? false : true))],
+          ])
+      ),
       numbered: false,
     };
   }
@@ -673,12 +1106,131 @@ async function calcRecords({
         ],
         cupID
       ),
-      rows: result
-        .filter((x) => x.cupID == cupID || !cupID)
-        .map((x) => [
-          ...(cupID ? [x.row] : []),
-          ...[x.count, ...cupPlayerHeader(x, cupID ? false : true)],
-        ]),
+      rows: await Promise.all(
+        result
+          .filter((x) => x.cupID == cupID || !cupID)
+          .map(async (x) => [
+            ...(cupID ? [x.row] : []),
+            ...[x.count, ...(await cupPlayerHeader(x, cupID ? false : true))],
+          ])
+      ),
+      numbered: false,
+    };
+  }
+  async function indCupEvent({
+    eventTypes,
+    wheres,
+  }: {
+    eventTypes: number[];
+    wheres?: SQLWrapper;
+  }) {
+    const selects = {
+      name: PlayerLink.name,
+      team: PlayerLink.team,
+      linkID: PlayerLink.linkID,
+      cup: Cup.cupName,
+      cupID: Cup.cupID,
+      row: Cup.cupName,
+    };
+    let result = await db
+      .select({ ...selects, count: count() })
+      .from(Event)
+      .innerJoin(Match, eq(Match.matchID, Event.matchID))
+      .innerJoin(Player, eq(Event.playerID, Player.playerID))
+      .innerJoin(PlayerLink, eq(Player.linkID, PlayerLink.linkID))
+      .innerJoin(Cup, eq(Cup.cupID, Match.cupID))
+      .where(
+        and(
+          inArray(Event.eventType, eventTypes),
+          eq(Match.valid, 1),
+          eq(Match.official, 1),
+          lte(Cup.end, date),
+          not(eq(PlayerLink.name, "Unknown Player")),
+          wheres !== undefined ? wheres : undefined
+        )
+      )
+      .groupBy(Cup.cupID, PlayerLink.linkID)
+      .orderBy(desc(count()), desc(Cup.end))
+      .limit(len);
+    result = placeMaker(result, "count");
+    return {
+      header: [
+        ...getHeaders(
+          [{ header: "Record" }, { header: "Player", colspan: 2 }],
+          cupID
+        ),
+        ...(cupID ? [] : [{ header: "Cup", colspan: 1 }]),
+      ],
+      rows: await Promise.all(
+        result
+          .filter((x) => x.cupID == cupID || !cupID)
+          .map(async (x) => [
+            ...(cupID ? [x.row] : []),
+            ...[x.count, teamLink(x.team, "left"), x.name],
+            ...(cupID
+              ? []
+              : [await cupLink(x.cupID, { logo: true, format: "med" })]),
+          ])
+      ),
+      numbered: false,
+    };
+  }
+  async function indCupPerf({
+    stat,
+    dir,
+    wheres,
+  }: {
+    stat: SQL<string | number>;
+    dir: Function;
+    wheres?: SQLWrapper;
+  }) {
+    const selects = {
+      name: PlayerLink.name,
+      team: PlayerLink.team,
+      linkID: PlayerLink.linkID,
+      cup: Cup.cupName,
+      cupID: Cup.cupID,
+      row: Cup.cupName,
+    };
+    let result = await db
+      .select({ ...selects, count: stat })
+      .from(Performance)
+      .innerJoin(Match, eq(Match.matchID, Performance.matchID))
+      .innerJoin(Player, eq(Performance.playerID, Player.playerID))
+      .innerJoin(PlayerLink, eq(Player.linkID, PlayerLink.linkID))
+      .innerJoin(Cup, eq(Cup.cupID, Match.cupID))
+      .where(
+        and(
+          eq(Match.valid, 1),
+          eq(Match.official, 1),
+          lte(Cup.end, date),
+          not(eq(PlayerLink.name, "Unknown Player")),
+          wheres !== undefined ? wheres : undefined
+        )
+      )
+      .groupBy(Cup.cupID, PlayerLink.linkID)
+      .orderBy(dir(stat), desc(Cup.end))
+      .limit(len);
+    result = placeMaker(result, "count");
+    return {
+      header: [
+        ...getHeaders(
+          [{ header: "Record" }, { header: "Player", colspan: 2 }],
+          cupID
+        ),
+        ...(cupID ? [] : [{ header: "Cup", colspan: 1 }]),
+      ],
+      rows: await Promise.all(
+        result
+          .filter((x) => x.cupID == cupID || !cupID)
+          .map(async (x) => [
+            ...(cupID ? [x.row] : []),
+            ...[x.count, teamLink(x.team, "left"), x.name],
+            ...(cupID
+              ? []
+              : [await cupLink(x.cupID, { logo: true, format: "med" })]),
+          ])
+      ),
       numbered: false,
     };
   }
@@ -730,12 +1282,14 @@ async function calcRecords({
         ],
         cupID
       ),
-      rows: result
-        .filter((x) => x.cupID == cupID || !cupID)
-        .map((x) => [
-          ...(cupID ? [x.row] : []),
-          ...[x.count, ...cupPlayerHeader(x, cupID ? false : true)],
-        ]),
+      rows: await Promise.all(
+        result
+          .filter((x) => x.cupID == cupID || !cupID)
+          .map(async (x) => [
+            ...(cupID ? [x.row] : []),
+            ...[x.count, ...(await cupPlayerHeader(x, cupID ? false : true))],
+          ])
+      ),
       numbered: false,
     };
   }
@@ -861,16 +1415,19 @@ async function calcRecords({
           time,
           formatEventTime(goals[0]),
           formatEventTime(goals[num - 1]),
-          teamLink(player.player.team),
+          teamLink(player.player.team, "left"),
 
           player.playerlink
             ? await playerLink([
                 player.playerlink.linkID,
                 player.playerlink.name,
+                player.playerlink.team,
               ])
             : player.player.name,
-          `${cupID ? "" : cupName} ${round}`,
-          `${teamLink(home)} - ${teamLink(away)}`,
+          `${
+            cupID ? "" : await cupLink(x.cupID, { logo: true, format: "med" })
+          } ${round}`,
+          `${teamLink(home, "left")} - ${teamLink(away, "right")}`,
         ],
       ]);
     }
@@ -890,23 +1447,27 @@ async function calcRecords({
     };
   }
 }
-function cupPlayerHeader(x, displayCup = false) {
+async function cupPlayerHeader(x, displayCup = false) {
   return [
-    teamLink(x.team),
+    teamLink(x.team, "left"),
     x.name,
-    `${displayCup ? x.cup + " " : ""}${x.round}`,
-    `${teamLink(x.home)} - ${teamLink(x.away)}`,
+    `${
+      displayCup
+        ? (await cupLink(x.cupID, { logo: true, format: "med" })) + " "
+        : ""
+    }${x.round}`,
+    `${teamLink(x.home, "left")} - ${teamLink(x.away, "right")}`,
   ];
 }
-function cupMatchHeader(x) {
-  return `${x.cup} ${x.round}</td>
-  <td>${teamLink(x.home)} - ${teamLink(x.away)}`;
-}
-function teamMatchHeader(x, displayCup = false) {
+async function teamMatchHeader(x, displayCup = false) {
   return [
-    teamLink(x.team),
-    `${displayCup ? x.cup + " " : ""}${x.round}`,
-    `${teamLink(x.home)} - ${teamLink(x.away)}`,
+    teamLink(x.team, "left"),
+    `${
+      displayCup
+        ? (await cupLink(x.cupID, { logo: true, format: "med" })) + " "
+        : ""
+    }${x.round}`,
+    `${teamLink(x.home, "left")} - ${teamLink(x.away, "right")}`,
   ];
 }
 function placeMaker(result, key) {

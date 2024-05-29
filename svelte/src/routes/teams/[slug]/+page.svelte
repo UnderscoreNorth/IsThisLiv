@@ -197,4 +197,9 @@ import { page } from '$app/stores';
 	container :global(td) {
 		text-align: left;
 	}
+	@media only screen and (max-width: 1500px) {
+		grid{
+			grid-template-columns: 1fr;
+		}
+	}
 </style>

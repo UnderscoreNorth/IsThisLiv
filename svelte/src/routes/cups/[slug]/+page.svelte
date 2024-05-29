@@ -224,12 +224,18 @@
 	#recordsContainer{
 		display:flex;
 		flex-wrap: wrap;
-		flex-direction: column;
+		flex-direction: row;
 		gap:1rem;
 	}
 	:global(#recordsContainer table){
 		max-width: fit-content;
 		border-collapse: collapse;
+	}
+	:global(#recordsContainer h3){
+		width:100%
+	}
+	:global(.recordContainer){
+		max-width: 50rem;
 	}
 	:global(#recordsContainer td:not(:first-child):not(:last-child)){
 		border-right:solid 1px var(--fg-color);

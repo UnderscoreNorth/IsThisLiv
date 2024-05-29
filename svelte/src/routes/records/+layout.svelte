@@ -3,7 +3,7 @@
 	import { DeepSet } from '$lib/deepSet';
 	const links = new DeepSet([
 		{ Match: ['Individual', 'Team', 'Match', 'Day'] },
-		//{ Cup: ['Individual', 'Team', 'Cup'] },
+		{ Cup: ['Individual', 'Team', 'Cup'] },
 		{Overall:['Leaderboards']},
 		//{ Rankings: ['Coefficient', 'Elo'] }
 	]);

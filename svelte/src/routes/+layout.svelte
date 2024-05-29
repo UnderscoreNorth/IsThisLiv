@@ -186,6 +186,12 @@
 		color: black;
 		padding: 0 0.5rem;
 	}
+	:global(.Gold a, .Silver a, .Bronze a){
+		color:black;
+	}
+	:global(.Gold a:hover, .Silver a:hover, .Bronze a:hover){
+		color:white;
+	}
 	:global(.W) {
 		background: #ddffdd;
 		color: black;

@@ -1,7 +1,9 @@
 import { NextFunction, Request, Response } from "express";
 import { db } from "../db";
 import fs from "fs/promises";
-export const pageExpiry = 1; //8640000000; //;
+import { InferSelectModel } from "drizzle-orm";
+import { Cup } from "../db/schema";
+export const pageExpiry = 864000000000; //;
 
 export function teamIcon(team: string) {
   if (team.length == 0) return "";
@@ -23,10 +25,20 @@ export function teamLink(team: string, icon?: "left" | "right") {
     return team;
   }
 }
-export async function cupLink(cupID, logo = false) {
-  let cup = await db.query.Cup.findFirst({
-    where: (Cup, { eq }) => eq(Cup.cupID, cupID),
-  });
+export async function cupLink(
+  cupID: number | InferSelectModel<typeof Cup>,
+  params: { logo: boolean; format: "long" | "med" | "short" } = {
+    logo: false,
+    format: "long",
+  }
+) {
+  const { logo, format } = params;
+  let cup =
+    typeof cupID == "number"
+      ? await db.query.Cup.findFirst({
+          where: (Cup, { eq }) => eq(Cup.cupID, cupID),
+        })
+      : cupID;
   if (cup == undefined) return;
   let cupShortName =
     cup.year +
@@ -40,20 +52,26 @@ export async function cupLink(cupID, logo = false) {
       ? "Q"
       : "F") +
     "C";
+  let cupText = cup.cupName;
+  if (format == "short") cupText = cupShort(cup.cupName);
+  if (format == "med") {
+    cupText = cup.year + " " + cup.season;
+    if (cup.cupType == 3) cupText += " Q";
+    if (cup.cupType == 4) cupText += " F";
+  }
   if (logo)
     return `<a style='display:inline-block' href='/cups/${cupID}-${cupShortName}'>${
       logo
         ? `<img style='height:2.5rem;vertical-align:middle;margin-right:5px' src='/icons/cups/${cupID}.png' />`
         : ""
-    }<span style='vertical-align:middle'>${cup.cupName}</span></a>`;
-  return `<a href='/cups/${cupID}-${cupShortName}'>${cup.cupName}</a>`;
+    }<span style='vertical-align:middle'>${cupText}</span></a>`;
+  return `<a href='/cups/${cupID}-${cupShortName}'>${cupText}</a>`;
 }
-
-export function cupShort(cupName) {
+export function cupShort(cupName: string) {
   let cupWords = cupName.split(" ");
   let shortName = "";
   for (let cupWord of cupWords) {
-    if (parseInt(cupWord) && cupWord > 2000) {
+    if (parseInt(cupWord) && parseInt(cupWord) > 2000) {
       shortName += cupWord + " ";
     } else if (cupWord != "4chan") {
       if (cupWord == "World") {

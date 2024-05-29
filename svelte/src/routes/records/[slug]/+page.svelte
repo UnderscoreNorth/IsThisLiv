@@ -64,6 +64,15 @@
 		max-width:50rem;
 		vertical-align:top
 	}
+	:global(.recordContainer td){
+		max-width:15rem;
+	}
+	:global(.recordContainer img){
+		max-height:1rem;
+	}
+	:global(.recordContainer a){
+		vertical-align: bottom;
+	}
     :global(th){text-align:center}
 	:global(h4){margin:10px 0}
 

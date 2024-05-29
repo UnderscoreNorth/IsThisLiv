@@ -3,7 +3,7 @@
 			string,
 			{
 				header: Array<{ header: string; colspan?: number }>;
-				rows: Array<Array<string | number>>;
+				rows: Array<Array<string>>;
 				numbered: boolean;
 			}
 		>>;
@@ -28,7 +28,7 @@
                     <td>{i+1}</td>
                     {/if}
                     {#each row as cell}
-                    <td>{@html cell}</td>
+                    <td style:text-align={parseFloat(cell).toString() == cell ? 'right' : (cell.includes('> - <') ? 'center' : 'left')}>{@html cell.toString().replace('/icons/cups/','/icons/cups-small/')}</td>
                     {/each}
                 </tr>
                 {/each}
@@ -36,3 +36,11 @@
         </div>
     {/each}
 {/each}
+<style>
+    td{
+        white-space:nowrap;
+        text-overflow: ellipsis;
+        overflow:hidden;
+    }
+    
+</style>
