@@ -41,6 +41,7 @@ import {
   Performance,
   Player,
   PlayerLink,
+  Team,
 } from "../../db/schema";
 import { db } from "../../db";
 import { getCup, getCups, getPlayers } from "../../db/commonFn";
@@ -81,6 +82,17 @@ export async function cupRecords(req: Request) {
     calcAll: false,
   });
 }
+export async function teamRecords(req: Request) {
+  const team = req.params.team;
+  let date = new Date();
+  date.setDate(date.getDate() + 1);
+  return await calcRecords({
+    types: [...recordTypes],
+    date,
+    team,
+    calcAll: true,
+  });
+}
 export async function calcAllCups() {
   const cups = await getCups({ excludeFriendlies: true, asc: true });
   for (const cup of cups) {
@@ -100,16 +112,36 @@ export async function calcAllCups() {
   }
   return {};
 }
+export async function calcAllTeams() {
+  const teams = await db.select().from(Team);
+  let date = new Date();
+  date.setDate(date.getDate() + 1);
+  for (const { team } of teams) {
+    const data = await calcRecords({
+      types: [...recordTypes],
+      date,
+      team,
+      calcAll: true,
+    });
+    await fs.writeFile(
+      "cache/__api__records__teams__" + team + ".json",
+      JSON.stringify(data)
+    );
+    console.log(team + " records rebuilt");
+  }
+}
 
 async function calcRecords({
   types,
   date,
   cupID,
+  team,
   calcAll,
 }: {
   types: Array<(typeof recordTypes)[number]>;
   date: Date;
   cupID?: number;
+  team?: string;
   calcAll: boolean;
 }) {
   const len = calcAll ? 25 : 10;
@@ -495,14 +527,16 @@ async function calcRecords({
       rows = placeMaker(rows, "c");
       return {
         header: [
-          ...getHeaders([{ header: "Total" }, { header: "Team" }], cupID),
+          ...getHeaders([{ header: "Total" }, { header: "Team" }]),
           ...(cupID ? [] : [{ header: "Cup" }]),
         ],
         rows: await Promise.all(
           rows
-            .filter((x) => x.cupID == cupID || !cupID)
+            .filter(
+              (x) => (x.cupID == cupID || !cupID) && (!team || x.team == team)
+            )
             .map(async (x) => [
-              ...(cupID ? [x.row] : []),
+              ...(cupID || team ? [x.row] : []),
               stat(x),
               teamLink(x.team, "left"),
               ...(cupID
@@ -594,64 +628,6 @@ async function calcRecords({
     data,
     date: new Date(),
   };
-  async function cupEvent({
-    eventTypes,
-    wheres,
-  }: {
-    eventTypes: number[];
-    wheres?: SQLWrapper;
-  }) {
-    const selects = {
-      cup: Cup.cupName,
-      cupID: Cup.cupID,
-      row: Cup.cupName,
-    };
-    let result = await db
-      .select({ ...selects, count: count() })
-      .from(Event)
-      .innerJoin(Match, eq(Match.matchID, Event.matchID))
-      .innerJoin(Player, eq(Event.playerID, Player.playerID))
-      .innerJoin(PlayerLink, eq(Player.linkID, PlayerLink.linkID))
-      .innerJoin(Cup, eq(Cup.cupID, Match.cupID))
-      .where(
-        and(
-          inArray(Event.eventType, eventTypes),
-          eq(Match.valid, 1),
-          eq(Match.official, 1),
-          lte(Cup.end, date),
-          not(eq(PlayerLink.name, "Unknown Player")),
-          wheres !== undefined ? wheres : undefined
-        )
-      )
-      .groupBy(Cup.cupID, PlayerLink.linkID)
-      .orderBy(desc(count()), desc(Cup.end))
-      .limit(len);
-    result = placeMaker(result, "count");
-    return {
-      header: getHeaders(
-        [
-          { header: "Record" },
-          { header: "Player", colspan: 2 },
-          { header: "Cup", colspan: 1 },
-        ],
-        cupID
-      ),
-      rows: await Promise.all(
-        result
-          .filter((x) => x.cupID == cupID || !cupID)
-          .map(async (x) => [
-            ...(cupID ? [x.row] : []),
-            ...[
-              x.count,
-              teamLink(x.team, "left"),
-              x.name,
-              await cupLink(x.cupID, { logo: true, format: "med" }),
-            ],
-          ])
-      ),
-      numbered: false,
-    };
-  }
   async function cupMatchStat({
     stat,
     dir,
@@ -691,9 +667,9 @@ async function calcRecords({
       ],
       rows: await Promise.all(
         result
-          .filter((x) => x.cupID == cupID || !cupID)
+          .filter((x) => (x.cupID == cupID || !cupID) && !team)
           .map(async (x) => [
-            ...(cupID ? [x.row] : []),
+            ...(cupID || team ? [x.row] : []),
             ...[
               Math.floor(x.avg) +
                 "." +
@@ -749,9 +725,11 @@ async function calcRecords({
       ],
       rows: await Promise.all(
         result
-          .filter((x) => x.cupID == cupID || !cupID)
+          .filter(
+            (x) => (x.cupID == cupID || !cupID) && (!team || x.team == team)
+          )
           .map(async (x) => [
-            ...(cupID ? [x.row] : []),
+            ...(cupID || team ? [x.row] : []),
             ...[Math.floor(x.sum), teamLink(x.team, "left")],
             ...(cupID
               ? []
@@ -796,15 +774,19 @@ async function calcRecords({
       .limit(len);
     result = placeMaker(result, "sum");
     return {
-      header: getHeaders(
-        [{ header: "Record" }, { header: "Match", colspan: 3 }],
-        cupID
-      ),
+      header: getHeaders([
+        { header: "Record" },
+        { header: "Match", colspan: 3 },
+      ]),
       rows: await Promise.all(
         result
-          .filter((x) => x.cupID == cupID || !cupID)
+          .filter(
+            (x) =>
+              (x.cupID == cupID || !cupID) &&
+              (!team || [x.home, x.away].includes(team))
+          )
           .map(async (x) => [
-            ...(cupID ? [x.row] : []),
+            ...(cupID || team ? [x.row] : []),
             ...[
               x.sum,
               `${
@@ -864,15 +846,16 @@ async function calcRecords({
           .indexOf(row.date) + 1;
     }
     return {
-      header: getHeaders(
-        [{ header: "Per Match" }, { header: "Total" }, { header: "Day" }],
-        cupID
-      ),
+      header: getHeaders([
+        { header: "Per Match" },
+        { header: "Total" },
+        { header: "Day" },
+      ]),
       rows: await Promise.all(
         result
-          .filter((x) => x.cupID == cupID || !cupID)
+          .filter((x) => (x.cupID == cupID || !cupID) && !team)
           .map(async (x) => [
-            ...(cupID ? [x.row] : []),
+            ...(cupID || team ? [x.row] : []),
             ...[
               Math.round((x.sum / x.count) * 100) / 100,
               x.sum,
@@ -936,15 +919,16 @@ async function calcRecords({
           .indexOf(row.date) + 1;
     }
     return {
-      header: getHeaders(
-        [{ header: "Per Match" }, { header: "Total" }, { header: "Day" }],
-        cupID
-      ),
+      header: getHeaders([
+        { header: "Per Match" },
+        { header: "Total" },
+        { header: "Day" },
+      ]),
       rows: await Promise.all(
         result
-          .filter((x) => x.cupID == cupID || !cupID)
+          .filter((x) => (x.cupID == cupID || !cupID) && !team)
           .map(async (x) => [
-            ...(cupID ? [x.row] : []),
+            ...(cupID || team ? [x.row] : []),
             ...[
               Math.round(((x.sum as number) / x.count) * 100) / 100,
               x.sum,
@@ -1000,15 +984,17 @@ async function calcRecords({
     });
     result = placeMaker(result, "avg");
     return {
-      header: getHeaders(
-        [{ header: "Record" }, { header: "Match", colspan: 3 }],
-        cupID
-      ),
+      header: getHeaders([
+        { header: "Record" },
+        { header: "Match", colspan: 3 },
+      ]),
       rows: await Promise.all(
         result
-          .filter((x) => x.cupID == cupID || !cupID)
+          .filter(
+            (x) => (x.cupID == cupID || !cupID) && (!team || x.team == team)
+          )
           .map(async (x) => [
-            ...(cupID ? [x.row] : []),
+            ...(cupID || team ? [x.row] : []),
             ...[x.avg, ...(await teamMatchHeader(x, cupID ? false : true))],
           ])
       ),
@@ -1050,15 +1036,17 @@ async function calcRecords({
       .limit(len);
     result = placeMaker(result, "sum");
     return {
-      header: getHeaders(
-        [{ header: "Record" }, { header: "Match", colspan: 3 }],
-        cupID
-      ),
+      header: getHeaders([
+        { header: "Record" },
+        { header: "Match", colspan: 3 },
+      ]),
       rows: await Promise.all(
         result
-          .filter((x) => x.cupID == cupID || !cupID)
+          .filter(
+            (x) => (x.cupID == cupID || !cupID) && (!team || x.team == team)
+          )
           .map(async (x) => [
-            ...(cupID ? [x.row] : []),
+            ...(cupID || team ? [x.row] : []),
             ...[x.sum, ...(await teamMatchHeader(x, cupID ? false : true))],
           ])
       ),
@@ -1106,19 +1094,18 @@ async function calcRecords({
       .limit(len);
     result = placeMaker(result, "count");
     return {
-      header: getHeaders(
-        [
-          { header: "Record" },
-          { header: "Player", colspan: 2 },
-          { header: "Match", colspan: 2 },
-        ],
-        cupID
-      ),
+      header: getHeaders([
+        { header: "Record" },
+        { header: "Player", colspan: 2 },
+        { header: "Match", colspan: 2 },
+      ]),
       rows: await Promise.all(
         result
-          .filter((x) => x.cupID == cupID || !cupID)
+          .filter(
+            (x) => (x.cupID == cupID || !cupID) && (!team || x.team == team)
+          )
           .map(async (x) => [
-            ...(cupID ? [x.row] : []),
+            ...(cupID || team ? [x.row] : []),
             ...[x.count, ...(await cupPlayerHeader(x, cupID ? false : true))],
           ])
       ),
@@ -1163,17 +1150,16 @@ async function calcRecords({
     result = placeMaker(result, "count");
     return {
       header: [
-        ...getHeaders(
-          [{ header: "Record" }, { header: "Player", colspan: 2 }],
-          cupID
-        ),
+        ...getHeaders([{ header: "Record" }, { header: "Player", colspan: 2 }]),
         ...(cupID ? [] : [{ header: "Cup", colspan: 1 }]),
       ],
       rows: await Promise.all(
         result
-          .filter((x) => x.cupID == cupID || !cupID)
+          .filter(
+            (x) => (x.cupID == cupID || !cupID) && (!team || x.team == team)
+          )
           .map(async (x) => [
-            ...(cupID ? [x.row] : []),
+            ...(cupID || team ? [x.row] : []),
             ...[x.count, teamLink(x.team, "left"), x.name],
             ...(cupID
               ? []
@@ -1222,17 +1208,16 @@ async function calcRecords({
     result = placeMaker(result, "count");
     return {
       header: [
-        ...getHeaders(
-          [{ header: "Record" }, { header: "Player", colspan: 2 }],
-          cupID
-        ),
+        ...getHeaders([{ header: "Record" }, { header: "Player", colspan: 2 }]),
         ...(cupID ? [] : [{ header: "Cup", colspan: 1 }]),
       ],
       rows: await Promise.all(
         result
-          .filter((x) => x.cupID == cupID || !cupID)
+          .filter(
+            (x) => (x.cupID == cupID || !cupID) && (!team || x.team == team)
+          )
           .map(async (x) => [
-            ...(cupID ? [x.row] : []),
+            ...(cupID || team ? [x.row] : []),
             ...[x.count, teamLink(x.team, "left"), x.name],
             ...(cupID
               ? []
@@ -1282,19 +1267,18 @@ async function calcRecords({
       .limit(len);
     result = placeMaker(result, "count");
     return {
-      header: getHeaders(
-        [
-          { header: "Record" },
-          { header: "Player", colspan: 2 },
-          { header: "Match", colspan: 2 },
-        ],
-        cupID
-      ),
+      header: getHeaders([
+        { header: "Record" },
+        { header: "Player", colspan: 2 },
+        { header: "Match", colspan: 2 },
+      ]),
       rows: await Promise.all(
         result
-          .filter((x) => x.cupID == cupID || !cupID)
+          .filter(
+            (x) => (x.cupID == cupID || !cupID) && (!team || x.team == team)
+          )
           .map(async (x) => [
-            ...(cupID ? [x.row] : []),
+            ...(cupID || team ? [x.row] : []),
             ...[x.count, ...(await cupPlayerHeader(x, cupID ? false : true))],
           ])
       ),
@@ -1416,9 +1400,13 @@ async function calcRecords({
       if (p == 2) x.row += "nd";
       if (p == 3) x.row += "rd";
       if (p > 3) x.row += "th";
-      if (cupID && times[i].cupID !== cupID) continue;
+      if (
+        (cupID && times[i].cupID !== cupID) ||
+        (team && player.player.team !== team)
+      )
+        continue;
       rowArray.push([
-        ...(cupID ? [x.row] : []),
+        ...(cupID || team ? [x.row] : []),
         ...[
           time,
           formatEventTime(goals[0]),
@@ -1440,19 +1428,20 @@ async function calcRecords({
       ]);
     }
     return {
-      header: getHeaders(
-        [
-          { header: "Min" },
-          { header: "From" },
-          { header: "To" },
-          { header: "Player", colspan: 2 },
-          { header: "Match", colspan: 2 },
-        ],
-        cupID
-      ),
+      header: getHeaders([
+        { header: "Min" },
+        { header: "From" },
+        { header: "To" },
+        { header: "Player", colspan: 2 },
+        { header: "Match", colspan: 2 },
+      ]),
       rows: rowArray,
       numbered: false,
     };
+  }
+
+  function getHeaders(array: Array<{ header: string; colspan?: number }>) {
+    return [...(cupID || team ? [{ header: "#" }] : []), ...array];
   }
 }
 async function cupPlayerHeader(x, displayCup = false) {
@@ -1498,10 +1487,4 @@ function placeMaker(result, key) {
     }
     return x;
   });
-}
-function getHeaders(
-  array: Array<{ header: string; colspan?: number }>,
-  cupID?: number
-) {
-  return [...(cupID ? [{ header: "#" }] : []), ...array];
 }

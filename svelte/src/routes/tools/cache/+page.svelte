@@ -2,7 +2,8 @@
 	import { api } from "$lib/helper";    
     const commands:Record<string,{link:string,inProgress:boolean}> = {
         'Clear Cache':{link:'/sql/clearCache',inProgress:false},
-        'Rebuild Cup Records':{link:'/sql/rebuildCupRecords',inProgress:false}
+        'Rebuild Cup Records':{link:'/sql/rebuildCupRecords',inProgress:false},
+        'Rebuild Team Records':{link:'/sql/rebuildTeamRecords',inProgress:false},
     };
     async function runCommand(key:string){
         commands[key].inProgress = true;

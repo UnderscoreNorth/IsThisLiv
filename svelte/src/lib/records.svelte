@@ -42,4 +42,20 @@
         text-overflow: ellipsis;
         overflow:hidden;
     }
+	.recordContainer table{
+		max-width: fit-content;
+		border-collapse: collapse;
+	}
+    .recordContainer td:not(:first-child):not(:last-child){
+		border-right:solid 1px var(--fg-color);
+		border-left:solid 1px var(--fg-color);
+	}
+	.recordContainer th:not(:first-child):not(:last-child){
+		border-right:solid 1px var(--fg-color);
+		border-left:solid 1px var(--fg-color);
+	}
+	.recordContainer table tr:first-child th{
+		padding:0 3px;
+		border-bottom:solid 1px var(--fg-color);
+	}
 </style>

@@ -227,27 +227,11 @@
 		flex-direction: row;
 		gap:1rem;
 	}
-	:global(#recordsContainer table){
-		max-width: fit-content;
-		border-collapse: collapse;
-	}
 	:global(#recordsContainer h3){
 		width:100%
 	}
 	:global(.recordContainer){
 		max-width: 50rem;
-	}
-	:global(#recordsContainer td:not(:first-child):not(:last-child)){
-		border-right:solid 1px var(--fg-color);
-		border-left:solid 1px var(--fg-color);
-	}
-	:global(#recordsContainer th:not(:first-child):not(:last-child)){
-		border-right:solid 1px var(--fg-color);
-		border-left:solid 1px var(--fg-color);
-	}
-	:global(#recordsContainer table tr:first-child th){
-		padding:0 3px;
-		border-bottom:solid 1px var(--fg-color);
 	}
 	:global(#recordsContainer h3){
 		margin-bottom: 0;

@@ -10,12 +10,13 @@ import { matchSave } from "./matchSave";
 import { db } from "../../db";
 import { Round } from "../../db/schema";
 import { matchAdd } from "./matchAdd";
-import { calcAllCups } from "../records/records";
 import { newCup } from "./newCup";
 import { processManager } from "./processManager";
 import { updateCupTeam } from "./updateCupTeam";
 import { updateLinkName } from "./updateLinkName";
 import { groupStage } from "./groupStage";
+import { getMaintenance } from "./getMaintenance";
+import { calcAllCups, calcAllTeams } from "../records/records";
 
 const router = express.Router();
 router.use("/user", user);
@@ -35,9 +36,6 @@ router.use("/playerLink/", async (req, res, next) => {
 });
 router.use("/clearCache", async (req, res, next) => {
   res.send(await clearCache());
-});
-router.use("/rebuildCupRecords", async (req, res, next) => {
-  res.send(await calcAllCups());
 });
 router.use("/matchSave", async (req, res, next) => {
   res.send(await matchSave(req));
@@ -62,5 +60,16 @@ router.use("/updateLinkName", async (req, res, next) => {
 });
 router.use("/groupstage", async (req, res, next) => {
   res.send(await groupStage(req));
+});
+router.use("/getmaintenance", async (req, res, next) => {
+  res.send(await getMaintenance(req));
+});
+
+router.use("/rebuildCupRecords", async (req, res, next) => {
+  res.send(await calcAllCups());
+});
+
+router.use("/rebuildTeamRecords", async (req, res, next) => {
+  res.send(await calcAllTeams());
 });
 export default router;

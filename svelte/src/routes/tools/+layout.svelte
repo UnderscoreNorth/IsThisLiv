@@ -11,6 +11,7 @@
 		['upload', 'Upload Edit File'],
 		['unlinked_players', 'Unlinked Players'],
 		['groupstage', 'Groupstage'],
+		['maintenance','Maintenance']
 		
 	]);
 	const path = '/tools/';

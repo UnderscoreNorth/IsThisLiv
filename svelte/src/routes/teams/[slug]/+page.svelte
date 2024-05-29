@@ -5,18 +5,23 @@ import { page } from '$app/stores';
 	import Gallery from '$lib/gallery.svelte'
 	import TeamRoster from '$lib/teamRoster.svelte';
 	import TeamIcon from '$lib/teamIcon.svelte';
+	import Records from '$lib/records.svelte';
 	//let data;	
 	let data = {};
 	let sortData;
 	let id = '';
 	let imgs;
+	let records:Promise<any>;
+	let team:string;
 	page.subscribe((p)=>{
 		if(id!==p.url.pathname){
 			if(!p.url.pathname.includes('team')) return;
 			id = p.url.pathname;
+			team = $page.url.pathname.replace('/', '').substring(6);
 			data = api($page.url.pathname).then((r)=>{
-				imgs = getBooru('/' + $page.url.pathname.replace('/', '').substring(6) + '/')
+				imgs = getBooru('/' + team + '/')
 				sortData = r;
+				records =  api('/records/teams/' + team);
 				return r;
 			});
 		}
@@ -58,7 +63,7 @@ import { page } from '$app/stores';
 </script>
 
 <svelte:head>
-	<title>/{$page.url.pathname.replace('/', '').substring(6)}/ - IsThisLiv</title>
+	<title>/{team}/ - IsThisLiv</title>
 </svelte:head>
 
 {#await data}
@@ -72,10 +77,11 @@ import { page } from '$app/stores';
 			<div id="pageModifiedTime">Last updated - {data.date}</div>
 		{/if}
 		<h2 id="header">
-			<TeamIcon team={$page.url.pathname.replace('/', '').substring(6)}/> /{$page.url.pathname.replace('/', '').substring(6)}/ - <a href="#stats">Stats</a>
+			<TeamIcon team={team}/> /{team}/ - <a href="#stats">Stats</a>
 			<a href="#matches">Matches</a>
 			<a href='#gallery'>Gallery</a>
 			<a href="#roster">Roster Timeline</a>
+			<a href='#records'>Records</a>
 		</h2>
 	</div>
 	<container>
@@ -137,6 +143,14 @@ import { page } from '$app/stores';
 				{@html data.roster.footer}
 			</table>
 		</div>
+		<div id='recordsContainer'>
+			<h3 id='records'>Records</h3>
+			{#await records}
+				Loading...
+			{:then records}	
+				<Records res={records.data}/>
+			{/await}
+		</div>
 		{@html data.styleHtml}
 	</container>
 	{/if}
@@ -179,6 +193,16 @@ import { page } from '$app/stores';
 		margin: 0;
 		height: 1.5rem;
 		flex-shrink: 0;
+	}
+	#recordsContainer :global(.recordContainer){
+		display:inline-block;
+		padding: 1rem;
+	}
+	#recordsContainer :global(h3){
+		margin-bottom: 0;
+	}
+	#recordsContainer:global( h4){
+		margin: 5px;
 	}
 	container {
 		flex-shrink: 1;
