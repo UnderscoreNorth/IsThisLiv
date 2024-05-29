@@ -88,7 +88,7 @@
 </SideBar>
 <style>
 	#slotContainer{
-		padding:1rem;
 		position:relative;
+		height:100%;
 	}
 </style>

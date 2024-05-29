@@ -72,91 +72,93 @@ import { page } from '$app/stores';
 	{#if !data.statsHtml}
 		<h2>Team not found</h2>
 	{:else}
-	<div style='position:sticky;top:0;background:var(--bg-color);z-index:2'>
-		{#if data.date}
-			<div id="pageModifiedTime">Last updated - {data.date}</div>
-		{/if}
-		<h2 id="header">
-			<TeamIcon team={team}/> /{team}/ - 
-			<a href='#roster'>Roster</a>
-			<a href="#stats">Stats</a>
-			<a href="#matches">Matches</a>
-			<a href='#gallery'>Gallery</a>
-			<a href="#rostertimeline">Roster Timeline</a>
-			<a href='#records'>Records</a>
-		</h2>
+	<div style='display:flex;flex-direction:column;height:100%'>
+		<div>
+			{#if data.date}
+				<div id="pageModifiedTime">Last updated - {data.date}</div>
+			{/if}
+			<h2 id="header">
+				<TeamIcon team={team}/> /{team}/ - 
+				<a href='#roster'>Roster</a>
+				<a href="#stats">Stats</a>
+				<a href="#matches">Matches</a>
+				<a href='#gallery'>Gallery</a>
+				<a href="#rostertimeline">Roster Timeline</a>
+				<a href='#records'>Records</a>
+			</h2>
+		</div>
+		<container>
+			<grid>
+				<div>
+					<h3 id='roster'>Roster</h3>
+					<TeamRoster roster={data.latestRoster} />
+				</div>
+				<div>
+					<h3 id='stats'>Stats</h3>
+					{@html data.statsHtml}
+				</div>
+				<div>
+					<h3 id='matches'>Matches</h3>
+					{@html data.matchesHtml}
+				</div>
+				<div>
+					<h3 id='gallery'>Gallery</h3>
+					<Gallery {imgs} />
+				</div>
+			</grid>
+			<div >
+				<h3 id="rostertimeline">Roster Timeline</h3>
+				<div id='rosterContainer'>
+				<table id="tbl_roster">
+					{#each data.roster.header as headerRow,i}
+						<tr style='position:sticky;top:calc({i*1.2}rem;z-index:1'>
+							{#each headerRow as header}
+								<th
+									class={header.sort ? 'pointer' : ''}
+									colspan={header.colSpan || 1}
+									on:click={() => {
+										if (header.sort) sortTable(header.sort, header.dir);
+									}}
+								>
+									{header.text}
+								</th>
+							{/each}
+						</tr>
+					{/each}
+					{#each data.roster.data as player}
+						<tr class="playerRow">
+							<td class='rosterPlayerNameCell'  title={player.truename}>{@html player.name}</td>
+							<td>{player.apps}</td>
+							<td>{player.cups}</td>
+							<td>{player.goals}</td>
+							<td>{player.assists}</td>
+							<td>{player.saves}</td>
+							<td>{player.rating}</td>
+							{#each data.roster.cups as cup}
+								<td
+									class={'rosterCell ' +
+										('t' + Math.floor(player[cup.year + cup.season]) || 'no') +
+										(player[cup.year + cup.season] % 1 > 0 ? ' cap' : '')}
+									>{player[cup.year + cup.season] ? '_' : ''}</td
+								>
+							{/each}
+						</tr>
+					{/each}
+					{@html data.roster.footer}
+				</table>
+			</div>
+			</div>
+			<div id='recordsContainer'>
+				<h3 id='records'>Records</h3>
+				{#await records}
+					Loading...
+				{:then records}	
+					<Records res={records.data}/>
+				{/await}
+			</div>
+			{@html data.styleHtml}
+		</container>
 	</div>
-	<container>
-		<grid>
-			<div>
-				<h3 id='roster'>Roster</h3>
-				<TeamRoster roster={data.latestRoster} />
-			</div>
-			<div>
-				<h3 id='stats'>Stats</h3>
-				{@html data.statsHtml}
-			</div>
-			<div>
-				<h3 id='matches'>Matches</h3>
-				{@html data.matchesHtml}
-			</div>
-			<div>
-				<h3 id='gallery'>Gallery</h3>
-				<Gallery {imgs} />
-			</div>
-		</grid>
-		<div >
-			<h3 id="rostertimeline">Roster Timeline</h3>
-			<div id='rosterContainer'>
-			<table id="tbl_roster">
-				{#each data.roster.header as headerRow,i}
-					<tr style='position:sticky;top:calc({i*1.2}rem;z-index:1'>
-						{#each headerRow as header}
-							<th
-								class={header.sort ? 'pointer' : ''}
-								colspan={header.colSpan || 1}
-								on:click={() => {
-									if (header.sort) sortTable(header.sort, header.dir);
-								}}
-							>
-								{header.text}
-							</th>
-						{/each}
-					</tr>
-				{/each}
-				{#each data.roster.data as player}
-					<tr class="playerRow">
-						<td class='rosterPlayerNameCell'  title={player.truename}>{@html player.name}</td>
-						<td>{player.apps}</td>
-						<td>{player.cups}</td>
-						<td>{player.goals}</td>
-						<td>{player.assists}</td>
-						<td>{player.saves}</td>
-						<td>{player.rating}</td>
-						{#each data.roster.cups as cup}
-							<td
-								class={'rosterCell ' +
-									('t' + Math.floor(player[cup.year + cup.season]) || 'no') +
-									(player[cup.year + cup.season] % 1 > 0 ? ' cap' : '')}
-								>{player[cup.year + cup.season] ? '_' : ''}</td
-							>
-						{/each}
-					</tr>
-				{/each}
-				{@html data.roster.footer}
-			</table>
-		</div>
-		</div>
-		<div id='recordsContainer'>
-			<h3 id='records'>Records</h3>
-			{#await records}
-				Loading...
-			{:then records}	
-				<Records res={records.data}/>
-			{/await}
-		</div>
-		{@html data.styleHtml}
-	</container>
 	{/if}
 	
 {:catch}
@@ -220,8 +222,8 @@ import { page } from '$app/stores';
 	}
 	container {
 		flex-shrink: 1;
-		overflow-y: scroll;
-		padding: 1rem;
+		overflow-y: auto;
+		padding:1rem;
 	}
 	grid{
 		display:flex;
