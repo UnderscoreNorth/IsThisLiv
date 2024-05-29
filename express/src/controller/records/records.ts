@@ -436,6 +436,8 @@ async function calcRecords({
         goalsAgainstGroup: number;
         cupID: number;
         team: string;
+        c?: number;
+        row?: number;
       }
     > = {};
     for (let row of result) {
@@ -477,24 +479,30 @@ async function calcRecords({
       desc = true
     ) => {
       const dir = desc ? -1 : 1;
+      let rows = Object.values(goals)
+        .sort((a, b) => {
+          if (stat(a) > stat(b)) return 1 * dir;
+          if (stat(a) < stat(b)) return -1 * dir;
+          if (a.cupID > b.cupID) return -1;
+          if (a.cupID < b.cupID) return 1;
+          return 0;
+        })
+        .filter((x, i) => i < len)
+        .map((x) => {
+          x.c = stat(x);
+          return x;
+        });
+      rows = placeMaker(rows, "c");
       return {
         header: [
           ...getHeaders([{ header: "Total" }, { header: "Team" }], cupID),
           ...(cupID ? [] : [{ header: "Cup" }]),
         ],
         rows: await Promise.all(
-          Object.values(goals)
-            .sort((a, b) => {
-              if (stat(a) > stat(b)) return 1 * dir;
-              if (stat(a) < stat(b)) return -1 * dir;
-              if (a.cupID > b.cupID) return -1;
-              if (a.cupID < b.cupID) return 1;
-              return 0;
-            })
-            .filter((x, i) => i < len)
+          rows
             .filter((x) => x.cupID == cupID || !cupID)
             .map(async (x) => [
-              ...(cupID ? [x.cupID] : []),
+              ...(cupID ? [x.row] : []),
               stat(x),
               teamLink(x.team, "left"),
               ...(cupID
