@@ -26,6 +26,14 @@
             >
         }
     } = JSON.parse(JSON.stringify(data2));
+    if(data.matches.kos.length > 0){
+        for(let i = data.matches.kos.length -1 ;i>=0;i--){
+            if(['Boss','Wooden Spoon'].includes(data.matches.kos[i].name )){
+                data.matches.kos.splice(i)
+            }
+        }
+    }
+    
     for(let i in data.matches.kos){
         if(data.matches.kos[i].name == '3rd Place'){
             data.matches.kos[parseInt(i)+1].matches.push(data.matches.kos[i].matches[0]);            
