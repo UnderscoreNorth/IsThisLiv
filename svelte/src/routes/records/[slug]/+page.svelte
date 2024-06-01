@@ -25,8 +25,8 @@
 
 <title
 	>{$page.url.pathname
-		.substring(9)
-		.split('-')
+		.substring(9).replace('Misc','')
+		.split(/-|%20/gm)
 		.map((x) => x.charAt(0).toUpperCase() + x.substring(1).toLowerCase())
 		.join(' ')} - IsThisLiv</title
 >
@@ -35,11 +35,16 @@
 		<h2>Loading...</h2>
 	{:then res}
 		{#if res.date}
-			<div id="pageModifiedTime">Last updated - {res.date}</div>
+		<div id="pageModifiedTime">Last updated - {res.date}</div>
+			{#if res.data}
 			<h2>Records</h2>
 			<div id='recordContainer'>
 				<Records res={res.data}/>
 			</div>
+			{/if}
+			{#if res.html}
+				{@html res.html}
+			{/if}
 		{/if}
 	{:catch}
 		<h2>Error</h2>

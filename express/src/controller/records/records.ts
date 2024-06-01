@@ -2,6 +2,8 @@ import { Request } from "express";
 import {
   assistTypes,
   cupLink,
+  cupShort,
+  dateFormat,
   formatEventTime,
   goalTypes,
   goalTypesOG,
@@ -16,6 +18,7 @@ import {
   asc,
   avg,
   count,
+  countDistinct,
   desc,
   eq,
   gt,
@@ -23,11 +26,13 @@ import {
   inArray,
   InferSelectModel,
   isNotNull,
+  isNull,
   like,
   lte,
   max,
   min,
   not,
+  or,
   sql,
   SQL,
   SQLWrapper,
@@ -44,7 +49,13 @@ import {
   Team,
 } from "../../db/schema";
 import { db } from "../../db";
-import { getCup, getCups, getPlayers } from "../../db/commonFn";
+import {
+  getCup,
+  getCups,
+  getEvents,
+  getMatches,
+  getPlayers,
+} from "../../db/commonFn";
 import { MySqlColumn } from "drizzle-orm/mysql-core";
 
 const recordTypes = [
@@ -55,6 +66,7 @@ const recordTypes = [
   "cup-individual",
   "cup-team",
   "cup-cup",
+  "overall-streaks",
 ] as const;
 
 export async function mainRecords(req: Request) {
@@ -617,6 +629,409 @@ async function calcRecords({
     await matchStatShort("Crosses", MatchStat.crosses, true);
     await matchStatShort("Interceptions", MatchStat.interceptions, true);
     await matchStatShort("Tackles", MatchStat.tackles, true);
+    await matchStatShort("Saves", MatchStat.saves, true);
+    data[title]["Highest Pass Completion"] = await cupMatchStat({
+      dir: desc,
+      stat: MatchStat.passComp,
+    });
+    data[title]["Highest Pass Completion"].header.splice(1, 1);
+    data[title]["Highest Pass Completion"].header[0].header = "%";
+    for (const row of data[title]["Highest Pass Completion"].rows) {
+      row.splice(1, 1);
+    }
+    data[title]["Lowest Pass Completion"] = await cupMatchStat({
+      dir: asc,
+      stat: MatchStat.passComp,
+    });
+    data[title]["Lowest Pass Completion"].header.splice(1, 1);
+    data[title]["Lowest Pass Completion"].header[0].header = "%";
+    for (const row of data[title]["Lowest Pass Completion"].rows) {
+      row.splice(1, 1);
+    }
+  }
+  if (types.includes("overall-streaks")) {
+    data["Streaks"] = {};
+    let teams = await db.select().from(Team);
+    const teamStreaks: Record<
+      string,
+      Array<{
+        team: string;
+        count: number;
+        from: string;
+        to: string;
+        date: Date;
+        cupID: number;
+        row: string;
+      }>
+    > = {
+      w: [],
+      l: [],
+      d: [],
+      u: [],
+      wl: [],
+      dl: [],
+      s: [],
+      sl: [],
+      c: [],
+      cl: [],
+    };
+    const playerStreaks: Record<
+      string,
+      Array<{
+        player: string;
+        team: string;
+        count: number;
+        from: string;
+        to: string;
+        date: Date;
+        cupID: number;
+        row: string;
+      }>
+    > = {
+      m: [],
+      c: [],
+    };
+    for (const { team } of teams) {
+      const s = {
+        w: 0,
+        l: 0,
+        d: 0,
+        u: 0,
+        wl: 0,
+        dl: 0,
+        s: 0,
+        c: 0,
+        sl: 0,
+        cl: 0,
+        fw: "",
+        fwl: "",
+        fl: "",
+        fd: "",
+        fu: "",
+        fdl: "",
+        fs: "",
+        fc: "",
+        fsl: "",
+        fcl: "",
+      };
+      const matches = await getMatches({ sort: "asc", team, end: date });
+      for (const i in matches) {
+        const { match } = matches[i];
+        const set = (
+          k: "w" | "l" | "d" | "u" | "wl" | "dl" | "s" | "c" | "sl" | "cl",
+          num = 1
+        ) => {
+          if (s["f" + k] == "") s["f" + k] = dateFormat(match.utcTime, "med");
+          s[k] += num;
+        };
+        const setStreak = (
+          k: "w" | "l" | "d" | "u" | "wl" | "dl" | "s" | "c" | "sl" | "cl",
+          cur = false
+        ) => {
+          if (s[k] >= 3) {
+            teamStreaks[k].push({
+              team,
+              count: s[k],
+              from: s["f" + k],
+              to: cur ? "Ongoing" : dateFormat(match.utcTime, "med"),
+              date: match.utcTime,
+              row: "",
+              cupID: match.cupID,
+            });
+          }
+          s["f" + k] = "";
+          s[k] = 0;
+        };
+        if (match.winningTeam == team) {
+          set("w");
+          set("u");
+          set("dl");
+          setStreak("l");
+          setStreak("wl");
+          setStreak("d");
+        } else if (match.winningTeam == "draw") {
+          set("d");
+          set("u");
+          set("wl");
+          setStreak("w");
+          setStreak("l");
+          setStreak("dl");
+        } else {
+          set("l");
+          set("wl");
+          set("dl");
+          setStreak("w");
+          setStreak("u");
+          setStreak("d");
+        }
+        const events = await getEvents({
+          matchID: match.matchID,
+          eventTypes: [...goalTypes, ...goalTypesOG],
+        });
+        let gf = 0;
+        let ga = 0;
+        for (const event of events) {
+          if (goalTypes.includes(event.event.eventType)) {
+            if (event.player.team == team) {
+              gf++;
+            } else {
+              ga++;
+            }
+          } else if (goalTypesOG.includes(event.event.eventType)) {
+            if (event.player.team == team) {
+              ga++;
+            } else {
+              gf++;
+            }
+          }
+        }
+        if (gf > 0) {
+          set("s");
+          setStreak("sl");
+        } else {
+          set("sl");
+          setStreak("s");
+        }
+        if (ga > 0) {
+          set("c");
+          setStreak("cl");
+        } else {
+          set("cl");
+          setStreak("c");
+        }
+        if (parseInt(i) == matches.length - 1) {
+          setStreak("wl", true);
+          setStreak("l", true);
+          setStreak("dl", true);
+          setStreak("w", true);
+          setStreak("u", true);
+          setStreak("d", true);
+          setStreak("s", true);
+          setStreak("sl", true);
+          setStreak("cl", true);
+          setStreak("c", true);
+        }
+      }
+    }
+    for (const t in teamStreaks) {
+      let results = teamStreaks[t]
+        .sort((a, b) => {
+          if (a.count > b.count) return -1;
+          if (a.count < b.count) return 1;
+          if (a.date > b.date) return -1;
+          if (a.date < b.date) return 1;
+          return 0;
+        })
+        .filter((x, i) => i < 25);
+      results = placeMaker(results, "count");
+      let title = "Longest";
+      if (t == "w") title += " Winning Streak";
+      if (t == "u") title += " Undefeated Streak";
+      if (t == "l") title += " Losing Streak";
+      if (t == "wl") title += " Winless Streak";
+      if (t == "dl") title += " Drawless Streak";
+      if (t == "d") title += " Draw Streak";
+      if (t == "s") title += " Scoring Streak";
+      if (t == "sl") title += " Without Scoring";
+      if (t == "c") title += " Conceding Streak";
+      if (t == "cl") title += " Without Conceding";
+      data["Streaks"][title] = {
+        header: [
+          ...(cupID || team ? [{ header: "#" }] : []),
+          ...[
+            { header: "#" },
+            { header: "Team" },
+            { header: "From" },
+            { header: "To" },
+          ],
+        ],
+        rows: results
+          .filter(
+            (x) => (!team || x.team == team) && (!cupID || x.cupID == cupID)
+          )
+          .map((x) => {
+            return [
+              ...(cupID || team ? [x.row] : []),
+              ...[x.count, teamLink(x.team, "left"), x.from, x.to],
+            ];
+          }),
+        numbered: false,
+      };
+    }
+    const players = await db
+      .select({ PlayerLink })
+      .from(PlayerLink)
+      .innerJoin(Player, eq(PlayerLink.linkID, Player.linkID))
+      .innerJoin(Event, eq(Event.playerID, Player.playerID))
+      .innerJoin(Match, eq(Match.matchID, Event.matchID))
+      .where(and(inArray(Event.eventType, goalTypes), lte(Match.utcTime, date)))
+      .groupBy(PlayerLink.linkID)
+      .having(gte(count(), 8));
+    for (const j in players) {
+      const { PlayerLink } = players[j];
+      let m = 0;
+      let c = 0;
+      let fm = "";
+      let fc = "";
+      let cupID = 0;
+      let cupName = "";
+      let cupGoals = 0;
+      const matches = await db
+        .select()
+        .from(Performance)
+        .innerJoin(Match, eq(Performance.matchID, Match.matchID))
+        .innerJoin(Player, eq(Player.playerID, Performance.playerID))
+        .innerJoin(Cup, eq(Cup.cupID, Match.cupID))
+        .where(
+          and(
+            eq(Match.official, 1),
+            eq(Match.valid, 1),
+            eq(Player.linkID, PlayerLink.linkID),
+            lte(Match.utcTime, date),
+            lte(Cup.cupType, 3)
+          )
+        )
+        .orderBy(Cup.start, Match.utcTime);
+      for (const i in matches) {
+        const match = matches[i];
+        const goals = (
+          await db
+            .select()
+            .from(Event)
+            .where(
+              and(
+                eq(Event.playerID, match.player.playerID),
+                eq(Event.matchID, match.match.matchID),
+                inArray(Event.eventType, goalTypes)
+              )
+            )
+        ).length;
+        if (cupID !== match.match.cupID) {
+          if (cupGoals > 0) {
+            c++;
+          } else {
+            if (c >= 3) {
+              playerStreaks.c.push({
+                count: c,
+                player: await playerLink([
+                  PlayerLink.linkID,
+                  PlayerLink.name,
+                  PlayerLink.team,
+                ]),
+                team: PlayerLink.team,
+                from: fc,
+                to: cupShort(cupName),
+                date: match.match.utcTime,
+                row: "",
+                cupID: match.cup.cupID,
+              });
+            }
+            c = 0;
+            fc = "";
+          }
+          cupID = match.match.cupID;
+          cupName = match.cup.cupName;
+          cupGoals = 0;
+        }
+        cupGoals += goals;
+        if (goals > 0) {
+          if (fm == "") fm = dateFormat(match.match.utcTime, "med");
+          m++;
+          if (fc == "") fc = cupShort(match.cup.cupName);
+        } else {
+          if (m >= 3) {
+            playerStreaks.m.push({
+              count: m,
+              player: await playerLink([
+                PlayerLink.linkID,
+                PlayerLink.name,
+                PlayerLink.team,
+              ]),
+              team: PlayerLink.team,
+              from: fm,
+              to: dateFormat(match.match.utcTime, "med"),
+              date: match.match.utcTime,
+              row: "",
+              cupID: match.cup.cupID,
+            });
+          }
+          m = 0;
+          fm = "";
+        }
+        if (parseInt(i) == matches.length - 1) {
+          if (cupGoals > 0) c++;
+          if (c >= 3) {
+            playerStreaks.c.push({
+              count: c,
+              player: await playerLink([
+                PlayerLink.linkID,
+                PlayerLink.name,
+                PlayerLink.team,
+              ]),
+              team: PlayerLink.team,
+              from: fc,
+              to: cupGoals > 0 ? "Ongoing" : cupShort(cupName),
+              date: match.match.utcTime,
+              row: "",
+              cupID: match.cup.cupID,
+            });
+          }
+          if (m >= 3) {
+            playerStreaks.m.push({
+              count: m,
+              player: await playerLink([
+                PlayerLink.linkID,
+                PlayerLink.name,
+                PlayerLink.team,
+              ]),
+              team: PlayerLink.team,
+              from: fm,
+              to: "Ongoing",
+              date: match.match.utcTime,
+              row: "",
+              cupID: match.cup.cupID,
+            });
+          }
+        }
+      }
+    }
+    for (const t in playerStreaks) {
+      let results = playerStreaks[t]
+        .sort((a, b) => {
+          if (a.count > b.count) return -1;
+          if (a.count < b.count) return 1;
+          if (a.date > b.date) return -1;
+          if (a.date < b.date) return 1;
+          return 0;
+        })
+        .filter((x, i) => i < 25);
+      results = placeMaker(results, "count");
+      let title = "Longest";
+      if (t == "m") title += " Scoring Streak (Player/Match)";
+      if (t == "c") title += " Scoring Streak (Player/Cup)";
+      data["Streaks"][title] = {
+        header: [
+          ...(cupID || team ? [{ header: "#" }] : []),
+          ...[
+            { header: t == "m" ? "Matches" : "Cups" },
+            { header: "Player", colspan: 2 },
+            { header: "From" },
+            { header: "To" },
+          ],
+        ],
+        rows: results
+          .filter(
+            (x) => (!team || x.team == team) && (!cupID || x.cupID == cupID)
+          )
+          .map((x) => {
+            return [
+              ...(cupID || team ? [x.row] : []),
+              ...[x.count, teamLink(x.team, "left"), x.player, x.from, x.to],
+            ];
+          }),
+        numbered: false,
+      };
+    }
   }
   for (let k in data) {
     for (let j in data[k]) {
@@ -1444,6 +1859,7 @@ async function calcRecords({
     return [...(cupID || team ? [{ header: "#" }] : []), ...array];
   }
 }
+
 async function cupPlayerHeader(x, displayCup = false) {
   return [
     teamLink(x.team, "left"),

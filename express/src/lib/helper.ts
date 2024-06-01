@@ -39,6 +39,7 @@ export async function cupLink(
           where: (Cup, { eq }) => eq(Cup.cupID, cupID),
         })
       : cupID;
+  cupID = cup.cupID;
   if (cup == undefined) return;
   let cupShortName =
     cup.year +
