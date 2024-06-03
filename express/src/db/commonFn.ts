@@ -152,7 +152,6 @@ export async function getPerformances(options: {
     options.motm ? eq(Performance.motm, options.motm) : undefined,
     options?.end ? lte(Match.utcTime, options.end) : undefined
   );
-
   return await db
     .select()
     .from(Performance)

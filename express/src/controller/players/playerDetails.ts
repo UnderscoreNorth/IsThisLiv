@@ -32,7 +32,7 @@ export async function playerDetails(req: Request) {
 
   let linkID = parseInt(req.params.linkID.split("-")[0]);
   if (!linkID) return {};
-  let playerData = await getPlayers({ linkID });
+  let playerData = await getPlayers({ linkID, getFriendlies: true });
   if (!playerData[0]) return {};
   team = playerData[0].playerlink.team;
   pName = playerData[0].playerlink.name;
@@ -94,7 +94,10 @@ export async function playerDetails(req: Request) {
         events.push("Saves: " + saves);
         if (match.valid) totalSaves += saves;
       }
-      const eventData = await getEvents({ matchID: match.matchID });
+      const eventData = await getEvents({
+        matchID: match.matchID,
+        getVoided: true,
+      });
       for (const { event, player } of eventData) {
         if (goalTypes.includes(event.eventType) && player.team == team)
           matchGoals++;

@@ -4,9 +4,9 @@
 	// @ts-ignore
 	import MdAddBox from 'svelte-icons/md/MdAddBox.svelte';
 	import { cupShort, cupToBooru, getBooru} from '$lib/helper';	
-	import MatchEdit from './MatchEdit.svelte';
+	import MatchEdit from '../../../lib/matches/MatchEdit.svelte';
 	import MatchAdd from './MatchAdd.svelte';
-	import TeamModal from './teamModal.svelte';
+	import TeamModal from '../../../lib/teamModal.svelte';
 	import { api } from '$lib/helper';
 	import TeamIcon from '$lib/teamIcon.svelte';
 	import Gallery from '$lib/gallery.svelte'
