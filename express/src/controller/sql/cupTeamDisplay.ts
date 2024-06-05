@@ -12,20 +12,21 @@ export async function cupTeamDisplay(req: Request) {
       .from(PlayerLink)
       .where(eq(PlayerLink.team, team))
       .orderBy(PlayerLink.name),
-    players: (await getPlayers({ cupID, team })).sort((a, b) => {
-      if (a.player.starting > b.player.starting) {
-        return -1;
-      } else if (a.player.starting < b.player.starting) {
-        return 1;
-      } else {
-        if (a.rosterorder.order > b.rosterorder.order) {
-          return 1;
-        } else if (a.rosterorder.order < b.rosterorder.order) {
+    players:
+      (await getPlayers({ cupID, team }))?.sort((a, b) => {
+        if (a.player.starting > b.player.starting) {
           return -1;
+        } else if (a.player.starting < b.player.starting) {
+          return 1;
         } else {
-          return 0;
+          if (a.rosterorder.order > b.rosterorder.order) {
+            return 1;
+          } else if (a.rosterorder.order < b.rosterorder.order) {
+            return -1;
+          } else {
+            return 0;
+          }
         }
-      }
-    }),
+      }) ?? [],
   };
 }
