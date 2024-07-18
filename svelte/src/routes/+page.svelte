@@ -22,6 +22,14 @@
 			rel="noreferrer">https://isthisliv.com/stream/</a
 		>
 	</p>
+	<h3>Roadmap</h3>
+	<ul>
+		<li>Migrating old misc stats</li>
+		<li>Requiring tags when uploading on booru</li>
+		<li>Text/copypasta/flash support on booru</li>
+		<li>QoL UI changes to booru like right click to save</li>
+		<li>Time graphs like Elo or GD</li>
+	</ul>
 	<a href="mailto:underscorenorth@gmail.com">Contact</a>
 	<a href="https://IsThisLiv.com/files/">Github</a>
 	<a href="https://isthisliv.com/files/sql_backups/">SQL Backups</a>

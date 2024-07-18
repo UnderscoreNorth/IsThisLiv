@@ -19,9 +19,9 @@ export async function cupTeamDisplay(req: Request) {
         } else if (a.player.starting < b.player.starting) {
           return 1;
         } else {
-          if (a.rosterorder.order > b.rosterorder.order) {
+          if (a?.rosterorder?.order > b?.rosterorder?.order) {
             return 1;
-          } else if (a.rosterorder.order < b.rosterorder.order) {
+          } else if (a?.rosterorder?.order < b?.rosterorder?.order) {
             return -1;
           } else {
             return 0;
