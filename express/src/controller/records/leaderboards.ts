@@ -8,6 +8,7 @@ import {
   gt,
   gte,
   inArray,
+  isNull,
   lte,
   not,
   or,
@@ -212,6 +213,45 @@ export async function leaderboards(req: Request) {
         x.wins / x.total >= 0.5 ? "N/A" : Math.ceil(x.total - 2 * x.wins),
       ];
     });
+  const hatTricks = await db
+    .select({ player: Player })
+    .from(Event)
+    .innerJoin(Match, eq(Event.matchID, Match.matchID))
+    .innerJoin(Player, eq(Event.playerID, Player.playerID))
+    .where(
+      and(
+        eq(Match.valid, 1),
+        eq(Match.official, 1),
+        lte(Match.utcTime, new Date(new Date(cup.end).getTime() + 864000)),
+        inArray(Event.eventType, goalTypes),
+        not(eq(Player.name, "Unknown Player")),
+        not(isNull(Player.linkID))
+      )
+    )
+    .groupBy(Event.matchID, Player.playerID)
+    .having(gte(count(), 3));
+  const hatTricksGrouped: Record<string, [number, string, number]> = {};
+  for (const row of hatTricks) {
+    if (hatTricksGrouped[row.player.linkID] == undefined)
+      hatTricksGrouped[row.player.linkID] = [
+        row.player.linkID,
+        row.player.team,
+        0,
+      ];
+    hatTricksGrouped[row.player.linkID][2]++;
+  }
+  data.mostHattricks = await Promise.all(
+    Object.values(hatTricksGrouped)
+      .sort((a, b) => {
+        if (a[2] > b[2]) return -1;
+        if (a[2] < b[2]) return 1;
+        return 0;
+      })
+      .filter((x, i) => i < 100)
+      .map(async (x, i) => {
+        return [i + 1, teamLink(x[1], "left"), await playerLink(x[0]), x[2]];
+      })
+  );
   data.date = new Date();
   return data;
   async function avgPerf(arg: SQLWrapper, dir: typeof asc) {

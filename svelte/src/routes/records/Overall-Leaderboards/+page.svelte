@@ -39,6 +39,7 @@
         {#if data !== undefined && data.date !== undefined}
             <data>
                 <Table title={'All Time Goalscorers'} headers={['#','Board','Name','Goals']} rows={data.mostGoals} />
+                <Table title={'Most Hat Tricks'} headers={['#','Board','Name','Hat Tricks']} rows={data.mostHattricks} />
                 <Table title={'All Time Cards'} headers={['#','Board','Name','Cards']} rows={data.mostCards} />  
                 <Table title={'All Time Assists'} headers={['#','Board','Name','Assists']} rows={data.mostAssists} />    
                 <Table title={'All Time Saves'} headers={['#','Board','Name','Saves']} rows={data.mostSaves} />    

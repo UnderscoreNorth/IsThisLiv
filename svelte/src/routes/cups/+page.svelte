@@ -41,56 +41,65 @@
 		<p>Loading...</p>
 	{:then data}
 		<div id="tableContainer">
-			<table>
-				<thead>
-					<tr>
-						<th>Cup</th>
-						<th>Teams</th>
-						<th>Matches</th>
-						<th>1st</th>
-						<th>2nd</th>
-						<th>3rd</th>
-						<th>4th</th>
-						<th>Matches going<br />to E.T.</th>
-						<th>Matches going<br />to Pens</th>
-						<th>Goals</th>
-						<th>Golden Boot</th>
-						<th>Golden Ball</th>
-						<th>Golden Glove</th>
-						<th>Yellow Cards</th>
-						<th>Red Cards</th>
-					</tr>
-				</thead>
-				<tbody>
-					{#each data as row}
-						<tr>
-							{#each row as cell,i}
-								<td style:text-align={i==0 ? 'left' : ''}>{@html cell}</td>
-							{/each}
-						</tr>
+			<div id='headers'>
+				<div>Cup</div>
+				<div>Teams</div>
+				<div>1st</div>
+				<div>2nd</div>
+				<div>3rd</div>
+				<div>4th</div>
+				<div>Matches<br>going<br />to E.T.</div>
+				<div>Matches<br>going<br />to Pens</div>
+				<div>Goals</div>
+				<div>Golden Boot</div>
+				<div>Golden Ball</div>
+				<div>Golden Glove</div>
+				<div>Yellow Cards</div>
+				<div>Red Cards</div>
+			</div>
+			{#each data as row}
+				<div>
+					{#each row as cell,i}
+						<span style:text-align={i==0 ? 'left' : ''}>{@html cell}</span>
 					{/each}
-				</tbody>
-			</table>
+				</div>
+			{/each}
 		</div>
 	{/await}
 </div>
 
 <style>
-	thead {
+	#headers {
 		position: sticky;
 		top: 0;
 		background: var(--bg-color);
+		z-index: 1;
 	}
 	#tableContainer {
 		height: calc(100% - 5rem);
 		overflow-y: scroll;
+		display:grid;
+		grid-template-columns: 2fr auto auto auto auto auto auto auto auto 1fr 1fr 1fr auto auto;
+	}
+	#tableContainer>div{
+		display:grid;
+		grid-template-columns: subgrid;
+		grid-column: 1/16;
+		gap:5px;
+		font-size: smaller;
+		align-items: center;
+	}
+	#tableContainer>div span:nth-child(1n + 2){
+		text-overflow: ellipsis;
+		white-space: nowrap;
+		overflow-x: hidden;
 	}
 	#cupContainer {
 		height: calc(100% - 2rem);
 		padding:1rem;
 	}
-	@media only screen and (max-width: 1000px) {
-		tr *:not(:first-child){
+	@media only screen and (max-widdiv: 1000px) {
+		div *:not(:first-child){
 			display: none;
 		}
 		#cupContainer{

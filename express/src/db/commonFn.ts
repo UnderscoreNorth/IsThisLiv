@@ -67,6 +67,7 @@ export async function getMatches(options?: {
   getVoided?: boolean;
   getUnofficial?: boolean;
   sort?: "asc" | "desc";
+  roundSort?: "asc" | "desc";
   team?: string;
   cupID?: number;
   matchID?: number;
@@ -96,7 +97,7 @@ export async function getMatches(options?: {
     )
     .orderBy(
       Cup.start,
-      Round.order,
+      options?.roundSort == "desc" ? desc(Round.order) : asc(Round.order),
       Round.round,
       options?.sort == "desc" ? desc(Match.utcTime) : asc(Match.utcTime),
       Match.matchID

@@ -325,7 +325,7 @@
                         <td>
                             <select bind:value={player.playerID}>
                                 <option></option>
-                                {#each Object.values(data.players[i]).filter((x)=>data.performances[i].map((y)=>y?.performance?.playerID).includes(x.player.playerID)
+                                {#each Object.values(data.players[i]).filter((x)=>data.performances[i].map((y)=>y?.player?.playerID).includes(x.player.playerID)
                                 )  as {player}}
                                     <option value={player.playerID}>{player.name}</option>
                                 {/each}

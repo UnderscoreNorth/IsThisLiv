@@ -22,20 +22,21 @@ export async function cupsOverview(req: Request) {
   let wikiText = ``;
   for (const cup of cups) {
     let teams = await getCupTeams(cup.cupID);
-    let matches = (await getMatches({ cupID: cup.cupID, sort: "desc" })).map(
-      (x) => x.match
-    );
+    let matches = (
+      await getMatches({
+        cupID: cup.cupID,
+        sort: "desc",
+        roundSort: "desc",
+        getVoided: true,
+      })
+    ).map((x) => x.match);
     let places = ["", "", "", ""];
     if (cup.cupType < 3 && cup.end < new Date()) {
-      for (const match of matches.sort((a, b) => {
-        if (a.utcTime > b.utcTime) return -1;
-        if (a.utcTime < b.utcTime) return 1;
-        if (a.matchID > b.matchID) return -1;
-        return 1;
-      })) {
-        const winner = teamLink(match.winningTeam);
+      for (const match of matches) {
+        const winner = teamLink(match.winningTeam, "left");
         const loser = teamLink(
-          match.homeTeam == match.winningTeam ? match.awayTeam : match.homeTeam
+          match.homeTeam == match.winningTeam ? match.awayTeam : match.homeTeam,
+          "left"
         );
         for (let i = 0; i < 4; i++) {
           if (places[i]) continue;
@@ -68,20 +69,20 @@ export async function cupsOverview(req: Request) {
     let goldenBootLink = await getMost("goals", cup.cupID);
     let goldenBoot =
       goldenBootLink.length && goldenBootLink[0].linkID
-        ? (await playerLink(goldenBootLink[0].linkID)) +
-          ` (${goldenBootLink[0].count})`
+        ? `(${goldenBootLink[0].count}) ` +
+          (await playerLink(goldenBootLink[0].linkID, "left"))
         : "";
     let goldenBallLink = await getMost("assists", cup.cupID);
     let goldenBall =
       goldenBallLink.length && goldenBallLink[0].linkID
-        ? (await playerLink(goldenBallLink[0].linkID)) +
-          ` (${goldenBallLink[0].count})`
+        ? `(${goldenBallLink[0].count}) ` +
+          (await playerLink(goldenBallLink[0].linkID, "left"))
         : "";
     let goldenGloveLink = await getMost("saves", cup.cupID);
     let goldenGlove =
       goldenGloveLink.length && goldenGloveLink[0].linkID
-        ? (await playerLink(goldenGloveLink[0].linkID)) +
-          ` (${goldenGloveLink[0].count})`
+        ? `(${goldenGloveLink[0].count}) ` +
+          (await playerLink(goldenGloveLink[0].linkID, "left"))
         : "";
     const per = (num: number) => {
       return matches.length > 0
@@ -91,7 +92,6 @@ export async function cupsOverview(req: Request) {
     let row = [
       await cupLink(cup.cupID, { logo: true }),
       teams.length,
-      matches.length,
       first,
       second,
       third,
