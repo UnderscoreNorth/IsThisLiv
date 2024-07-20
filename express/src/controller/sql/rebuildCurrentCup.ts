@@ -13,7 +13,7 @@ export async function rebuildCurrentCup() {
   await rebuildMass("__api__records__Match-");
   await rebuildMass("__api__records__Misc-");
   await rebuildMass("__api_records__Overall");
-  await rebuild(`cache/__api__records__cups__${cup.cupID}`);
+  await rebuild(`cache/__api__records__cups__${cup.cupID}.json`);
   await rebuild("cache/__api__cups.json");
   await rebuild(`cache/__api__cups__${cup.cupID}.json`);
   await rebuild(`cache/__api__records__leaderboards__${cup.cupID}.json`);
@@ -31,7 +31,7 @@ export async function rebuildCurrentCup() {
 }
 
 async function rebuild(str: string) {
-  await fs.unlink(str);
+  await fs.unlink(str).catch(() => {});
   await fetch(`http://localhost:${port}${cacheNameToRoute(str)}`).catch(
     (err) => {
       console.log(err);
