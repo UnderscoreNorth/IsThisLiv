@@ -467,7 +467,7 @@ async function calcRecords({
         and(
           eq(Match.valid, 1),
           eq(Match.official, 1),
-          lte(Cup.end, date),
+          lte(Match.utcTime, date),
           lte(Cup.cupType, 3)
         )
       );
@@ -1065,7 +1065,7 @@ async function calcRecords({
           eq(Match.valid, 1),
           eq(Match.official, 1),
           eq(MatchStat.finalPeriod, true),
-          lte(Cup.end, date),
+          lte(Match.utcTime, date),
           gte(Cup.year, 2012),
           lte(Cup.cupType, 3)
         )
@@ -1123,7 +1123,7 @@ async function calcRecords({
           eq(Match.valid, 1),
           eq(Match.official, 1),
           eq(MatchStat.finalPeriod, true),
-          lte(Cup.end, date),
+          lte(Match.utcTime, date),
           gte(Cup.year, 2012),
           lte(Cup.cupType, 3)
         )
@@ -1180,7 +1180,7 @@ async function calcRecords({
           eq(Match.valid, 1),
           eq(Match.official, 1),
           eq(MatchStat.finalPeriod, true),
-          lte(Cup.end, date),
+          lte(Match.utcTime, date),
           gte(Cup.year, 2012)
         )
       )
@@ -1240,7 +1240,9 @@ async function calcRecords({
         day: sql<number>`0`,
       })
       .from(Match)
-      .where(and(eq(Match.valid, 1), eq(Match.official, 1), lte(Cup.end, date)))
+      .where(
+        and(eq(Match.valid, 1), eq(Match.official, 1), lte(Match.utcTime, date))
+      )
       .innerJoin(Cup, eq(Match.cupID, Cup.cupID))
       .leftJoin(Event, eq(Event.matchID, Match.matchID))
       .groupBy(customDate)
@@ -1310,7 +1312,7 @@ async function calcRecords({
         and(
           eq(Match.valid, 1),
           eq(Match.official, 1),
-          lte(Cup.end, date),
+          lte(Match.utcTime, date),
           eq(MatchStat.finalPeriod, true),
           gte(Cup.year, 2012)
         )
@@ -1387,7 +1389,7 @@ async function calcRecords({
             eq(Match.valid, 1),
             eq(Match.official, 1),
             gt(stat, 0),
-            lte(Cup.end, date)
+            lte(Match.utcTime, date)
           )
         )
         .groupBy(Match.matchID, Player.team)
@@ -1443,7 +1445,7 @@ async function calcRecords({
           eq(Match.valid, 1),
           eq(Match.official, 1),
           where ? where : undefined,
-          lte(Cup.end, date)
+          lte(Match.utcTime, date)
         )
       )
       .groupBy(Match.matchID, MatchStat.team)
@@ -1499,7 +1501,7 @@ async function calcRecords({
         and(
           eq(Match.valid, 1),
           eq(Match.official, 1),
-          lte(Cup.end, date),
+          lte(Match.utcTime, date),
           not(eq(PlayerLink.name, "Unknown Player")),
           wheres !== undefined ? wheres : undefined
         )
@@ -1554,7 +1556,7 @@ async function calcRecords({
           inArray(Event.eventType, eventTypes),
           eq(Match.valid, 1),
           eq(Match.official, 1),
-          lte(Cup.end, date),
+          lte(Match.utcTime, date),
           not(eq(PlayerLink.name, "Unknown Player")),
           wheres !== undefined ? wheres : undefined
         )
@@ -1612,7 +1614,7 @@ async function calcRecords({
         and(
           eq(Match.valid, 1),
           eq(Match.official, 1),
-          lte(Cup.end, date),
+          lte(Match.utcTime, date),
           not(eq(PlayerLink.name, "Unknown Player")),
           wheres !== undefined ? wheres : undefined
         )
@@ -1672,7 +1674,7 @@ async function calcRecords({
           inArray(Event.eventType, eventTypes),
           eq(Match.valid, 1),
           eq(Match.official, 1),
-          lte(Cup.end, date),
+          lte(Match.utcTime, date),
           not(eq(PlayerLink.name, "Unknown Player")),
           wheres !== undefined ? wheres : undefined
         )
@@ -1723,7 +1725,7 @@ async function calcRecords({
           eq(Match.valid, 1),
           isNotNull(Player.linkID),
           gt(Event.regTime, 0),
-          lte(Cup.end, date),
+          lte(Match.utcTime, date),
           not(eq(Player.name, "Unknown Player"))
         )
       )
