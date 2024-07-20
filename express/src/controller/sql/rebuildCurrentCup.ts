@@ -31,6 +31,7 @@ export async function rebuildCurrentCup() {
 }
 
 async function rebuild(str: string) {
+  await fs.unlink(str);
   await fetch(`http://localhost:${port}${cacheNameToRoute(str)}`).catch(
     (err) => {
       console.log(err);
