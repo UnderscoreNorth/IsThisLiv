@@ -18,6 +18,7 @@
 	import Stats from './stats.svelte';
 	import TeamLink from '$lib/teamLink.svelte';
 	import Fantasy from './fantasy.svelte';
+	import Datetime from '$lib/datetime.svelte';
 	let matchID = 0;
 	let data:Promise<MainRes>;
 	let imgs:Promise<any>;
@@ -100,7 +101,7 @@
 		<Sidebar {data}/>
 	</vertNav>
 	<contents>
-		<div id="pageModifiedTime">Last updated - {data.date}</div>
+		<div id="pageModifiedTime">Last updated - <Datetime date={data.date} multiline={false}/></div>
 		<h1 id="Top">				
 			{data.cupName}{#if $User.user}
 				<!-- svelte-ignore a11y-click-events-have-key-events -->

@@ -1,4 +1,5 @@
 <script lang='ts'>
+	import Datetime from "$lib/datetime.svelte";
 	import { api } from "$lib/helper";
 	import Table from "./table.svelte";
     import {onMount} from 'svelte'
@@ -23,7 +24,7 @@
 <container>
     {#await data then data}
         {#if data !== undefined && data.date !== undefined}
-            <div id="pageModifiedTime">Last updated - {data.date}</div>  
+            <div id="pageModifiedTime">Last updated - <Datetime date={data.date} multiline={false}/></div>  
         {/if}
     {/await}
     <h2>Leaderboards {#await cups then cups}

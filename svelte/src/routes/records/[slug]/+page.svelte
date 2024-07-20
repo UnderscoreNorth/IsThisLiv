@@ -1,5 +1,6 @@
 <script lang='ts'>
 	import { page } from '$app/stores';
+	import Datetime from '$lib/datetime.svelte';
 	import { api } from '$lib/helper';
 	import Records from '$lib/records.svelte';
 	type Res = {
@@ -35,7 +36,7 @@
 		<h2>Loading...</h2>
 	{:then res}
 		{#if res.date}
-		<div id="pageModifiedTime">Last updated - {res.date}</div>
+		<div id="pageModifiedTime">Last updated - <Datetime date={res.date} multiline={false}/></div>
 			{#if res.data}
 			<h2>Records</h2>
 			<div id='recordContainer'>

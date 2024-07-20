@@ -11,6 +11,7 @@
 	import MdCancel from 'svelte-icons/md/MdCancel.svelte'
 	//@ts-ignore
 	import MdSave from 'svelte-icons/md/MdSave.svelte'
+	import Datetime from '$lib/datetime.svelte';
 	//let data;	
 	let data:any = {};
 	let id = '';
@@ -41,7 +42,7 @@
 		<h2>Loading...</h2>
 	{:then data}
 		{#if data.date}			
-			<div id="pageModifiedTime">Last updated - {data.date}</div>
+			<div id="pageModifiedTime">Last updated - <Datetime date={data.date} multiline={false}/></div>
 			<h2>
 				<TeamIcon team={data.playerTeam}/><TeamLink team={data.playerTeam}/> - 
 				{#if editing}

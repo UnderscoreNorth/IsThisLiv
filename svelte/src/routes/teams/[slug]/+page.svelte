@@ -6,6 +6,7 @@ import { page } from '$app/stores';
 	import TeamRoster from '$lib/teamRoster.svelte';
 	import TeamIcon from '$lib/teamIcon.svelte';
 	import Records from '$lib/records.svelte';
+	import Datetime from '$lib/datetime.svelte';
 	//let data;	
 	let data = {};
 	let sortData;
@@ -75,7 +76,7 @@ import { page } from '$app/stores';
 	<div style='display:flex;flex-direction:column;height:100%'>
 		<div>
 			{#if data.date}
-				<div id="pageModifiedTime">Last updated - {data.date}</div>
+				<div id="pageModifiedTime">Last updated - <Datetime date={data.date} multiline={false}/></div>
 			{/if}
 			<h2 id="header">
 				<TeamIcon team={team}/> /{team}/ - 
