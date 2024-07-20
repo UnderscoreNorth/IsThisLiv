@@ -17,6 +17,7 @@ import { updateLinkName } from "./updateLinkName";
 import { groupStage } from "./groupStage";
 import { getMaintenance } from "./getMaintenance";
 import { calcAllCups, calcAllTeams } from "../records/records";
+import { rebuildCurrentCup } from "./rebuildCurrentCup";
 
 const router = express.Router();
 router.use("/user", user);
@@ -71,5 +72,8 @@ router.use("/rebuildCupRecords", async (req, res, next) => {
 
 router.use("/rebuildTeamRecords", async (req, res, next) => {
   res.send(await calcAllTeams());
+});
+router.use("/rebuildCurrentCup", async (req, res, next) => {
+  res.send(await rebuildCurrentCup());
 });
 export default router;

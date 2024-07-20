@@ -1,6 +1,7 @@
 <script lang='ts'>
 	import { api } from "$lib/helper";    
     const commands:Record<string,{link:string,inProgress:boolean}> = {
+        'Rebuild Current Cup':{link:'/sql/rebuildCurrentCup',inProgress:false},
         'Clear Cache':{link:'/sql/clearCache',inProgress:false},
         'Rebuild Cup Records':{link:'/sql/rebuildCupRecords',inProgress:false},
         'Rebuild Team Records':{link:'/sql/rebuildTeamRecords',inProgress:false},

@@ -11,6 +11,7 @@ export async function updateCupTeam(req: Request) {
   for (const player of players) {
     const playerID = player.playerID;
     delete player.playerID;
+    if (player.linkID == "") player.linkID = null;
     await db.update(Player).set(player).where(eq(Player.playerID, playerID));
   }
   return {};
