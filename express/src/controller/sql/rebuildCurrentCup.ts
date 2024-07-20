@@ -16,6 +16,7 @@ export async function rebuildCurrentCup() {
   await rebuild(`cache/__api__records__cups__${cup.cupID}`);
   await rebuild("cache/__api__cups.json");
   await rebuild(`cache/__api__cups__${cup.cupID}.json`);
+  await rebuild(`cache/__api__records__leaderboards__${cup.cupID}.json`);
   await rebuildMass("__api__teams__");
   await rebuildMass("__api__players__");
   await calcAllTeams();
