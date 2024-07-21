@@ -27,6 +27,7 @@ export async function ninetyplusgoals(req: Request) {
     )
     .orderBy(desc(Match.utcTime));
   let teamsObj: Record<string, { team: string; num: number }> = {};
+  let losingTeamsObj: Record<string, { team: string; num: number }> = {};
   let playerObj: Record<string, { linkID: number; num: number }> = {};
   let matchArr: Array<{
     match: InferSelectModel<typeof Match>;
@@ -83,9 +84,14 @@ export async function ninetyplusgoals(req: Request) {
           awayGoals,
           goal,
         });
+        const losingTeam =
+          match.homeTeam == goal.player.team ? match.awayTeam : match.homeTeam;
         if (teamsObj[goal.player.team] == undefined)
           teamsObj[goal.player.team] = { team: goal.player.team, num: 0 };
         teamsObj[goal.player.team].num++;
+        if (losingTeamsObj[losingTeam] == undefined)
+          losingTeamsObj[losingTeam] = { team: losingTeam, num: 0 };
+        losingTeamsObj[losingTeam].num++;
         if (playerObj[goal.player.linkID] == undefined)
           playerObj[goal.player.linkID] = {
             linkID: goal.player.linkID,
@@ -129,6 +135,26 @@ export async function ninetyplusgoals(req: Request) {
         <th>Times<br>won/drawn</th>
     </tr>
     ${Object.values(teamsObj)
+      .sort((a, b) => {
+        if (a.num > b.num) return -1;
+        if (a.num < b.num) return 1;
+        return 0;
+      })
+      .map((x) => {
+        return `<tr>
+            <td>${teamLink(x.team, "right")}</td>
+            <td>${x.num}</td>
+        </tr>
+        `;
+      })
+      .join("")}
+    </table>
+    <table>
+    <tr>
+        <th><br>Board</th>
+        <th>Times<br>lost/drawn</th>
+    </tr>
+    ${Object.values(losingTeamsObj)
       .sort((a, b) => {
         if (a.num > b.num) return -1;
         if (a.num < b.num) return 1;
