@@ -6,7 +6,7 @@
 		{ Cup: ['Individual', 'Team', 'Cup'] },
 		{Overall:['Streaks','Leaderboards']},
 		//{ Rankings: ['Coefficient', 'Elo'] }
-		{Misc:['Repeat Groups','Most Dangerous Lead']}
+		{Misc:['Repeat Groups','Most Dangerous Lead','90+ Goals']}
 	]);
 	const path='/records/';
 </script>

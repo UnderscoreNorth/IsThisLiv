@@ -4,6 +4,7 @@ import { cupRecords, mainRecords, teamRecords } from "./records";
 import { leaderboards } from "./leaderboards";
 import { repeatGroups } from "./misc/repeatGroups";
 import { mostDangerousLead } from "./misc/mostDangerousLead";
+import { ninetyplusgoals } from "./misc/90plusgoals";
 
 const router = express.Router();
 router.use("/cups/:cupID", async (req, res, next) => {
@@ -20,6 +21,9 @@ router.use("/misc-repeat%20groups", async (req, res, next) => {
 });
 router.use("/misc-most%20dangerous%20lead", async (req, res, next) => {
   saveMiddleWare(req, res, mostDangerousLead);
+});
+router.use("/Misc-90*", async (req, res, next) => {
+  saveMiddleWare(req, res, ninetyplusgoals);
 });
 router.use("/*", async (req, res, next) => {
   saveMiddleWare(req, res, mainRecords);
