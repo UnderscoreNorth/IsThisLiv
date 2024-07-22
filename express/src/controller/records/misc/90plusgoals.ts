@@ -121,7 +121,7 @@ export async function ninetyplusgoals(req: Request) {
         <td>${teamLink(x.match.homeTeam, "right")}</td>
         <td>${x.homeGoals} - ${x.awayGoals}</td>
         <td style='text-align:left' >${teamLink(x.match.awayTeam, "left")}</td>
-        <td>${x.goal.event.regTime}${x.goal.event.injTime}'</td>
+        <td>${x.goal.event.regTime}+${x.goal.event.injTime}'</td>
         <td style='text-align:left' >${await playerLink(
           x.goal.player.linkID
         )}</td>
