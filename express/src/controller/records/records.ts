@@ -380,6 +380,66 @@ async function calcRecords({
     await matchStatShort("Interceptions", MatchStat.interceptions);
     await matchStatShort("Tackles", MatchStat.tackles);
     await matchStatShort("Saves", MatchStat.saves);
+    let result = await db
+      .select({
+        home: Match.homeTeam,
+        away: Match.awayTeam,
+        cup: Cup.cupName,
+        round: Match.round,
+        sum: count(),
+        date: Match.utcTime,
+        row: Match.round,
+        cupID: Match.cupID,
+      })
+      .from(Match)
+      .innerJoin(Event, eq(Match.matchID, Event.matchID))
+      .innerJoin(Player, eq(Event.playerID, Player.playerID))
+      .innerJoin(Cup, eq(Cup.cupID, Match.cupID))
+      .where(
+        and(
+          eq(Match.valid, 1),
+          eq(Match.official, 1),
+          lte(Match.utcTime, date),
+          gte(Cup.year, 2014),
+          lte(Cup.cupType, 3),
+          isNotNull(Player.linkID),
+          inArray(Event.eventType, goalTypes),
+          eq(Player.medal, "")
+        )
+      )
+      .groupBy(Cup.cupID, Match.matchID)
+      .orderBy(desc(count()), desc(Cup.end))
+      .having(gte(count(), 1))
+      .limit(len);
+    result = placeMaker(result, "sum");
+    data[title]["Most Non Medal Goals (2014+)"] = {
+      header: getHeaders([
+        { header: "Record" },
+        { header: "Match", colspan: 2 },
+      ]),
+      rows: await Promise.all(
+        result
+          .filter(
+            (x) =>
+              (x.cupID == cupID || !cupID) &&
+              (!team || [x.home, x.away].includes(team))
+          )
+          .map(async (x) => [
+            ...(cupID || team ? [x.row] : []),
+            ...[
+              x.sum,
+              `${
+                !cupID
+                  ? (await cupLink(x.cupID, { logo: true, format: "med" })) +
+                    " "
+                  : ""
+              }${x.round}`,
+              `${teamLink(x.home, "left")} - ${teamLink(x.away, "right")}`,
+            ],
+          ])
+      ),
+      numbered: false,
+    };
   }
   if (types.includes("cup-individual")) {
     const title = "Cup - Individual";

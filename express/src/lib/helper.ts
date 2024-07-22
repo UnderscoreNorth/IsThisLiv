@@ -27,12 +27,18 @@ export function teamLink(team: string, icon?: "left" | "right") {
 }
 export async function cupLink(
   cupID: number | InferSelectModel<typeof Cup>,
-  params: { logo?: boolean; format?: "long" | "med" | "short" } = {
+  params: {
+    logo?: boolean;
+    format?: "long" | "med" | "short";
+    text?: string;
+  } = {
     logo: false,
     format: "long",
+    text: "",
   }
 ) {
   const { logo, format } = params;
+  let text = params.text?.length ? " " + params.text : "";
   let cup =
     typeof cupID == "number"
       ? await db.query.Cup.findFirst({
@@ -60,6 +66,7 @@ export async function cupLink(
     if (cup.cupType == 3) cupText += " Q";
     if (cup.cupType == 4) cupText += " F";
   }
+  cupText += text;
   if (logo)
     return `<a style='display:inline-block' href='/cups/${cupID}-${cupShortName}'>${
       logo

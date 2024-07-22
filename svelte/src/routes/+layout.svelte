@@ -9,7 +9,8 @@
 	import SettingsModal from './settingsModal.svelte';
 	import { User } from '$lib/user';
 	import { DeepSet } from '$lib/deepSet';
-	export let data;
+	import {onMount} from 'svelte';
+	import { api } from '$lib/helper';
 	let width: any;
 	let drawerHidden = true;
 	let transitionParams = {
@@ -41,6 +42,32 @@
 	function toggleSettings() {
 		settingsFlag =!settingsFlag
 	}
+
+	onMount(async()=>{
+		if (typeof localStorage !== 'undefined') {
+		try {
+			let data = localStorage.getItem('user');
+			if (typeof data == 'string') {
+				let res = await api('/sql/user/logintoken', {
+					token: JSON.parse(data)
+				});
+				if (res.user) {
+					User.set(res);
+					localStorage.setItem('user', JSON.stringify(res));
+				}
+			}
+		} catch (error) {
+			alert(error);
+			console.log(error)
+			localStorage.removeItem('user');
+		}
+	}
+	User.update((u) => {
+		u.init = true;
+		return u;
+	});
+	})
+
 </script>
 
 <svelte:window bind:innerWidth={width} />

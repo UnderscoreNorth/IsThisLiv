@@ -1,4 +1,4 @@
-import { and, desc, eq, inArray, InferSelectModel } from "drizzle-orm";
+import { and, desc, eq, gte, inArray, InferSelectModel } from "drizzle-orm";
 import { db } from "../../../db";
 import { Cup, Event, Match, Player } from "../../../db/schema";
 import {
@@ -22,6 +22,7 @@ export async function ninetyplusgoals(req: Request) {
       and(
         inArray(Event.eventType, [...goalTypes, ...goalTypesOG]),
         inArray(Event.regTime, [90, 120]),
+        gte(Event.injTime, 0),
         eq(Match.valid, 1)
       )
     )
@@ -120,7 +121,7 @@ export async function ninetyplusgoals(req: Request) {
         <td>${teamLink(x.match.homeTeam, "right")}</td>
         <td>${x.homeGoals} - ${x.awayGoals}</td>
         <td style='text-align:left' >${teamLink(x.match.awayTeam, "left")}</td>
-        <td>${x.goal.event.regTime}+${x.goal.event.injTime}'</td>
+        <td>${x.goal.event.regTime}${x.goal.event.injTime}'</td>
         <td style='text-align:left' >${await playerLink(
           x.goal.player.linkID
         )}</td>
