@@ -40,6 +40,7 @@ export async function cupLink(
   }
 ) {
   const { logo, format } = params;
+  if (params.textPos == undefined) params.textPos = "after";
   let text = params.text?.length ? " " + params.text : "";
   let cup =
     typeof cupID == "number"
@@ -77,6 +78,7 @@ export async function cupLink(
   }' src='/icons/cups/${cupID}.png' />
   `;
   let textHtml = `<span style='vertical-align:middle'>${cupText}</span>`;
+  console.log(params.textPos);
   if (logo) {
     return `<a style='display:inline-block' href='/cups/${cupID}-${cupShortName}'>${
       params.textPos == "after"
