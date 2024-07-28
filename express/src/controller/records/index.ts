@@ -11,6 +11,7 @@ import { teamMatchup } from "./misc/teamMatchup";
 import { yoyo } from "./misc/yoyo";
 import { groupStageByTeam } from "./misc/groupStageByTeam";
 import { groupStageResults } from "./misc/groupStageResults";
+import { togetherForever } from "./misc/togetherforever";
 
 const router = express.Router();
 router.use("/cups/:cupID", async (req, res, next) => {
@@ -45,6 +46,9 @@ router.use("/Misc-yoyos", async (req, res, next) => {
 });
 router.use("/Misc-Group%20Stage%20Results", async (req, res, next) => {
   saveMiddleWare(req, res, groupStageResults);
+});
+router.use("/Misc-Together%20Forever", async (req, res, next) => {
+  saveMiddleWare(req, res, togetherForever);
 });
 router.use(
   "/Misc-Group%20Stage%20Results%20by%20Team",

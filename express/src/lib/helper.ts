@@ -78,7 +78,6 @@ export async function cupLink(
   }' src='/icons/cups/${cupID}.png' />
   `;
   let textHtml = `<span style='vertical-align:middle'>${cupText}</span>`;
-  console.log(params.textPos);
   if (logo) {
     return `<a style='display:inline-block' href='/cups/${cupID}-${cupShortName}'>${
       params.textPos == "after"
