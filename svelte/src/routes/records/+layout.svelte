@@ -6,7 +6,7 @@
 		{ Cup: ['Individual', 'Team', 'Cup'] },
 		{Overall:['Streaks','Leaderboards']},
 		//{ Rankings: ['Coefficient', 'Elo'] }
-		{Misc:['Repeat Groups','Team Matchup','Most Dangerous Lead','90+ Goals','Rematches','Possession is a Negative Stat']}
+		{Misc:['Repeat Groups','Team Matchup','Most Dangerous Lead','90+ Goals','Rematches','Possession is a Negative Stat','Group Stage Results','Group Stage Results by Team','Yoyos']}
 	]);
 	const path='/records/';
 </script>

@@ -31,10 +31,12 @@ export async function cupLink(
     logo?: boolean;
     format?: "long" | "med" | "short";
     text?: string;
+    textPos?: "after" | "above";
   } = {
     logo: false,
     format: "long",
     text: "",
+    textPos: "after",
   }
 ) {
   const { logo, format } = params;
@@ -66,15 +68,24 @@ export async function cupLink(
     if (cup.cupType == 3) cupText += " Q";
     if (cup.cupType == 4) cupText += " F";
   }
+  if (params.textPos == "above") cupText += "<br>";
   cupText += text;
-  if (logo)
+  let logoHtml = `<img style='${
+    format == "med"
+      ? ""
+      : "height:2.5rem;vertical-align:middle;margin-right:5px"
+  }' src='/icons/cups/${cupID}.png' />
+  `;
+  let textHtml = `<span style='vertical-align:middle'>${cupText}</span>`;
+  if (logo) {
     return `<a style='display:inline-block' href='/cups/${cupID}-${cupShortName}'>${
-      logo
-        ? `<img style='${
-            format == "med" ? "" : "height:2.5rem;"
-          }vertical-align:middle;margin-right:5px' src='/icons/cups/${cupID}.png' />`
-        : ""
-    }<span style='vertical-align:middle'>${cupText}</span></a>`;
+      params.textPos == "after"
+        ? logoHtml + textHtml
+        : textHtml + "<br>" + logoHtml
+    }
+    </a>`;
+  }
+
   return `<a href='/cups/${cupID}-${cupShortName}'>${cupText}</a>`;
 }
 export function cupShort(cupName: string) {
@@ -179,7 +190,11 @@ export function asort(object: Object) {
     .sort(([, a], [, b]) => parseFloat(a) - parseFloat(b))
     .reduce((r, [k, v]) => ({ ...r, [k]: v }), {});
 }
-export function keySort(object, key, descending = false) {
+export function keySort<T>(
+  object: T & Array<any>,
+  key: string,
+  descending = false
+): T {
   object.sort((a, b) => {
     let r = 0;
     if (a[key] > b[key]) {

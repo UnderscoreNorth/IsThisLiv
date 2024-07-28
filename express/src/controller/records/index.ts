@@ -8,6 +8,9 @@ import { ninetyplusgoals } from "./misc/90plusgoals";
 import { rematches } from "./misc/rematches";
 import { possession } from "./misc/possession";
 import { teamMatchup } from "./misc/teamMatchup";
+import { yoyo } from "./misc/yoyo";
+import { groupStageByTeam } from "./misc/groupStageByTeam";
+import { groupStageResults } from "./misc/groupStageResults";
 
 const router = express.Router();
 router.use("/cups/:cupID", async (req, res, next) => {
@@ -37,6 +40,18 @@ router.use("/Misc-Possession*", async (req, res, next) => {
 router.use("/Misc-team%20matchup", async (req, res, next) => {
   saveMiddleWare(req, res, teamMatchup);
 });
+router.use("/Misc-yoyos", async (req, res, next) => {
+  saveMiddleWare(req, res, yoyo);
+});
+router.use("/Misc-Group%20Stage%20Results", async (req, res, next) => {
+  saveMiddleWare(req, res, groupStageResults);
+});
+router.use(
+  "/Misc-Group%20Stage%20Results%20by%20Team",
+  async (req, res, next) => {
+    saveMiddleWare(req, res, groupStageByTeam);
+  }
+);
 router.use("/*", async (req, res, next) => {
   saveMiddleWare(req, res, mainRecords);
 });

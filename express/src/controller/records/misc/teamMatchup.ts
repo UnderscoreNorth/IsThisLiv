@@ -12,7 +12,7 @@ import {
 
 export async function teamMatchup(req: Request) {
   let html = `<h2>Team Matchup</h2>
-	Earliest matchup shown, grey and italized means they've only met in a voided match<br><br>`;
+	Earliest matchup shown<br><br>`;
   const teams = (await db.select().from(Team)).map((x) => x.team);
   const teamMatrix: Record<string, Record<string, string>> = {};
   const unplayed: Array<{ t1: string; t2: string; days: number }> = [];
