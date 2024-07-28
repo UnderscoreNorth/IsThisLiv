@@ -17,6 +17,7 @@ export async function playerDetails(req: Request) {
   let html = "";
   let team = "";
   let matches = 0;
+  let ratedMatches = 0;
   let minutes = 0;
   let avgRating = 0;
   let avgCond = 0;
@@ -67,6 +68,9 @@ export async function playerDetails(req: Request) {
     for (const { match, performance, player } of perfData) {
       if (match.valid) {
         matches++;
+        if (performance.rating > 0) {
+          ratedMatches++;
+        }
       }
       pos = player.regPos;
       medal = player.medal;
@@ -260,7 +264,9 @@ export async function playerDetails(req: Request) {
             </tr><tr>
                 <th>Avg Rating</th>
                 <td>${
-                  matches ? Math.round((avgRating * 100) / matches) / 100 : "-"
+                  ratedMatches
+                    ? Math.round((avgRating * 100) / ratedMatches) / 100
+                    : "-"
                 }</th>
             </tr><tr>
                 <th>Avg Cond</th>
