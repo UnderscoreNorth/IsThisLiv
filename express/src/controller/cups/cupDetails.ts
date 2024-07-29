@@ -5,6 +5,7 @@ import {
   getCupTeams,
   getEvents,
   getMatches,
+  getPenalties,
   getPerformances,
 } from "../../db/commonFn";
 import {
@@ -16,25 +17,33 @@ import {
   teamLink,
   yellowCardTypes,
 } from "../../lib/helper";
+import { InferSelectModel } from "drizzle-orm";
+import { Event, Player } from "../../db/schema";
 type Matches = Record<
   "groups" | "kos",
   {
     name: string;
-    matches: [
-      {
-        utcTime: Date;
-        stadium: string;
-        attendance: number;
-        home: string;
-        away: string;
-        winner: string;
-        homeg: number;
-        awayg: number;
-        id: number;
-        official: number;
-        roundOrder: number;
-      }
-    ];
+    matches: Array<{
+      utcTime: Date;
+      stadium: string;
+      attendance: number;
+      home: string;
+      away: string;
+      winner: string;
+      homeg: number;
+      awayg: number;
+      id: number;
+      official: number;
+      roundOrder: number;
+      homeE: Array<{
+        primaryE: InferSelectModel<typeof Event>;
+        secondaryE?: InferSelectModel<typeof Event>;
+      }>;
+      awayE: Array<{
+        primaryE: InferSelectModel<typeof Event>;
+        secondaryE?: InferSelectModel<typeof Event>;
+      }>;
+    }>;
     table: any;
   }[]
 >;
@@ -72,7 +81,7 @@ export async function cupDetails(req: Request) {
     "SELECT * FROM MatchDB INNER JOIN RoundOrder ON MatchDB.sRound = RoundOrder.sRound WHERE iCupID=? ORDER BY iOrder,RoundOrder.sRound,dUTCTime",
     [cupID]
   );*/
-  let matches = {};
+  let matches: Matches = { groups: [], kos: [] };
   for (const p of await getPerformances({ cupID })) {
     if (p.performance.saves > 0) {
       if (goalies[p.player.linkID] == undefined) goalies[p.player.linkID] = 0;
@@ -100,6 +109,26 @@ export async function cupDetails(req: Request) {
         roundType = "kos";
         break;
     }
+    let homeE: Array<{
+      primary: {
+        e: InferSelectModel<typeof Event>;
+        p: InferSelectModel<typeof Player>;
+      };
+      secondary?: {
+        e: InferSelectModel<typeof Event>;
+        p: InferSelectModel<typeof Player>;
+      };
+    }> = [];
+    let awayE: Array<{
+      primary: {
+        e: InferSelectModel<typeof Event>;
+        p: InferSelectModel<typeof Player>;
+      };
+      secondary?: {
+        e: InferSelectModel<typeof Event>;
+        p: InferSelectModel<typeof Player>;
+      };
+    }> = [];
     if (typeof matches[roundType] !== "object") matches[roundType] = {};
     if (typeof matches[roundType][match.round] != "object")
       matches[roundType][match.round] = {
@@ -132,6 +161,9 @@ export async function cupDetails(req: Request) {
         matches[roundType][match.round].table[aTeam].data[6]++;
         totalGoals++;
         goals[oTeam == match.homeTeam ? 0 : 1]++;
+        oTeam == match.homeTeam
+          ? homeE.push({ primary: { e: e.event, p: e.player } })
+          : awayE.push({ primary: { e: e.event, p: e.player } });
       } else if (goalTypesOG.includes(e.event.eventType)) {
         owngoalers[e.player.linkID] = owngoalers[e.player.linkID] || 0;
         owngoalers[e.player.linkID]++;
@@ -139,14 +171,23 @@ export async function cupDetails(req: Request) {
         matches[roundType][match.round].table[aTeam].data[5]++;
         totalGoals++;
         goals[oTeam == match.homeTeam ? 1 : 0]++;
+        oTeam !== match.homeTeam
+          ? homeE.push({ primary: { e: e.event, p: e.player } })
+          : awayE.push({ primary: { e: e.event, p: e.player } });
       } else if (assistTypes.includes(e.event.eventType)) {
         assisters[e.player.linkID] = assisters[e.player.linkID] || 0;
         assisters[e.player.linkID]++;
+        oTeam == match.homeTeam
+          ? (homeE[homeE.length - 1].secondary = { e: e.event, p: e.player })
+          : (awayE[awayE.length - 1].secondary = { e: e.event, p: e.player });
       } else if (
         [...yellowCardTypes, ...redCardTypes].includes(e.event.eventType)
       ) {
         cards[e.player.linkID] = cards[e.player.linkID] || 0;
         cards[e.player.linkID]++;
+        oTeam == match.homeTeam
+          ? homeE.push({ primary: { e: e.event, p: e.player } })
+          : awayE.push({ primary: { e: e.event, p: e.player } });
       }
       if (matches[roundType][match.round].table[oTeam])
         matches[roundType][match.round].table[oTeam].data[7] =
@@ -156,6 +197,14 @@ export async function cupDetails(req: Request) {
         matches[roundType][match.round].table[aTeam].data[7] =
           matches[roundType][match.round].table[aTeam].data[5] -
           matches[roundType][match.round].table[aTeam].data[6];
+    }
+    let penalties = [[], []];
+    for (const { player, penalty } of await getPenalties({
+      matchID: match.matchID,
+      getVoided: true,
+    })) {
+      let index = player.team == match.homeTeam ? 0 : 1;
+      penalties[index].push({ player, goal: penalty.goal });
     }
     for (let team of teams) {
       matches[roundType][match.round].table[team].data[1]++;
@@ -169,7 +218,6 @@ export async function cupDetails(req: Request) {
         matches[roundType][match.round].table[team].data[4]++;
       }
     }
-
     matches[roundType][match.round].matches.push({
       utcTime: match.utcTime,
       stadium: match.stadium,
@@ -183,6 +231,10 @@ export async function cupDetails(req: Request) {
       official: match.official,
       valid: match.valid,
       roundOrder: roundorder.order,
+      homeE,
+      awayE,
+      penalties,
+      endPeriod: match.endPeriod,
     });
   }
   for (let i in matches) {

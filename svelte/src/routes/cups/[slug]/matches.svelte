@@ -79,7 +79,7 @@
         text-align: center;
         min-width: 2rem;
     }
-    :global(.groups td a) {
+    :global(groupTable td a) {
         color: black !important;
     }
     tr.green {
@@ -94,7 +94,7 @@
 		padding-bottom: 0.5rem;
 		margin-bottom: 0.5rem;
 	}
-	.groups match:nth-child(2n):not(:last-of-type) {
+	.groups match:not(:last-of-type) {
 		border-bottom: solid 1px grey;
 	}
 	.kos match:not(:last-of-type) {
