@@ -177,9 +177,11 @@ export async function cupDetails(req: Request) {
       } else if (assistTypes.includes(e.event.eventType)) {
         assisters[e.player.linkID] = assisters[e.player.linkID] || 0;
         assisters[e.player.linkID]++;
-        oTeam == match.homeTeam
-          ? (homeE[homeE.length - 1].secondary = { e: e.event, p: e.player })
-          : (awayE[awayE.length - 1].secondary = { e: e.event, p: e.player });
+        if (homeE.length) {
+          oTeam == match.homeTeam
+            ? (homeE[homeE.length - 1].secondary = { e: e.event, p: e.player })
+            : (awayE[awayE.length - 1].secondary = { e: e.event, p: e.player });
+        }
       } else if (
         [...yellowCardTypes, ...redCardTypes].includes(e.event.eventType)
       ) {
