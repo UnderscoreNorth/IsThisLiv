@@ -177,7 +177,7 @@ export async function cupDetails(req: Request) {
       } else if (assistTypes.includes(e.event.eventType)) {
         assisters[e.player.linkID] = assisters[e.player.linkID] || 0;
         assisters[e.player.linkID]++;
-        if (homeE.length) {
+        if ((oTeam == match.homeTeam ? homeE.length : awayE.length) > 0) {
           oTeam == match.homeTeam
             ? (homeE[homeE.length - 1].secondary = { e: e.event, p: e.player })
             : (awayE[awayE.length - 1].secondary = { e: e.event, p: e.player });
