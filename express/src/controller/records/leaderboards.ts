@@ -265,7 +265,10 @@ export async function leaderboards(req: Request) {
         and(
           eq(Match.valid, 1),
           eq(Match.official, 1),
-          lte(Match.utcTime, new Date(new Date(cup.end).getTime() + 864000)),
+          lte(
+            Match.utcTime,
+            new Date(new Date(cup.end).getTime() + 864000 * 2)
+          ),
           gte(arg, 0)
         )
       )
