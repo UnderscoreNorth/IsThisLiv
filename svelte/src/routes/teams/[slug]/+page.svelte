@@ -7,6 +7,9 @@ import { page } from '$app/stores';
 	import TeamIcon from '$lib/teamIcon.svelte';
 	import Records from '$lib/records.svelte';
 	import Datetime from '$lib/datetime.svelte';
+		//@ts-ignore
+	import MdAssessment from 'svelte-icons/md/MdAssessment.svelte'
+	import MatchDetails from '$lib/matches/matchDetails.svelte';
 	//let data;	
 	let data = {};
 	let sortData;
@@ -61,12 +64,15 @@ import { page } from '$app/stores';
 		});
 		data = sortData;
 	};
+	let matchID = 0;
 </script>
 
 <svelte:head>
 	<title>/{team}/ - IsThisLiv</title>
 </svelte:head>
-
+{#if matchID > 0}
+	<MatchDetails bind:matchID />
+{/if}
 {#await data}
 	<h2>Loading...</h2>
 {:then data}
@@ -100,7 +106,29 @@ import { page } from '$app/stores';
 				</div>
 				<div>
 					<h3 id='matches'>Matches</h3>
-					{@html data.matchesHtml}
+					<table>
+						<tr>
+						  <th>Cup</th>
+						  <th>Round</th>
+						  <th>Date</th>
+						  <th>Team</th>
+						  <th>Result</th>
+						  <th>Scorers</th>
+						</tr>
+						{#each data.matchesHtml as row}
+						<tr class={row.status}>
+							{@html row.cup}
+							<td>{row.round}</td>
+							<td>{row.date}</td>
+							<td>{@html row.team}</td>
+							<td>{row.result}</td>
+							<td>{@html row.scorers}</td>
+							<td><icon on:click={()=>matchID = row.matchID}><MdAssessment /></icon></td>
+							{@html row.num}
+						</tr>
+						{/each}
+					</table>
+					
 				</div>
 				<div>
 					<h3 id='gallery'>Gallery</h3>
@@ -242,5 +270,17 @@ import { page } from '$app/stores';
 		grid{
 			grid-template-columns: 1fr;
 		}
+	}
+	icon {
+		height: 1rem;
+		width: 1rem;
+		float: right;
+		display: block;
+		cursor: pointer;
+		border-radius: 0.25rem;
+		padding: 0.25rem;
+	}
+	icon:hover {
+		background: #2e51a2;
 	}
 </style>

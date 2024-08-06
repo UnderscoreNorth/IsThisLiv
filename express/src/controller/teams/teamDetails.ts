@@ -86,6 +86,7 @@ export async function teamDetails(req: Request) {
       scorers: scorerArr,
       num: match.valid ? offMatches : "",
       status: "",
+      matchID: match.matchID,
     };
     if (!match.valid) {
       matchT.status = "V";
@@ -229,19 +230,21 @@ export async function teamDetails(req: Request) {
                 </tr>
             `;
   statsHtml += `</table>`;
-  let matchesHtml = `<table>
-    <tr>
-      <th>Cup</th>
-      <th>Round</th>
-      <th>Date</th>
-      <th>Team</th>
-      <th>Result</th>
-      <th>Scorers</th>
-    </tr>`;
+  let matchesHtml = [];
   let cup = "";
   for (let i = 0; i < matches.length; i++) {
     const match = matches[i];
-    matchesHtml += `<tr class=${match.status}>`;
+    let row = {
+      matchID: match.matchID,
+      status: match.status,
+      cup: "",
+      round: "",
+      date: "",
+      team: "",
+      result: "",
+      scorers: "",
+      num: "",
+    };
     if (cup != match.cup) {
       cup = match.cup;
       let cupNum = 0;
@@ -252,7 +255,7 @@ export async function teamDetails(req: Request) {
           break;
         }
       }
-      matchesHtml += `<th style='background:var(--bg-color);color:var(--fg-color);vertical-align:top' rowspan=${cupNum}>${match.cup}<br><img src="/icons/cups/${match.cupID}.png" style="
+      row.cup = `<th style='background:var(--bg-color);color:var(--fg-color);vertical-align:top' rowspan=${cupNum}>${match.cup}<br><img src="/icons/cups/${match.cupID}.png" style="
       width: 4rem;
   "></th>`;
     }
@@ -267,18 +270,14 @@ export async function teamDetails(req: Request) {
       goalStr += player.goals.join(", ");
       scorers.push(goalStr);
     }
-    matchesHtml += `
-        <td>${match.round}</td>
-        <td>${match.date}</td>
-        <td>${teamLink(match.team, "left")}</td>
-        <td>${match.result}</td>
-        <td>${scorers.join("<br>")}</td>
-        <td style='background:var(--bg-color);color:var(--fg-color)'>${
-          match.num
-        }</td>
-      `;
+    row.date = match.date;
+    row.round = match.round;
+    row.team = teamLink(match.team, "left");
+    row.result = match.result;
+    row.scorers = scorers.join("<br>");
+    row.num = `<td style='background:var(--bg-color);color:var(--fg-color)'>${match.num}</td>`;
+    matchesHtml.push(row);
   }
-  matchesHtml += "</table>";
 
   //Roster
   let avgList = [];
