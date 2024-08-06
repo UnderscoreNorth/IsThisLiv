@@ -65,7 +65,7 @@ export async function leaderboards(req: Request) {
         eq(Match.valid, 1),
         eq(Match.official, 1),
         not(eq(Match.winningTeam, "")),
-        lte(Match.utcTime, new Date(new Date(cup.end).getTime() + 86400000))
+        lte(Match.utcTime, new Date(new Date(cup.end).getTime() + 172800000))
       )
     )
     .groupBy(Team.team)
@@ -100,7 +100,7 @@ export async function leaderboards(req: Request) {
     .where(eq(Player.regPos, "GK"))) {
     const matches = await getPerformances({
       playerID: player.playerID,
-      end: new Date(new Date(cup.end).getTime() + 86400000),
+      end: new Date(new Date(cup.end).getTime() + 172800000),
     });
     if (gks[player.linkID] == undefined) {
       gks[player.linkID] = {
@@ -180,7 +180,7 @@ export async function leaderboards(req: Request) {
       ];
     });
   const matches = await getMatches({
-    end: new Date(new Date(cup.end).getTime() + 86400000),
+    end: new Date(new Date(cup.end).getTime() + 172800000),
   });
   const teamEff: Record<string, { team: string; wins: number; total: number }> =
     {};
@@ -222,7 +222,7 @@ export async function leaderboards(req: Request) {
       and(
         eq(Match.valid, 1),
         eq(Match.official, 1),
-        lte(Match.utcTime, new Date(new Date(cup.end).getTime() + 86400000)),
+        lte(Match.utcTime, new Date(new Date(cup.end).getTime() + 172800000)),
         inArray(Event.eventType, goalTypes),
         not(eq(Player.name, "Unknown Player")),
         not(isNull(Player.linkID))
@@ -265,7 +265,7 @@ export async function leaderboards(req: Request) {
         and(
           eq(Match.valid, 1),
           eq(Match.official, 1),
-          lte(Match.utcTime, new Date(new Date(cup.end).getTime() + 86400000)),
+          lte(Match.utcTime, new Date(new Date(cup.end).getTime() + 172800000)),
           gte(arg, 0)
         )
       )
@@ -303,7 +303,7 @@ export async function leaderboards(req: Request) {
         and(
           eq(Match.valid, 1),
           eq(Match.official, 1),
-          lte(Match.utcTime, new Date(new Date(cup.end).getTime() + 86400000)),
+          lte(Match.utcTime, new Date(new Date(cup.end).getTime() + 172800000)),
           gte(arg, 0)
         )
       )
@@ -335,7 +335,7 @@ export async function leaderboards(req: Request) {
         and(
           eq(Match.valid, 1),
           eq(Match.official, 1),
-          lte(Match.utcTime, new Date(new Date(cup.end).getTime() + 86400000)),
+          lte(Match.utcTime, new Date(new Date(cup.end).getTime() + 172800000)),
           negOne === true ? gt(sumArg, 0) : undefined
         )
       )
@@ -370,7 +370,7 @@ export async function leaderboards(req: Request) {
           eq(Match.valid, 1),
           eq(Match.official, 1),
           inArray(Event.eventType, eType),
-          lte(Match.utcTime, new Date(new Date(cup.end).getTime() + 86400000))
+          lte(Match.utcTime, new Date(new Date(cup.end).getTime() + 172800000))
         )
       )
       .groupBy(PlayerLink.linkID)
