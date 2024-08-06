@@ -18,6 +18,7 @@ import { groupStage } from "./groupStage";
 import { getMaintenance } from "./getMaintenance";
 import { calcAllCups, calcAllTeams } from "../records/records";
 import { rebuildCurrentCup } from "./rebuildCurrentCup";
+import { matchHistory } from "./matchHistory";
 
 const router = express.Router();
 router.use("/user", user);
@@ -28,6 +29,9 @@ router.post(
 );
 router.use("/matchDisplay/:matchID", async (req, res, next) => {
   res.send(await matchDisplay(req));
+});
+router.use("/matchHistory/:matchID", async (req, res, next) => {
+  res.send(await matchHistory(req));
 });
 router.use("/cupTeamDisplay", async (req, res, next) => {
   res.send(await cupTeamDisplay(req));

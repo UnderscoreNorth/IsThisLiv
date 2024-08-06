@@ -1,14 +1,15 @@
 <script lang='ts'>
-	export let editMatch, match;
+	export let editMatch, match, matchDetails;
 	//@ts-ignore
 	import MdEdit from 'svelte-icons/md/MdEdit.svelte';
+	//@ts-ignore
+	import MdAssessment from 'svelte-icons/md/MdAssessment.svelte'
 	import { User} from '$lib/user';
 	import TeamIcon from '$lib/teamIcon.svelte';
 	import TeamLink from '$lib/teamLink.svelte';
 	import Datetime from '$lib/datetime.svelte';
 	import EventIcon from '$lib/eventIcon.svelte';
 	import PenaltyIcon from '$lib/penaltyIcon.svelte';
-	console.log(match);
 </script>
 
 <leftInfo><Datetime date={match.utcTime}/></leftInfo>
@@ -30,6 +31,7 @@
 		<!-- svelte-ignore a11y-click-events-have-key-events -->
 		<icon on:click={() => editMatch(match.id)}><MdEdit /></icon>
 	{/if}
+	<icon on:click={()=>matchDetails(match.id)}><MdAssessment /></icon>
 	{match.stadium}
 	<br />Attendance: {match.attendance <= 0 ? 'Unknown' : match.attendance}
 </rightInfo>

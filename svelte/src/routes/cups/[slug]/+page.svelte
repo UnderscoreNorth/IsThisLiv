@@ -19,11 +19,18 @@
 	import TeamLink from '$lib/teamLink.svelte';
 	import Fantasy from './fantasy.svelte';
 	import Datetime from '$lib/datetime.svelte';
+	import MatchDetails from '$lib/matches/matchDetails.svelte';
 	let matchID = 0;
+	let viewType:'' | 'edit' | 'details' = ''
 	let data:Promise<MainRes>;
 	let imgs:Promise<any>;
 	function editMatch(ID:number) {
 		matchID = ID;
+		viewType = 'edit';
+	}
+	function matchDetails(ID:number){
+		matchID =ID;
+		viewType = 'details'
 	}
 	let displayAddMatchModal = false;
 	let toggleAddMatchModal = () => {
@@ -74,9 +81,12 @@
 	{/await}
 </svelte:head>
 <container>
-{#if matchID > 0}
+{#if matchID > 0 && viewType == 'edit'}
 	<MatchEdit bind:matchID />
+{:else if matchID > 0 && viewType == 'details'}
+	<MatchDetails bind:matchID />
 {/if}
+
 {#await data}
 <vertNav class="c-1" />
 <contents>
@@ -125,7 +135,7 @@
 				<teamBox on:click={()=>displayTeam=teamData} class="c-2"><TeamIcon team={teamData}/><TeamLink team={teamData}/></teamBox>
 			{/each}
 		</teamsContainer>
-		<Matches {data} {editMatch}/>
+		<Matches {data} {editMatch} {matchDetails}/>
 		<Section {show} section='Statistics'>
 			<div class='groupsContainer' style="padding:0 2rem">
 				<Stats {data} />

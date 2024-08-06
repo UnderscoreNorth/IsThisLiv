@@ -4,6 +4,7 @@
 	import type { MainRes } from "./types";
     export let editMatch:Function;
     export let data:MainRes;
+    export let matchDetails:Function;
 </script>
 {#if data.matches.groups}
     <h2 id="Groups">Group Stage</h2>
@@ -35,7 +36,7 @@
                 {/if}
                 {#each group.matches as match}
                     <match>
-                        <MatchDisplay {editMatch} {match} />
+                        <MatchDisplay {editMatch} {match} {matchDetails}/>
                     </match>
                 {/each}
             </div>
@@ -53,7 +54,7 @@
                 <h3 id={group.name}>{group.name}</h3>
                 {#each group.matches as match}
                     <match>
-                        <MatchDisplay {editMatch} {match} />
+                        <MatchDisplay {editMatch} {match} {matchDetails}/>
                     </match>
                 {/each}
             </div>

@@ -154,6 +154,7 @@ export async function cupDetails(req: Request) {
       let oTeam = e.player.team;
       let aTeam =
         e.player.team !== match.homeTeam ? match.homeTeam : match.awayTeam;
+      let eArr = match.homeTeam == oTeam ? homeE : awayE;
       if (goalTypes.includes(e.event.eventType)) {
         scorers[e.player.linkID] = scorers[e.player.linkID] || 0;
         scorers[e.player.linkID]++;
@@ -161,9 +162,7 @@ export async function cupDetails(req: Request) {
         matches[roundType][match.round].table[aTeam].data[6]++;
         totalGoals++;
         goals[oTeam == match.homeTeam ? 0 : 1]++;
-        oTeam == match.homeTeam
-          ? homeE.push({ primary: { e: e.event, p: e.player } })
-          : awayE.push({ primary: { e: e.event, p: e.player } });
+        eArr.push({ primary: { e: e.event, p: e.player } });
       } else if (goalTypesOG.includes(e.event.eventType)) {
         owngoalers[e.player.linkID] = owngoalers[e.player.linkID] || 0;
         owngoalers[e.player.linkID]++;
@@ -177,7 +176,6 @@ export async function cupDetails(req: Request) {
       } else if (assistTypes.includes(e.event.eventType)) {
         assisters[e.player.linkID] = assisters[e.player.linkID] || 0;
         assisters[e.player.linkID]++;
-        let eArr = match.homeTeam ? homeE : awayE;
         let found = false;
         let i = eArr.length - 1;
         while (found == false && i >= 0) {

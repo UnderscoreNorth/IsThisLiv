@@ -2,7 +2,7 @@
 	import type { MainRes } from "./types";
 
     export let data:MainRes
-    let types = [{title:'Goals',key:'scorers'},{title:'Assists',key:'assisters'},{title:'Saves',key:'goalies'},{title:'Cards',key:'cards'}]
+    let types = [{title:'Goals',key:'scorers'},{title:'Own Goals',key:'owngoalers'},{title:'Assists',key:'assisters'},{title:'Saves',key:'goalies'},{title:'Cards',key:'cards'}]
 </script>
 
 {#each types as type}
