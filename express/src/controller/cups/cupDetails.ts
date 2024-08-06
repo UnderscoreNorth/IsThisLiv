@@ -274,7 +274,16 @@ export async function cupDetails(req: Request) {
     teams: (await getCupTeams(cupID)).sort(),
     cupID: cupID,
     cupName: cupMeta.cupName,
-    dates: `${cupMeta.start.toLocaleDateString()} to ${cupMeta.end.toLocaleDateString()}`,
+    dates: `${cupMeta.start.getUTCDate().toString().padStart(2, "0")}/${(
+      cupMeta.start.getUTCMonth() + 1
+    )
+      .toString()
+      .padStart(2, "0")}/${cupMeta.start.getUTCFullYear()} to ${cupMeta.end
+      .getUTCDate()
+      .toString()
+      .padStart(2, "0")}/${(cupMeta.end.getUTCMonth() + 1)
+      .toString()
+      .padStart(2, "0")}/${cupMeta.end.getUTCFullYear()}`,
     matches: matches,
     goals: totalGoals,
     numMatches: totalMatches,
