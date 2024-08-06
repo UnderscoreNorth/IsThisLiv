@@ -35,6 +35,7 @@ export default async function playerWiki(req: Request) {
       Total: number;
       "# GS Picks": number;
       "# KS Picks": number;
+      playerID: number;
     }
   > = {};
   for (const p of performances) {
@@ -56,6 +57,7 @@ export default async function playerWiki(req: Request) {
         "# GS Picks": 0,
         "# KS Picks": 0,
         medal: p.player.medal,
+        playerID: pID,
       };
     let rating: number | "" = p.performance.ff;
     rowsObj[pID].Total += rating;
@@ -93,6 +95,14 @@ export default async function playerWiki(req: Request) {
         }
       }
     }
+  }
+  for (const player of Object.values(rowsObj)) {
+    const picks = await db
+      .select()
+      .from(FantasyPlayer)
+      .where(eq(FantasyPlayer.playerID, player.playerID));
+    player["# GS Picks"] = picks.filter((x) => x.stage == 0).length;
+    player["# KS Picks"] = picks.filter((x) => x.stage == 1).length;
   }
   let rows = Object.values(rowsObj).sort((a, b) => {
     if (a.team > b.team) return 1;
