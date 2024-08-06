@@ -22,26 +22,7 @@ export async function matchSave(req: Request) {
     .replace(/-/gm, " ")
     .replace(/:/gm, " ")
     .split(" ");
-  await db
-    .update(Match)
-    .set({
-      winningTeam: data.winner,
-      round: data.round,
-      attendance: data.attendence,
-      official: data.off,
-      valid: data.valid,
-      stadium: data.stadium,
-      utcTime: new Date(
-        Date.UTC(
-          parseInt(dA[0]),
-          parseInt(dA[1]) - 1,
-          parseInt(dA[2]),
-          parseInt(dA[3]),
-          parseInt(dA[4])
-        )
-      ),
-    })
-    .where(eq(Match.matchID, data.matchID));
+
   for (const performances of data.performances) {
     for (const p of performances as {
       player: InferSelectModel<typeof Player>;
@@ -211,6 +192,27 @@ export async function matchSave(req: Request) {
         )
       );
   }
+  await db
+    .update(Match)
+    .set({
+      winningTeam: data.winner,
+      round: data.round,
+      attendance: data.attendence,
+      official: data.off,
+      valid: data.valid,
+      stadium: data.stadium,
+      utcTime: new Date(
+        Date.UTC(
+          parseInt(dA[0]),
+          parseInt(dA[1]) - 1,
+          parseInt(dA[2]),
+          parseInt(dA[3]),
+          parseInt(dA[4])
+        )
+      ),
+      endPeriod: finalPeriod,
+    })
+    .where(eq(Match.matchID, data.matchID));
   await deleteFile(data.cupID, "cups");
   return {};
 }
