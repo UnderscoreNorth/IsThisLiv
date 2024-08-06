@@ -39,25 +39,24 @@ export default async function playerWiki(req: Request) {
   > = {};
   for (const p of performances) {
     const pID = p.player.playerID;
-    if (rowsObj[pID] == undefined) {
-    }
-    rowsObj[pID] = {
-      team: p.player.team,
-      pos: p.player.regPos,
-      player: p.player.name,
-      R1: "",
-      R2: "",
-      R3: "",
-      R4: "",
-      Ro16: "",
-      QF: "",
-      SF: "",
-      "3rd/Finals": "",
-      Total: 0,
-      "# GS Picks": 0,
-      "# KS Picks": 0,
-      medal: p.player.medal,
-    };
+    if (rowsObj[pID] == undefined)
+      rowsObj[pID] = {
+        team: p.player.team,
+        pos: p.player.regPos,
+        player: p.player.name,
+        R1: "",
+        R2: "",
+        R3: "",
+        R4: "",
+        Ro16: "",
+        QF: "",
+        SF: "",
+        "3rd/Finals": "",
+        Total: 0,
+        "# GS Picks": 0,
+        "# KS Picks": 0,
+        medal: p.player.medal,
+      };
     let rating: number | "" = p.performance.ff;
     rowsObj[pID].Total += rating;
     if (p.performance.rating < 0) rating = "";
