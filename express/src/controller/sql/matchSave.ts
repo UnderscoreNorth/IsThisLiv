@@ -210,7 +210,7 @@ export async function matchSave(req: Request) {
           parseInt(dA[4])
         )
       ),
-      endPeriod: finalPeriod,
+      endPeriod: finalPeriod - 1,
     })
     .where(eq(Match.matchID, data.matchID));
   await deleteFile(data.cupID, "cups");
