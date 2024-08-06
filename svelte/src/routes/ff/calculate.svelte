@@ -34,6 +34,19 @@
             outputText = 'Something wrong happened'
         })
     }
+    async function getPlayerPage(){
+        outputText = 'Calculating...'
+        api('/ff/playerWiki',{cupID:cup}).then((d)=>{
+            if(d.error){
+                outputText = d.error;
+            } else {
+                outputText = ''
+                textArea = d.wiki;
+            }
+        }).catch(()=>{
+            outputText = 'Something wrong happened'
+        })
+    }
 </script>
 {#await cups then cups}
 <div>
@@ -49,7 +62,7 @@
     <button on:click={()=>{getMainPage()}}>
         Main Wiki Page
     </button>
-    <button>
+    <button on:click={()=>{getPlayerPage()}}>
         Individuals Wiki Page
     </button>
     <br>

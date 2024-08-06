@@ -7,6 +7,7 @@ import { saveTeam } from "./saveTeam";
 import calculate from "./calculate";
 import { getCup } from "./cup";
 import mainWiki from "./mainWiki";
+import playerWiki from "./playerWiki";
 
 const router = express.Router();
 router.use("/cup/:cupID", async (req, res, next) => {
@@ -32,5 +33,8 @@ router.use("/saveTeam", async (req, res, next) => {
 });
 router.use("/mainWiki", async (req, res, next) => {
   res.send(await mainWiki(req));
+});
+router.use("/playerWiki", async (req, res, next) => {
+  res.send(await playerWiki(req));
 });
 export default router;
