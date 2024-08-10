@@ -46,16 +46,12 @@ export async function eliteStreaks(req: Request) {
             withoutStreak.start = await cupLink(cup, { logo: true });
           withStreak.end = await cupLink(cup, { logo: true });
           withStreak.num++;
-          withoutStreak.num = Math.ceil(withoutStreak.num);
           withoutStreak.num++;
           withoutStreak.end = await cupLink(cup, { logo: true });
           withStreak.date = cup.end;
           withoutStreak.date = cup.end;
         } else {
           finishStreak(withStreak, withStreaks, team);
-          if (withoutStreak.start) {
-            withoutStreak.num += 0.75;
-          }
         }
       } else {
         if (cup.cupType == 1) {
@@ -117,7 +113,6 @@ function finishStreak(
   team: string,
   end = false
 ) {
-  streak.num = end == false ? Math.floor(streak.num) : Math.ceil(streak.num);
   if (end == true) streak.end = "<center><b>Ongoing</b></center>";
   if (streak.num >= 4) {
     streaks.push({ ...streak, ...{ team } });
