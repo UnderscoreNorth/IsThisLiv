@@ -12,6 +12,9 @@ import { yoyo } from "./misc/yoyo";
 import { groupStageByTeam } from "./misc/groupStageByTeam";
 import { groupStageResults } from "./misc/groupStageResults";
 import { togetherForever } from "./misc/togetherforever";
+import { roundTour } from "./misc/roundTour";
+import { eliteStreaks } from "./misc/eliteStreaks";
+import { benchWarmers } from "./misc/benchWarmers";
 
 const router = express.Router();
 router.use("/cups/:cupID", async (req, res, next) => {
@@ -56,6 +59,15 @@ router.use(
     saveMiddleWare(req, res, groupStageByTeam);
   }
 );
+router.use("/Misc-Round%20Tour", async (req, res, next) => {
+  saveMiddleWare(req, res, roundTour);
+});
+router.use("/Misc-Elite%20Streaks", async (req, res, next) => {
+  saveMiddleWare(req, res, eliteStreaks);
+});
+router.use("/Misc-Bench%20warmers", async (req, res, next) => {
+  saveMiddleWare(req, res, benchWarmers);
+});
 router.use("/*", async (req, res, next) => {
   saveMiddleWare(req, res, mainRecords);
 });

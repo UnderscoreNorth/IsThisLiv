@@ -109,6 +109,7 @@ export async function getEvents(options: {
   matchID?: number;
   eventTypes?: number[];
   getVoided?: boolean;
+  getFriendlies?: boolean;
   linkID?: number;
   team?: string;
 }) {
@@ -118,6 +119,7 @@ export async function getEvents(options: {
       ? inArray(Event.eventType, options.eventTypes)
       : undefined,
     options.cupID ? eq(Match.cupID, options.cupID) : undefined,
+    options.getFriendlies ? undefined : lte(Cup.cupType, 3),
     options.matchID ? eq(Match.matchID, options.matchID) : undefined,
     options.linkID ? eq(Player.linkID, options.linkID) : undefined,
     options?.team ? eq(Player.team, options.team) : undefined
@@ -128,6 +130,7 @@ export async function getEvents(options: {
     .from(Event)
     .innerJoin(Match, eq(Event.matchID, Match.matchID))
     .innerJoin(Player, eq(Event.playerID, Player.playerID))
+    .innerJoin(Cup, eq(Match.cupID, Cup.cupID))
     .where(where)
     .orderBy(Event.regTime, Event.injTime, Event.eventType);
 }

@@ -29,7 +29,9 @@ export async function api(url: string, body?: object) {
 			  }
 	).then(async (result) => {
 		return await result.json();
-	});
+	}).catch(()=>{
+    
+  });
 }
 
 export async function getBooru(tag:string) {

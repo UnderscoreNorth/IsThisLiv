@@ -6,7 +6,19 @@
 		{ Cup: ['Individual', 'Team', 'Cup'] },
 		{Overall:['Streaks','Leaderboards']},
 		//{ Rankings: ['Coefficient', 'Elo'] }
-		{Misc:['Repeat Groups','Team Matchup','Most Dangerous Lead','90+ Goals','Rematches','Possession is a Negative Stat','Group Stage Results','Group Stage Results by Team','Together Forever','Yoyos']}
+		{Misc:['Repeat Groups',
+		'Team Matchup',
+		'Most Dangerous Lead',
+		'90+ Goals',
+		'Rematches',
+		'Possession is a Negative Stat',
+		'Group Stage Results',
+		'Group Stage Results by Team',
+		'Together Forever',
+		'Yoyos',
+		'Round Tour',
+		'Elite Streaks',
+		'Bench Warmers']}
 	]);
 	const path='/records/';
 </script>

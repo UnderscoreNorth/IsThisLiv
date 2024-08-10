@@ -124,7 +124,7 @@ export async function teamDetails(req: Request) {
         stats[cup.cupType].bWin.results = [
           `${tg} - ${eg} ${teamLink(e, "left")} ${dateFormat(match.utcTime)}`,
         ];
-      } else if (gd == stats[cup.cupType].bWin.gd) {
+      } else if (gd == stats[cup.cupType].bWin.gd && gd !== 0) {
         stats[cup.cupType].bWin.results.push(
           `${tg} - ${eg} ${teamLink(e, "left")} ${dateFormat(match.utcTime)}`
         );
@@ -134,7 +134,7 @@ export async function teamDetails(req: Request) {
         stats[cup.cupType].bLose.results = [
           `${tg} - ${eg} ${teamLink(e, "left")} ${dateFormat(match.utcTime)}`,
         ];
-      } else if (gd == stats[cup.cupType].bLose.gd) {
+      } else if (gd == stats[cup.cupType].bLose.gd && gd !== 0) {
         stats[cup.cupType].bLose.results.push(
           `${tg} - ${eg} ${teamLink(e, "left")} ${dateFormat(match.utcTime)}`
         );
@@ -207,8 +207,16 @@ export async function teamDetails(req: Request) {
                 <td>${gf}</td>
                 <td>${ga}</td>
                 <td>${gd}</td>
-                <td>${stats[i].bWin.results.join("<br>")}</td>
-                <td>${stats[i].bLose.results.join("<br>")}</td>
+                <td>${stats[i].bWin.results
+                  .filter((x, i) => {
+                    return i < 3;
+                  })
+                  .join("<br>")}</td>
+                <td>${stats[i].bLose.results
+                  .filter((x, i) => {
+                    return i < 3;
+                  })
+                  .join("<br>")}</td>
             `;
     statsHtml += `</tr>`;
   }
@@ -306,8 +314,14 @@ export async function teamDetails(req: Request) {
     }
     latestRoster.push(p);
     if (arr[p.player.linkID] == undefined) {
-      const eventData = await getEvents({ linkID: p.player.linkID });
-      const perfData = await getPerformances({ linkID: p.player.linkID });
+      const eventData = await getEvents({
+        linkID: p.player.linkID,
+        getFriendlies: true,
+      });
+      const perfData = await getPerformances({
+        linkID: p.player.linkID,
+        getFriendlies: true,
+      });
       arr[p.player.linkID] = {
         id: p.player.linkID,
         cups: 0,
