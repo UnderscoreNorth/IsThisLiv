@@ -20,10 +20,12 @@
 	import Fantasy from './fantasy.svelte';
 	import Datetime from '$lib/datetime.svelte';
 	import MatchDetails from '$lib/matches/matchDetails.svelte';
+	import Rankings from './rankings.svelte';
 	let matchID = 0;
 	let viewType:'' | 'edit' | 'details' = ''
 	let data:Promise<MainRes>;
 	let imgs:Promise<any>;
+
 	function editMatch(ID:number) {
 		matchID = ID;
 		viewType = 'edit';
@@ -67,7 +69,8 @@
 		'Records':false,
 		'Gallery':false,
 		'Statistics':true,
-		'Fantasy Football':false
+		'Fantasy Football':false,
+		'Rankings':true
 	}
 </script>
 
@@ -153,9 +156,14 @@
 		<Section {show} section='Gallery'>
 			<Gallery {imgs} />
 		</Section>
+		{#if data.cupType <= 2}
 		<Section {show} section='Fantasy Football'>
 			<Fantasy cupID={data.cupID} />
 		</Section>
+		<Section {show} section='Rankings'>
+			<Rankings {data} />
+		</Section>
+		{/if}
 	</contents>
 	{:else}
 		<vertNav class="c-1" />

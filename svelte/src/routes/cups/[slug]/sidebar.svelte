@@ -43,7 +43,9 @@
 <a style="padding-left:1rem" href="#Cards">Cards</a>
 <a href="#Records">Records</a>
 <a href="#Gallery">Gallery</a>
+{#if data.cupType <= 2}
 <a href='#Fantasy Football'>Fantasy Football</a>
+<a href='#Rankings'>Rankings</a>{/if}
 <style>
     .element{
 		background: var(--bg-color);

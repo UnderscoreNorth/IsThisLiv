@@ -297,6 +297,7 @@ export async function cupDetails(req: Request) {
       timeStyle: "short",
       dateStyle: "medium",
     }),
+    cupType: cupMeta.cupType,
   };
 
   return result;

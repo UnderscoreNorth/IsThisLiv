@@ -35,4 +35,5 @@ export type MainRes = {
     goalies: any[];
     cards: any[];
     date:Date;
+    cupType:number;
 }
