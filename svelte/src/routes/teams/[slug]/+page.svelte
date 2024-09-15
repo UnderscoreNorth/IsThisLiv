@@ -10,6 +10,7 @@ import { page } from '$app/stores';
 		//@ts-ignore
 	import MdAssessment from 'svelte-icons/md/MdAssessment.svelte'
 	import MatchDetails from '$lib/matches/matchDetails.svelte';
+	import { sidebarStore } from '$lib/sideBarStore';
 	//let data;	
 	let data = {};
 	let sortData;
@@ -28,6 +29,7 @@ import { page } from '$app/stores';
 				records =  api('/records/teams/' + team);
 				return r;
 			});
+			$sidebarStore = `/${team}/`;
 		}
 	})
 	
@@ -269,6 +271,14 @@ import { page } from '$app/stores';
 	@media only screen and (max-width: 1500px) {
 		grid{
 			grid-template-columns: 1fr;
+		}
+	}
+	#mobileHeader{
+
+	}
+	@media (width <= 700px){
+		#header{
+			display:none;
 		}
 	}
 	icon {

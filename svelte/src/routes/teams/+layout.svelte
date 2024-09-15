@@ -2,6 +2,7 @@
 	import { page } from '$app/stores';
 	import { DeepSet } from '$lib/deepSet';
 	import SideBar from '$lib/sideBar.svelte';
+	import { sidebarStore } from '$lib/sideBarStore';
 	const links = [
 		'3',
 		'a',
@@ -80,6 +81,7 @@
 		deepset.add([link,'/' + link + '/'])
 	}
 	const path = '/teams/';
+	$sidebarStore = '';
 </script>
 <SideBar links={deepset} {path}>
 	<div id="slotContainer">

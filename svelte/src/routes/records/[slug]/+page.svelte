@@ -3,6 +3,7 @@
 	import Datetime from '$lib/datetime.svelte';
 	import { api } from '$lib/helper';
 	import Records from '$lib/records.svelte';
+	import { sidebarStore } from '$lib/sideBarStore';
 	type Res = {
 		date: Date,
 		data:Record<string,Record<
@@ -20,6 +21,7 @@
 		if(id!==p.url.pathname){
 			id = p.url.pathname;
 			res = api($page.url.pathname);
+			$sidebarStore = p.url.pathname.replace('/records/','').replace('Misc-','').replaceAll('%20', ' ');
 		}
 	})
 </script>

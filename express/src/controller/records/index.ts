@@ -15,6 +15,15 @@ import { togetherForever } from "./misc/togetherforever";
 import { roundTour } from "./misc/roundTour";
 import { eliteStreaks } from "./misc/eliteStreaks";
 import { benchWarmers } from "./misc/benchWarmers";
+import { benchedMedals } from "./misc/benchedMedals";
+import { blessedPlayers } from "./misc/blessedPlayer";
+import { cursedPlayers } from "./misc/cursedPlayer";
+import { eliteDroughts } from "./misc/eliteDroughts";
+import { shitMedals } from "./misc/shitmedals";
+import { shotConversion } from "./misc/shot_conversion";
+import { alwaysSubbedOn } from "./misc/alwaysSubbedOn";
+import { subOnMOTM } from "./misc/subonMOTM";
+import { subbingGKs } from "./misc/subbingGK";
 
 const router = express.Router();
 router.use("/cups/:cupID", async (req, res, next) => {
@@ -67,6 +76,33 @@ router.use("/Misc-Elite%20Streaks", async (req, res, next) => {
 });
 router.use("/Misc-Bench%20warmers", async (req, res, next) => {
   saveMiddleWare(req, res, benchWarmers);
+});
+router.use("/Misc-Benched%20Medals", async (req, res, next) => {
+  saveMiddleWare(req, res, benchedMedals);
+});
+router.use("/Misc-Blessed%20Players", async (req, res, next) => {
+  saveMiddleWare(req, res, blessedPlayers);
+});
+router.use("/Misc-cursed%20players", async (req, res, next) => {
+  saveMiddleWare(req, res, cursedPlayers);
+});
+router.use("/Misc-Elite%20Droughts", async (req, res, next) => {
+  saveMiddleWare(req, res, eliteDroughts);
+});
+router.use("/Misc-Shit%20Medals", async (req, res, next) => {
+  saveMiddleWare(req, res, shitMedals);
+});
+router.use("/Misc-Shot%20Conversion", async (req, res, next) => {
+  saveMiddleWare(req, res, shotConversion);
+});
+router.use("/misc-always%20subbed%20on", async (req, res, next) => {
+  saveMiddleWare(req, res, alwaysSubbedOn);
+});
+router.use("/misc-sub%20on%20motm", async (req, res, next) => {
+  saveMiddleWare(req, res, subOnMOTM);
+});
+router.use("/misc-subbing%20gks", async (req, res, next) => {
+  saveMiddleWare(req, res, subbingGKs);
 });
 router.use("/*", async (req, res, next) => {
   saveMiddleWare(req, res, mainRecords);

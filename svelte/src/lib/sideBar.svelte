@@ -4,6 +4,7 @@
     import { sineIn } from 'svelte/easing';
 	import { Drawer } from 'flowbite-svelte';
 	import MdMenu from 'svelte-icons/md/MdMenu.svelte';
+	import { sidebarStore } from './sideBarStore';
     let width: any;
 	let drawerHidden = true;
 	let transitionParams = {
@@ -30,11 +31,15 @@
                     {#each Object.keys(link) as header}
                         {header}
                         {#each link[header] as subLink}
-                            <a
-                                style="padding-left:0.5rem"
-                                href="{path}{header}-{subLink}"
-                                on:click={() => (drawerHidden = true)}>{subLink}</a
-                            >
+							{#if subLink == '-'}
+								<div><hr></div>
+							{:else}
+								<a
+									style="padding-left:0.5rem"
+									href="{path}{header}-{subLink}"
+									on:click={() => (drawerHidden = true)}>{subLink}</a
+								>
+							{/if}
                         {/each}
                     {/each}
                 {:else}
@@ -56,10 +61,7 @@
 				<MdMenu />
 			</icon>
 			<span style="margin-left:0.5rem"
-				>{Array.from(links)
-					.filter((x) => $page.url.pathname.replace(path,'').includes(x[0]) && x[0] !== '/')
-					.map((x) => x[1])
-					.join('')}</span
+				>{@html $sidebarStore}</span
 			>
 		</div>
 	{:else}
@@ -70,18 +72,20 @@
                         {#each Object.keys(link) as header}
                             {header}
                             {#each link[header] as subLink}
-                                <a
+								{#if subLink == '-'}
+									<div><hr></div>
+								{:else}
+								<a
                                     style="padding-left:0.5rem"
                                     href="{path}{header}-{subLink}"
                                     on:click={() => (drawerHidden = true)}
                                     ><div
                                         class={$page.url.pathname == `${path}${header}-${subLink}`
                                             ? 'selectedPage'
-                                            : 'unselectedPage'}
-                                    >
+                                            : 'unselectedPage'}>
                                         {subLink}
-                                    </div></a
-                                >
+                                    </div></a>
+								{/if}
                             {/each}
                         {/each}
                     {:else}
@@ -115,6 +119,7 @@
 <style>
 	vertNav{
 		overflow-y: auto;
+		font-size: small;
 	}
 	#slotContainer{
 		overflow-y: auto;

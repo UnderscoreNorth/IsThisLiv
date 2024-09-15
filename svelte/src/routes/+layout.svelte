@@ -223,17 +223,29 @@
 		background: #ddffdd;
 		color: black;
 	}
+	:global(.W a){
+		color:black;
+	}
 	:global(.D) {
 		background: #ffffdd;
 		color: black;
+	}
+	:global(.D a){
+		color:black;
 	}
 	:global(.L) {
 		background: #ffdddd;
 		color: black;
 	}
+	:global(.L a){
+		color:black;
+	}
 	:global(.V) {
 		background: #ccc;
 		color: black;
+	}
+	:global(.V a){
+		color:black;
 	}
 	nav {
 		background: #2e51a2;

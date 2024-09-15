@@ -1,6 +1,7 @@
 <script lang='ts'>
 	import Datetime from "$lib/datetime.svelte";
 	import { api } from "$lib/helper";
+	import { sidebarStore } from "$lib/sideBarStore";
 	import Table from "./table.svelte";
     import {onMount} from 'svelte'
     let cup = 0
@@ -20,6 +21,7 @@
     <Table title={'Goals Per Match (Min 10 matches)'} headers={['#','Board','Name','GPM (# Matches)']} rows={data.gpm} />
            
     */
+    $sidebarStore = `Leaderboards`;
 </script>
 <container>
     {#await data then data}

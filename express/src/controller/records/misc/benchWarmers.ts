@@ -7,6 +7,7 @@ import {
   cupShort,
   keySort,
   playerLink,
+  pos,
   teamLink,
 } from "../../../lib/helper";
 import { getMatches, getPerformances, getPlayers } from "../../../db/commonFn";
@@ -65,9 +66,9 @@ export async function benchWarmers(req: Request) {
       player.name,
       player.team,
     ])}</td>`;
-    e += `<tr><td>${teamLink(player.team, "left")}</td><td>${
+    e += `<tr><td>${teamLink(player.team, "left")}</td><td>${pos(
       player.regPos
-    }</td>${playerHTML}</tr>`;
+    )}</td>${playerHTML}</tr>`;
 
     if (typeof link[player.linkID] == "undefined") {
       let [b, b2] = (

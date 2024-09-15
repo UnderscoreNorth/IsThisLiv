@@ -38,4 +38,10 @@
         display:inline-block;
         vertical-align: top;
     }
+    @media (width <= 700px){
+        table{
+            width:100%;
+            margin-top:5px;
+        }
+    }
 </style>
