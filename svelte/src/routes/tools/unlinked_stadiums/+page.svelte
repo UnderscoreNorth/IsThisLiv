@@ -15,14 +15,14 @@
 <div style='padding:2rem'>
     {#await data then {stadiums,stadiumLinks}} 
         <datalist id='data'>
-            {#each stadiumLinks as {stadium}}
+            {#each Array.from(new Set(stadiumLinks.map(x=>x.stadium))) as stadium}
                 <option value={stadium} />
             {/each}
         </datalist>       
         <div class='cat' style:border-right='solid 1px var(--fg-color)'>
             <div class='stadium {selected == 'Unlinked' ? 'sel' : ''}' on:click={()=>selected='Unlinked'}>Unlinked</div>
-            {#each stadiumLinks as s}
-                <div class='stadium {selected == s.stadium ? 'sel' : ''}'  on:click={()=>selected=s.stadium}>{s.stadium}</div>
+            {#each Array.from(new Set(stadiumLinks.map(x=>x.stadium))) as s}
+                <div class='stadium {selected == s ? 'sel' : ''}'  on:click={()=>selected=s}>{s}</div>
             {/each}
         </div>
         <div class='cat'>
