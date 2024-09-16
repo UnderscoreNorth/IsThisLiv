@@ -24,7 +24,6 @@
 	</p>
 	<h3>Roadmap</h3>
 	<ul>
-		<li>Migrating old misc stats</li>
 		<li>Requiring tags when uploading on booru</li>
 		<li>Text/copypasta/flash support on booru</li>
 		<li>QoL UI changes to booru like right click to save</li>
