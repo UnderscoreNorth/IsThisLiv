@@ -27,7 +27,7 @@
         </div>
         <div class='cat'>
             <table>
-            {#each stadiums.filter(x=>(selected=='Unlinked' && stadiumLinks.filter(y=>y.alias==x && y.stadium==selected).length == 0) || (selected !=='Unlinked' && stadiumLinks.filter(y=>y.alias==x && y.stadium==selected).length > 0)) as s}
+            {#each stadiums.filter(x=>(selected=='Unlinked' && stadiumLinks.filter(y=>y.alias==x).length == 0) || (selected !=='Unlinked' && stadiumLinks.filter(y=>y.alias==x && y.stadium==selected).length > 0)) as s}
                 <tr>
                     <td>{s}</td>
                     {#if selected == 'Unlinked'}
