@@ -1,5 +1,5 @@
 <script lang="ts">
-	export let data: Array<any>;
+	export let data: Array<Record<string,{id:string,name:string,class:string,style:string,value:string | number}>>;
 	export let defaultSort: string;
 	let sortAsc = true;
 	let sortField = defaultSort;
@@ -15,8 +15,8 @@
 			let res = 0;
 			let af = a[field].value || -99999999;
 			let bf = b[field].value || -99999999;
-			if (parseFloat(af)) af = parseFloat(af);
-			if (parseFloat(bf)) bf = parseFloat(bf);
+			if (parseFloat(af.toString())) af = parseFloat(af.toString());
+			if (parseFloat(bf.toString())) bf = parseFloat(bf.toString());
 			if (af > bf) {
 				res = 1;
 			} else if (af < bf) {

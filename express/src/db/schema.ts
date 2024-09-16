@@ -143,6 +143,10 @@ export const User = mysqlTable("user", {
   access: int("access"),
   hash: varchar("hash", { length: 100 }),
 });
+export const Stadiums = mysqlTable("stadium", {
+  stadium: varchar("stadium", { length: 100 }).primaryKey(),
+  alias: varchar("alias", { length: 100 }),
+});
 export const Fantasy = mysqlTable("fantasy", {
   teamID: int("teamID").autoincrement().primaryKey(),
   cupID: int("cupID").references(() => Cup.cupID),

@@ -76,7 +76,7 @@
 		'xs',
 		'y'
 	];
-	const deepset = new DeepSet();
+	const deepset = new DeepSet([['','Overall']]);
 	for(const link of links){
 		deepset.add([link,'/' + link + '/'])
 	}

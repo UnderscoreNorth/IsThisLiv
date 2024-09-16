@@ -8,17 +8,21 @@
 		{Overall:['Streaks','Leaderboards']},
 		//{ Rankings: ['Coefficient', 'Elo'] }
 		{Misc:['Repeat Groups',
+		'Closed Groups',
 		'Team Matchup',
 		'Most Dangerous Lead',
 		'90+ Goals',
 		'Rematches',
 		'Possession is a Negative Stat',
-		
+		'Stadiums',
 		'Together Forever',
 		'Yoyos',
 		'Round Tour',
 		'Shot Conversion',
 		'Shit Medals',
+		'Milestone Events',
+		'Milestone Matches',
+		'Condition Differences',
 		'-',
 		'Group Stage Results',
 		'Group Stage Results by Team',
@@ -33,7 +37,8 @@
 		'Always Subbed On',
 		'Sub on MOTM',
 		'Benched Medals',
-		'Subbing GKs']}
+		'Subbing GKs',
+		'Players by Cup Debut']}
 	]);
 	const path='/records/';
 	$sidebarStore = '';

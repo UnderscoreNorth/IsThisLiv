@@ -24,6 +24,12 @@ import { shotConversion } from "./misc/shot_conversion";
 import { alwaysSubbedOn } from "./misc/alwaysSubbedOn";
 import { subOnMOTM } from "./misc/subonMOTM";
 import { subbingGKs } from "./misc/subbingGK";
+import { playersByCupDebut } from "./misc/playersByCupDebut";
+import { milestoneEvents } from "./misc/milestoneEvents";
+import { milestoneMatches } from "./misc/milestoneMatches";
+import { conditionDifferences } from "./misc/conditionDifferences";
+import { closedGroups } from "./misc/closedGroups";
+import { stadiums } from "./misc/stadiums";
 
 const router = express.Router();
 router.use("/cups/:cupID", async (req, res, next) => {
@@ -103,6 +109,24 @@ router.use("/misc-sub%20on%20motm", async (req, res, next) => {
 });
 router.use("/misc-subbing%20gks", async (req, res, next) => {
   saveMiddleWare(req, res, subbingGKs);
+});
+router.use("/misc-players%20by%20cup%20debut", async (req, res, next) => {
+  saveMiddleWare(req, res, playersByCupDebut);
+});
+router.use("/misc-milestone%20events", async (req, res, next) => {
+  saveMiddleWare(req, res, milestoneEvents);
+});
+router.use("/misc-milestone%20matches", async (req, res, next) => {
+  saveMiddleWare(req, res, milestoneMatches);
+});
+router.use("/misc-condition%20differences", async (req, res, next) => {
+  saveMiddleWare(req, res, conditionDifferences);
+});
+router.use("/misc-closed%20groups", async (req, res, next) => {
+  saveMiddleWare(req, res, closedGroups);
+});
+router.use("/misc-stadiums", async (req, res, next) => {
+  saveMiddleWare(req, res, stadiums);
 });
 router.use("/*", async (req, res, next) => {
   saveMiddleWare(req, res, mainRecords);

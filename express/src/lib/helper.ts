@@ -248,6 +248,25 @@ export function keySort<T>(
   });
   return object;
 }
+export function keySortMulti<T>(
+  object: T & Array<any>,
+  keys: Array<{ key: keyof T[any]; descending?: boolean }>
+): T {
+  object.sort((a, b) => {
+    for (const key of keys) {
+      let r = 0;
+      if (a[key.key] > b[key.key]) {
+        r = 1;
+      } else if (a[key.key] < b[key.key]) {
+        r = -1;
+      }
+      if (key.descending) r *= -1;
+      if (r !== 0) return r;
+    }
+    return 0;
+  });
+  return object;
+}
 
 export function arsort(object: Object, index = 0) {
   return Object.entries(object).sort(([, a], [, b]) => {

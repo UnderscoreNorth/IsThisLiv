@@ -19,6 +19,7 @@ import { getMaintenance } from "./getMaintenance";
 import { calcAllCups, calcAllTeams } from "../records/records";
 import { rebuildCurrentCup } from "./rebuildCurrentCup";
 import { matchHistory } from "./matchHistory";
+import { getStadiumLinks, linkStadium, unlinkStadium } from "./stadiumLinks";
 
 const router = express.Router();
 router.use("/user", user);
@@ -79,5 +80,14 @@ router.use("/rebuildTeamRecords", async (req, res, next) => {
 });
 router.use("/rebuildCurrentCup", async (req, res, next) => {
   res.send(await rebuildCurrentCup());
+});
+router.use("/getStadiums", async (req, res, next) => {
+  res.send(await getStadiumLinks());
+});
+router.use("/linkStadium", async (req, res, next) => {
+  res.send(await linkStadium(req));
+});
+router.use("/unlinkStadium", async (req, res, next) => {
+  res.send(await unlinkStadium(req));
 });
 export default router;

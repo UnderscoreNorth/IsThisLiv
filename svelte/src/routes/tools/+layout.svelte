@@ -10,8 +10,10 @@
 		['cache', 'Cache'],
 		['upload', 'Upload Edit File'],
 		['unlinked_players', 'Unlinked Players'],
+		['unlinked_stadiums','Unlinked Stadiums'],
 		['groupstage', 'Groupstage'],
-		['maintenance','Maintenance']
+		['maintenance','Maintenance'],
+
 		
 	]);
 	const path = '/tools/';
