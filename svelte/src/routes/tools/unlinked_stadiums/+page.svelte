@@ -31,7 +31,8 @@
                 <tr>
                     <td>{s}</td>
                     {#if selected == 'Unlinked'}
-                        <td><input list='data' bind:value={stadium}><button on:click={()=>linkStadium(stadium,s)}>Create/Link</button></td>
+                        <td><input list='data' bind:value={stadium}><button on:click={()=>linkStadium(stadium,s)}>Create/Link</button>
+                            <button on:click={()=>linkStadium(s,s)}>Use Stadium Name</button></td>
                     {:else}
                         <td><button on:click={()=>unlinkStadium(selected,s)}>Unlink</button></td>
                     {/if}
