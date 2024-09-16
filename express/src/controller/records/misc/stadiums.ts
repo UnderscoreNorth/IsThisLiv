@@ -125,7 +125,11 @@ export async function stadiums(req: Request) {
             margin: 0 1rem;
         }
           td{
-          text-align:left}
+            text-align:left;
+            max-width: 10rem;
+            border-bottom:solid 1px var(--fg-color)}
+            table:{
+            border-collapse: collapse;}
     </STYLE>`;
   return { html, date: new Date() };
 }
