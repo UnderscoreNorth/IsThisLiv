@@ -45,7 +45,7 @@ export async function subbingGKs(req: Request) {
             eq(Performance.subOn, performance.subOff)
           )
         )
-        .orderBy(eq(Player.regPos, "GK"))
+        .orderBy(desc(eq(Player.regPos, "GK")))
     )?.[0]?.player ?? { linkID: 0, name: "Unknown", team };
     let hgb = 0,
       hgt = 0,
