@@ -64,6 +64,7 @@ export async function playersByCupDebut(req: Request) {
           .where(eq(Player.linkID, player.linkID))
           .orderBy(Player.cupID)
       )[0];
+      if (firstCup === undefined) continue;
       const playerCups = await db
         .select({ Cup })
         .from(Match)
