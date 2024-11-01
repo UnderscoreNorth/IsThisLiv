@@ -11,7 +11,7 @@ export async function playersByCupDebut(req: Request) {
       .from(Cup)
       .where(lte(Cup.cupType, 3))
       .orderBy(desc(Cup.start))
-  )[0].cupID;
+  )[1].cupID;
   const teams = (
     await db
       .select({ homeTeam: Match.homeTeam })
