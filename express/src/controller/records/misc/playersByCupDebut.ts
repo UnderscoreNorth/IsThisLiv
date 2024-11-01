@@ -73,7 +73,7 @@ export async function playersByCupDebut(req: Request) {
           .from(Player)
           .innerJoin(Cup, eq(Player.cupID, Cup.cupID))
           .where(eq(Player.linkID, player.linkID))
-          .orderBy(Player.cupID)
+          .orderBy(Cup.start)
       )[0];
       if (firstCup === undefined) continue;
       const playerCups = await db
