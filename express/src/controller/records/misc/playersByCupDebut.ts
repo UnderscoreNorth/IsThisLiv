@@ -1,16 +1,27 @@
 import { Request } from "express";
 import { db } from "../../../db";
 import { Cup, Match, Player, Team } from "../../../db/schema";
-import { and, desc, eq, gte, InferSelectModel, lte, or } from "drizzle-orm";
+import {
+  and,
+  desc,
+  eq,
+  gte,
+  InferSelectModel,
+  lte,
+  max,
+  min,
+  or,
+} from "drizzle-orm";
 import { cupLink, playerLink } from "../../../lib/helper";
 
 export async function playersByCupDebut(req: Request) {
   const cupThreshold = (
     await db
-      .select()
+      .select({ cupID: min(Cup.cupID) })
       .from(Cup)
       .where(lte(Cup.cupType, 3))
-      .orderBy(desc(Cup.start))
+      .groupBy(Cup.year, Cup.season)
+      .orderBy(desc(max(Cup.start)))
   )[1].cupID;
   const teams = (
     await db
