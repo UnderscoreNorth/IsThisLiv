@@ -156,27 +156,33 @@ export async function cupDetails(req: Request) {
         e.player.team !== match.homeTeam ? match.homeTeam : match.awayTeam;
       let eArr = match.homeTeam == oTeam ? homeE : awayE;
       if (goalTypes.includes(e.event.eventType)) {
-        scorers[e.player.linkID] = scorers[e.player.linkID] || 0;
-        scorers[e.player.linkID]++;
-        matches[roundType][match.round].table[oTeam].data[5]++;
-        matches[roundType][match.round].table[aTeam].data[6]++;
-        totalGoals++;
+        if (match.official) {
+          scorers[e.player.linkID] = scorers[e.player.linkID] || 0;
+          scorers[e.player.linkID]++;
+          matches[roundType][match.round].table[oTeam].data[5]++;
+          matches[roundType][match.round].table[aTeam].data[6]++;
+          totalGoals++;
+        }
         goals[oTeam == match.homeTeam ? 0 : 1]++;
         eArr.push({ primary: { e: e.event, p: e.player } });
       } else if (goalTypesOG.includes(e.event.eventType)) {
-        owngoalers[e.player.linkID] = owngoalers[e.player.linkID] || 0;
-        owngoalers[e.player.linkID]++;
-        matches[roundType][match.round].table[oTeam].data[6]++;
-        matches[roundType][match.round].table[aTeam].data[5]++;
-        totalGoals++;
+        if (match.official) {
+          owngoalers[e.player.linkID] = owngoalers[e.player.linkID] || 0;
+          owngoalers[e.player.linkID]++;
+          matches[roundType][match.round].table[oTeam].data[6]++;
+          matches[roundType][match.round].table[aTeam].data[5]++;
+          totalGoals++;
+        }
         goals[oTeam == match.homeTeam ? 1 : 0]++;
         oTeam !== match.homeTeam
           ? homeE.push({ primary: { e: e.event, p: e.player } })
           : awayE.push({ primary: { e: e.event, p: e.player } });
       } else if (assistTypes.includes(e.event.eventType)) {
-        assisters[e.player.linkID] = assisters[e.player.linkID] || 0;
-        assisters[e.player.linkID]++;
         let found = false;
+        if (match.official) {
+          assisters[e.player.linkID] = assisters[e.player.linkID] || 0;
+          assisters[e.player.linkID]++;
+        }
         let i = eArr.length - 1;
         while (found == false && i >= 0) {
           if (
@@ -193,8 +199,10 @@ export async function cupDetails(req: Request) {
       } else if (
         [...yellowCardTypes, ...redCardTypes].includes(e.event.eventType)
       ) {
-        cards[e.player.linkID] = cards[e.player.linkID] || 0;
-        cards[e.player.linkID]++;
+        if (match.official) {
+          cards[e.player.linkID] = cards[e.player.linkID] || 0;
+          cards[e.player.linkID]++;
+        }
         oTeam == match.homeTeam
           ? homeE.push({ primary: { e: e.event, p: e.player } })
           : awayE.push({ primary: { e: e.event, p: e.player } });
@@ -217,15 +225,17 @@ export async function cupDetails(req: Request) {
       penalties[index].push({ player, goal: penalty.goal });
     }
     for (let team of teams) {
-      matches[roundType][match.round].table[team].data[1]++;
-      if (match.winningTeam == "draw") {
-        matches[roundType][match.round].table[team].data[3]++;
-        matches[roundType][match.round].table[team].data[8]++;
-      } else if (match.winningTeam == team) {
-        matches[roundType][match.round].table[team].data[2]++;
-        matches[roundType][match.round].table[team].data[8] += 3;
-      } else {
-        matches[roundType][match.round].table[team].data[4]++;
+      if (match.official) {
+        matches[roundType][match.round].table[team].data[1]++;
+        if (match.winningTeam == "draw") {
+          matches[roundType][match.round].table[team].data[3]++;
+          matches[roundType][match.round].table[team].data[8]++;
+        } else if (match.winningTeam == team) {
+          matches[roundType][match.round].table[team].data[2]++;
+          matches[roundType][match.round].table[team].data[8] += 3;
+        } else {
+          matches[roundType][match.round].table[team].data[4]++;
+        }
       }
     }
     matches[roundType][match.round].matches.push({

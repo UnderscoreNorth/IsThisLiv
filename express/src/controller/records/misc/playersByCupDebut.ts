@@ -67,6 +67,7 @@ export async function playersByCupDebut(req: Request) {
       .from(Player)
       .where(and(eq(Player.cupID, latestCup), eq(Player.team, team)));
     for (const player of players) {
+      console.log(player);
       const firstCup = (
         await db
           .select({ cupID: Player.cupID, year: Cup.year })
@@ -75,7 +76,10 @@ export async function playersByCupDebut(req: Request) {
           .where(eq(Player.linkID, player.linkID))
           .orderBy(Cup.start)
       )[0];
-      if (firstCup === undefined) continue;
+      if (firstCup === undefined) {
+        console.log("skipped");
+        continue;
+      }
       const playerCups = await db
         .select({ Cup })
         .from(Match)
