@@ -3,11 +3,11 @@
 	import { browser } from '$app/environment';
 	import { User } from '$lib/user';
 	import { api } from '$lib/helper';
-	let data = api('/sql/ff/teamListID');
+	let data = api('/ff/teamListID');
 	let newUser = '';
 	let newPassword = '';
 	async function resetPassword(id: string) {
-		newPassword = (await api('/sql/ff/resetPassword', { id })).prv;
+		newPassword = (await api('/ff/resetPassword', { id })).prv;
 	}
 	if (browser && $User.access < 3) {
 		window.location.replace('/');
