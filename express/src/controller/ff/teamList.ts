@@ -12,3 +12,10 @@ export async function teamList(req: Request) {
     (x) => x.name
   );
 }
+export async function teamListID(req: Request) {
+  let cupID = req.body.cupID;
+  if (!(parseInt(cupID) > 0)) {
+    cupID = (await db.query.Cup.findFirst({ orderBy: desc(Cup.start) })).cupID;
+  }
+  return await db.select().from(Fantasy).where(eq(Fantasy.cupID, cupID));
+}

@@ -149,3 +149,15 @@ export async function register(req: Request) {
     return { error: "Something went wrong" };
   }
 }
+export async function resetPassword(req: Request) {
+  let { id } = req.body as { id: number };
+  try {
+    const prv = createPassword();
+    const pub = encrypt(prv);
+    await db.update(Fantasy).set({ pub }).where(eq(Fantasy.teamID, id));
+    return { prv };
+  } catch (err) {
+    console.log(err);
+    return { error: "Something went wrong" };
+  }
+}

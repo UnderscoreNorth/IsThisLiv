@@ -1,7 +1,7 @@
 import express from "express";
 import { saveMiddleWare } from "../../lib/helper";
-import { teamList } from "./teamList";
-import { login, register } from "./access";
+import { teamList, teamListID } from "./teamList";
+import { login, register, resetPassword } from "./access";
 import { getData } from "./getData";
 import { saveTeam } from "./saveTeam";
 import calculate from "./calculate";
@@ -36,5 +36,11 @@ router.use("/mainWiki", async (req, res, next) => {
 });
 router.use("/playerWiki", async (req, res, next) => {
   res.send(await playerWiki(req));
+});
+router.use("/resetPassword", async (req, res, next) => {
+  res.send(await resetPassword(req));
+});
+router.use("/teamListID", async (req, res, next) => {
+  res.send(await teamListID(req));
 });
 export default router;
