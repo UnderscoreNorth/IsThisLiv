@@ -20,6 +20,7 @@ import { calcAllCups, calcAllTeams } from "../records/records";
 import { rebuildCurrentCup } from "./rebuildCurrentCup";
 import { matchHistory } from "./matchHistory";
 import { getStadiumLinks, linkStadium, unlinkStadium } from "./stadiumLinks";
+import { uploadIcon } from "./uploadIcon";
 
 const router = express.Router();
 router.use("/user", user);
@@ -27,6 +28,15 @@ router.post(
   "/uploadSaveFile",
   multer({ dest: "uploads/" }).fields([{ name: "file" }, { name: "cups" }]),
   uploadEditFile
+);
+router.post(
+  "/uploadIcon",
+  multer({ dest: "uploads/" }).fields([
+    { name: "file" },
+    { name: "type" },
+    { name: "name" },
+  ]),
+  uploadIcon
 );
 router.use("/matchDisplay/:matchID", async (req, res, next) => {
   res.send(await matchDisplay(req));

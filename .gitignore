@@ -7,3 +7,6 @@ svelte/package-lock.json
 svelte/.svelte-kit/
 svelte/node_modules/
 svelte/src/lib/config.json
+svelte/static/icons/cups/
+svelte/static/icons/cups-small/
+svelte/static/icons/team-small/

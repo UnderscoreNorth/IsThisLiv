@@ -19,6 +19,7 @@
 	if ($User.access == 3) {
 		links.add(['users', 'Users']);
 		links.add(['ff_teams', 'FF Teams']);
+		links.add(['icons', 'Icons']);
 	} else {
 		links.delete(['users', 'Users']);
 		links.delete(['ff_teams', 'FF Teams']);
