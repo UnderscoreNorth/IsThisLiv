@@ -89,7 +89,7 @@ export async function groupStage(req: Request) {
     if (dayCounter > 7) {
       dayCounter = 0;
       currentDate = currentDate.add(1, "day");
-      if (currentDate.day() == 1) {
+      if (currentDate.day() == 0) {
         currentDate = currentDate.add(4, "day");
       }
     }
