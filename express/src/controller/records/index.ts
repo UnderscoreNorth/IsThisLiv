@@ -30,6 +30,7 @@ import { milestoneMatches } from "./misc/milestoneMatches";
 import { conditionDifferences } from "./misc/conditionDifferences";
 import { closedGroups } from "./misc/closedGroups";
 import { stadiums } from "./misc/stadiums";
+import { allMedalScoring } from "./misc/allMedalsScoring";
 
 const router = express.Router();
 router.use("/cups/:cupID", async (req, res, next) => {
@@ -127,6 +128,9 @@ router.use("/misc-closed%20groups", async (req, res, next) => {
 });
 router.use("/misc-stadiums", async (req, res, next) => {
   saveMiddleWare(req, res, stadiums);
+});
+router.use("/misc-all%20medals%20scoring", async (req, res, next) => {
+  saveMiddleWare(req, res, allMedalScoring);
 });
 router.use("/*", async (req, res, next) => {
   saveMiddleWare(req, res, mainRecords);

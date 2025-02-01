@@ -19,6 +19,12 @@ import {
 
 export async function teamDetails(req: Request) {
   let team = req.params.teamID.split("-")[0];
+  const wikiColors = {
+    W: "ccffcc",
+    L: "ffcccc",
+    D: "ffffcc",
+    V: "cccccc",
+  };
   const matchData = await getMatches({
     team,
     getVoided: true,
@@ -78,9 +84,11 @@ export async function teamDetails(req: Request) {
     if (match.valid) offMatches++;
     let matchT = {
       cup: cupShort(cup.cupName),
+      cupFull: cup.cupName,
       cupID: cup.cupID,
       round: match.round,
       date: dateFormat(match.utcTime, "short"),
+      dateFull: dateFormat(match.utcTime, "med"),
       team: e,
       result: `${tg} - ${eg}`,
       scorers: scorerArr,
@@ -240,11 +248,14 @@ export async function teamDetails(req: Request) {
   statsHtml += `</table>`;
   let matchesHtml = [];
   let cup = "";
+  let matchesWiki = [];
   for (let i = 0; i < matches.length; i++) {
     const match = matches[i];
+    matchesWiki;
     let row = {
       matchID: match.matchID,
       status: match.status,
+      wiki: "",
       cup: "",
       round: "",
       date: "",
@@ -268,6 +279,7 @@ export async function teamDetails(req: Request) {
   "></th>`;
     }
     let scorers = [];
+    let scorersWiki = [];
     for (let player of match.scorers) {
       let goalStr = "";
       if (player.id == 0) {
@@ -278,12 +290,29 @@ export async function teamDetails(req: Request) {
       goalStr += player.goals.join(", ");
       scorers.push(goalStr);
     }
+    for (let player of match.scorers) {
+      let goalStr = "";
+      if (player.id == 0) {
+        goalStr += "Own Goal ";
+      } else {
+        goalStr += (await playerLink(player.id, "none", false)) + " ";
+      }
+      goalStr += player.goals.join(", ");
+      scorersWiki.push(goalStr);
+    }
     row.date = match.date;
     row.round = match.round;
     row.team = teamLink(match.team, "left");
     row.result = match.result;
     row.scorers = scorers.join("<br>");
     row.num = `<td style='background:var(--bg-color);color:var(--fg-color)'>${match.num}</td>`;
+    row.wiki = `|
+|-bgcolor='${wikiColors[match.status]}'
+| ${match.dateFull}
+| {{team away|${match.team}}}
+| align=center|[[${match.cupFull}|${match.cup} ${match.round}]]
+| align=center|${match.result} ${match.status}
+| <small>${scorersWiki.join("<br>")}</small>`;
     matchesHtml.push(row);
   }
 

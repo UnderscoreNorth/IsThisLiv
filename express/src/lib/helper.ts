@@ -108,7 +108,8 @@ export function cupShort(cupName: string) {
 
 export async function playerLink(
   player: number | [number, string, string],
-  icon?: "left" | "right"
+  icon?: "left" | "right" | "none",
+  link = true
 ) {
   let id = 0;
   let name = "";
@@ -134,6 +135,7 @@ export async function playerLink(
   let urlname = name.replace(/./gm, function (s) {
     return s.match(/[a-z0-9\s]+/i) ? s : "";
   });
+  if (!link) return name;
   return (
     (icon == "left" ? teamIcon(team) : "") +
     `<a href='/players/${id}-${urlname}'>${name}</a>` +
