@@ -23,6 +23,7 @@
 				'Team Matchup',
 				'Rematches',
 				'Together Forever',
+				'Facing the Cup Winner',
 				'-',
 				'Group Stage Results',
 				'Group Stage Results by Team',
