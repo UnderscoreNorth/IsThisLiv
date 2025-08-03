@@ -79,8 +79,8 @@ export async function overall(req: Request) {
           at: 0,
           atp: 0,
           fr: 0,
-          eliteL:0,
           eliteW:0,
+          eliteL:0,
           eliteEff:0,
         };
       }
@@ -98,7 +98,6 @@ export async function overall(req: Request) {
           stat.w++;
           if(cup.cupType == 1 && !match.round.includes('Group')){
            stat.eliteW++;
-            stat.eliteEff = stat.eliteW / (stat.eliteW + stat.eliteL)
           }
         } else if (match.winningTeam == "draw") {
           stat.d++;
@@ -106,7 +105,6 @@ export async function overall(req: Request) {
           stat.l++;
           if(cup.cupType == 1 && !match.round.includes('Group')){
             stat.eliteL++;
-            stat.eliteEff = stat.eliteW / (stat.eliteW + stat.eliteL)
           }
         }
       }
@@ -152,6 +150,10 @@ export async function overall(req: Request) {
     team.p = team.w * 3 + team.d;
     if (team.pld > 0) {
       team.er = Math.round((team.elites / team.cups) * 100);
+      team.eliteEff = (Math.round((team.eliteW / team.eliteW + team.eliteL) * 10000) / 100)
+        .toString()
+        .padEnd(3, ".")
+        .padEnd(5, "0");
       team.e = (Math.round((team.w / team.pld) * 10000) / 100)
         .toString()
         .padEnd(3, ".")
