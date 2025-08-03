@@ -150,7 +150,7 @@ export async function overall(req: Request) {
     team.p = team.w * 3 + team.d;
     if (team.pld > 0) {
       team.er = Math.round((team.elites / team.cups) * 100);
-      team.eliteEff = (Math.round((team.eliteW / (team.eliteW + team.eliteL)) * 10000) / 100)
+      team.eliteEff = (Math.round(team.eliteW / (team.eliteW + team.eliteL) * 10000) / 100)
         .toString()
         .padEnd(3, ".")
         .padEnd(5, "0");
