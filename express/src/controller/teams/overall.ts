@@ -79,9 +79,9 @@ export async function overall(req: Request) {
           at: 0,
           atp: 0,
           fr: 0,
-          eliteEff:0,
           eliteL:0,
-          eliteW:0
+          eliteW:0,
+          eliteEff:0,
         };
       }
       const stat = teams[team];
@@ -96,7 +96,7 @@ export async function overall(req: Request) {
         stat.pld++;
         if (team == match.winningTeam) {
           stat.w++;
-          if(cup.cupType == 1){
+          if(cup.cupType == 1 && !match.round.includes('Group')){
            stat.eliteW++;
             stat.eliteEff = stat.eliteW / (stat.eliteW + stat.eliteL)
           }
@@ -104,7 +104,7 @@ export async function overall(req: Request) {
           stat.d++;
         } else {
           stat.l++;
-          if(cup.cupType == 1){
+          if(cup.cupType == 1 && !match.round.includes('Group')){
             stat.eliteL++;
             stat.eliteEff = stat.eliteW / (stat.eliteW + stat.eliteL)
           }
@@ -235,6 +235,9 @@ export async function overall(req: Request) {
       "Avg<br>Tenure",
       "Avg<br>Tenure %",
       "# Debut<br>Roster<br>Players",
+      'Elite<br>KO Wins',
+      'Elite<br>KO Losses',
+      'Elite<br>KO Eff %'
     ],
     data: teamArr,
   };
