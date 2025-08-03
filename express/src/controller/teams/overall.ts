@@ -39,6 +39,9 @@ export async function overall(req: Request) {
       at: number;
       atp: number;
       fr: number;
+      eliteW:number;
+      eliteL:number;
+      eliteEff:number;
     }
   > = {};
   const matches = await db
@@ -76,23 +79,35 @@ export async function overall(req: Request) {
           at: 0,
           atp: 0,
           fr: 0,
+          eliteEff:0,
+          eliteL:0,
+          eliteW:0
         };
       }
+      const stat = teams[team];
       if (cup.cupType == 1) {
-        if (typeof teams[team].elites !== "number")
-          teams[team].elites.add(cup.season + cup.year);
+        if (typeof stat.elites !== "number")
+          stat.elites.add(cup.season + cup.year);
       } else {
-        if (typeof teams[team].babbies !== "number")
-          teams[team].babbies.add(cup.season + cup.year);
+        if (typeof stat.babbies !== "number")
+          stat.babbies.add(cup.season + cup.year);
       }
       if (match.winningTeam !== "") {
-        teams[team].pld++;
+        stat.pld++;
         if (team == match.winningTeam) {
-          teams[team].w++;
+          stat.w++;
+          if(cup.cupType == 1){
+           stat.eliteW++;
+            stat.eliteEff = stat.eliteW / (stat.eliteW + stat.eliteL)
+          }
         } else if (match.winningTeam == "draw") {
-          teams[team].d++;
+          stat.d++;
         } else {
-          teams[team].l++;
+          stat.l++;
+          if(cup.cupType == 1){
+            stat.eliteL++;
+            stat.eliteEff = stat.eliteW / (stat.eliteW + stat.eliteL)
+          }
         }
       }
       const events = await db
