@@ -1146,11 +1146,7 @@ async function calcRecords({
           .map(async (x) => [
             ...(cupID || team ? [x.row] : []),
             ...[
-              Math.floor(x.avg) +
-                "." +
-                Math.round((x.avg - Math.floor(x.avg)) * 100)
-                  .toString()
-                  .padEnd(2, "0"),
+              Number(x.avg).toFixed(2),
               x.sum,
               ...(cupID
                 ? []
@@ -1790,7 +1786,7 @@ async function calcRecords({
         )
       )
       .groupBy(Event.playerID, Event.matchID)
-      .having(lte(count(), num))
+      .having(gte(count(), num))
       .orderBy(desc(Match.utcTime));
     let times: Array<{
       playerID: number;
