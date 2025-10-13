@@ -346,6 +346,7 @@ export async function teamDetails(req: Request) {
       const eventData = await getEvents({
         linkID: p.player.linkID,
         getFriendlies: true,
+        getVoided: false,
       });
       const perfData = await getPerformances({
         linkID: p.player.linkID,

@@ -1,11 +1,12 @@
 <script lang="ts">
-	import { browser } from '$app/environment';
+	import { onMount } from 'svelte';
 	import { api } from '$lib/helper';
 	import { DateInput } from 'date-picker-svelte';
+	import { createWorker } from 'tesseract.js';
 	export let data: MatchStat;
 	export let close: Function;
 	export let getData: Function;
-	let datePicker;
+	let datePicker: DateInput;
 	type Event = {
 		eventID?: number;
 		matchID?: number;
@@ -47,6 +48,7 @@
 		winner: string;
 		off: boolean;
 		valid: boolean;
+		motm: number;
 		version: number;
 		matchStats: Array<Array<Array<{ sql: string; name: string; value: number }>>>;
 		eventType: string[];
@@ -92,6 +94,160 @@
 	let ratingsOnly = false;
 	let condOnly = false;
 	let subOnly = false;
+	let ocrProcessing = false;
+	let ocrError = '';
+	let fileInput: HTMLInputElement;
+
+	const processOCR = async (file: File) => {
+		if (!file) return;
+
+		ocrProcessing = true;
+		ocrError = '';
+
+		try {
+			const worker = await createWorker('eng', 1, {
+				//logger: (m) => console.log(m)
+			});
+
+			const {
+				data: { text }
+			} = await worker.recognize(file);
+
+			await worker.terminate();
+			console.log(text);
+			// Parse the OCR text
+			parseScorecard(text);
+		} catch (error) {
+			console.error('OCR Error:', error);
+			ocrError = 'Failed to process image. Please try again.';
+		} finally {
+			ocrProcessing = false;
+			if (fileInput) fileInput.value = '';
+		}
+	};
+	onMount(() => {
+		window.addEventListener('paste', (e) => {
+			if (e.clipboardData) {
+				processOCR(e.clipboardData.files[0]);
+			}
+		});
+	});
+	const parseScorecard = (text: string) => {
+		const lines = text
+			.split('\n')
+			.map((line) => line.trim())
+			.filter((line) => line.length > 0);
+		let halfIndex = 0;
+		for (let i = 0; i < 3; i++) {
+			const isBlank = [...data.matchStats[i][0], ...data.matchStats[i][1]].every(
+				(s) =>
+					s.value == '' || s.value == undefined || ['SQL ID', 'Passes', '(Made)'].includes(s.name)
+			);
+			if (isBlank) {
+				halfIndex = i;
+				break;
+			}
+		}
+		if (data.version == 2015) {
+			if (lines.length == 13) {
+				for (let i = 0; i < lines.length; i++) {
+					const line = lines[i];
+					const res = [
+						...line.matchAll(/\d+\s+(.+)((\d.\d)|(\d{2}))\s+\d+\s+(.+)((\d.\d)|(\d{2}))/g)
+					][0];
+					if (res == undefined) continue;
+					data.performances[0][i].performance.rating = Number(res[2]);
+					data.performances[1][i].performance.rating = Number(res[6]);
+					const homePlayer = data.players[0].filter(
+						(p) =>
+							p.player.name?.toLowerCase().replaceAll(' ', '') ==
+							String(res[1]).toLowerCase().replaceAll(' ', '')
+					)[0];
+					if (homePlayer) data.performances[0][i].player.playerID = homePlayer.player.playerID;
+					const awayPlayer = data.players[1].filter(
+						(p) =>
+							p.player.name?.toLowerCase().replaceAll(' ', '') ==
+							String(res[5]).toLowerCase().replaceAll(' ', '')
+					)[0];
+					if (awayPlayer) data.performances[1][i].player.playerID = awayPlayer.player.playerID;
+				}
+			} else {
+				for (let i = 0; i < lines.length; i++) {
+					const line = lines[i];
+					if (/Possession/i.test(line)) {
+						const numbers = line.match(/(\d+)/gm);
+						if (numbers?.length)
+							updateStat(halfIndex, 'Posession (%)', parseInt(numbers[0]), parseInt(numbers[1]));
+					} else if (/Shots/i.test(line)) {
+						const numbers = line.match(/(\d+)/gm);
+						if (numbers?.length) {
+							updateStat(halfIndex, 'Shots', parseInt(numbers[0]), parseInt(numbers[2]));
+							updateStat(halfIndex, '(on target)', parseInt(numbers[1]), parseInt(numbers[3]));
+						}
+					} else if (/Fouls/i.test(line)) {
+						const numbers = line.match(/(\d+)/gm);
+						if (numbers?.length) {
+							updateStat(halfIndex, 'Fouls', parseInt(numbers[0]), parseInt(numbers[2]));
+							updateStat(halfIndex, '(offside)', parseInt(numbers[1]), parseInt(numbers[3]));
+						}
+					} else if (/Corner/i.test(line)) {
+						const numbers = line.match(/(\d+)/gm);
+						if (numbers?.length)
+							updateStat(halfIndex, 'Corner Kicks', parseInt(numbers[0]), parseInt(numbers[1]));
+					} else if (/Crosses/i.test(line)) {
+						const numbers = line.match(/(\d+)/gm);
+						if (numbers?.length)
+							updateStat(halfIndex, 'Crosses', parseInt(numbers[0]), parseInt(numbers[1]));
+					} else if (/Interceptions/i.test(line)) {
+						const numbers = line.match(/(\d+)/gm);
+						if (numbers?.length)
+							updateStat(halfIndex, 'Interceptions', parseInt(numbers[0]), parseInt(numbers[1]));
+					} else if (/Saves/i.test(line)) {
+						const numbers = line.match(/(\d+)/gm);
+						if (numbers?.length)
+							updateStat(halfIndex, 'Saves', parseInt(numbers[0]), parseInt(numbers[1]));
+					} else if (/Free/i.test(line)) {
+						const numbers = line.match(/(\d+)/gm);
+						if (numbers?.length)
+							updateStat(halfIndex, 'Free Kicks', parseInt(numbers[0]), parseInt(numbers[1]));
+					} else if (/Passes/i.test(line)) {
+						const numbers = line.match(/(\d+)/gm);
+						if (numbers?.length)
+							updateStat(
+								halfIndex,
+								'Passes completed (%)',
+								parseInt(numbers[0]),
+								parseInt(numbers[1])
+							);
+					} else if (/Tackles/i.test(line)) {
+						const numbers = line.match(/(\d+)/gm);
+						if (numbers?.length)
+							updateStat(halfIndex, 'Tackles', parseInt(numbers[0]), parseInt(numbers[1]));
+					}
+				}
+			}
+		}
+		checkChange();
+		data = data;
+	};
+
+	const updateStat = (
+		halfIndex: number,
+		statName: string,
+		homeValue: number,
+		awayValue: number
+	) => {
+		if (!data.matchStats[halfIndex]) return;
+
+		// Find the stat row by name and update it
+		for (let i = 0; i < data.matchStats[halfIndex][0].length; i++) {
+			if (data.matchStats[halfIndex][0][i].name === statName) {
+				data.matchStats[halfIndex][0][i].value = homeValue;
+				data.matchStats[halfIndex][1][i].value = awayValue;
+				break;
+			}
+		}
+	};
 	const sI = ['Home', 'Away'];
 	let errors: string[] = [];
 	checkChange();
@@ -172,6 +328,7 @@
 					>Official</th
 				><th>Valid</th>
 				<th>Pes</th>
+				<th>OCR</th>
 			</tr>
 			<tr>
 				<td>{data.matchID}</td>
@@ -237,11 +394,36 @@
 					/></td
 				>
 				<td><input id="version" bind:value={data.version} style="width:3rem" /></td>
+				<td>
+					<button
+						on:click={() => {
+							fileInput?.click();
+						}}
+						disabled={ocrProcessing}
+					>
+						{ocrProcessing ? 'Processing OCR...' : 'Upload Screenshot'}
+					</button>
+					{#if ocrError}
+						<span style="color: red; font-size: 0.9em;">{ocrError}</span>
+					{/if}</td
+				>
 			</tr>
 		</table>
 	</div>
 	<div id="matchStats">
-		<h3>Scorecards</h3>
+		<h3>
+			Scorecards
+			<br />
+		</h3>
+		<input
+			type="file"
+			accept="image/*"
+			bind:this={fileInput}
+			on:change={(e) => {
+				e.target.file[0];
+			}}
+			style="display: none;"
+		/>
 		<scorecards>
 			{#each halves as half, i}
 				<table id="matchstat1" style="text-align:center">
