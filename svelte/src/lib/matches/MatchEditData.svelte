@@ -600,7 +600,7 @@
 							<tr>
 								<td>{event.eventID ?? ''}</td>
 								<td>
-									<select bind:value={player.playerID}>
+									<select bind:value={data.events[i][j].player.playerID}>
 										<option></option>
 										{#each Object.values(data.players[i]).filter((x) => data.performances[i]
 												.map((y) => y?.player?.playerID)
@@ -614,7 +614,7 @@
 										on:change={() => {
 											checkChange();
 										}}
-										bind:value={event.eventType}
+										bind:value={data.events[i][j].event.eventType}
 									>
 										<option></option>
 										{#each Object.keys(data.eventType) as i}
@@ -628,7 +628,7 @@
 											addNewEvent(i);
 											checkChange();
 										}}
-										bind:value={event.regTime}
+										bind:value={data.events[i][j].event.regTime}
 									/></td
 								>
 								<td
@@ -636,7 +636,7 @@
 										on:change={() => {
 											checkChange();
 										}}
-										bind:value={event.injTime}
+										bind:value={data.events[i][j].event.injTime}
 									/></td
 								>
 							</tr>
@@ -667,14 +667,14 @@
 							<tr>
 								<td>{penalty.penaltyID ?? ''}</td>
 								<td>
-									<select bind:value={player.playerID}>
+									<select bind:value={data.penalties[i][j].player.playerID}>
 										<option></option>
 										{#each Object.values(data.players[i]) as { player }}
 											<option value={player.playerID}>{player.name}</option>
 										{/each}
 									</select>
 								</td>
-								<td><input bind:checked={penalty.goal} type="checkbox" /></td>
+								<td><input bind:checked={data.penalties[i][j].penalty.goal} type="checkbox" /></td>
 							</tr>
 						{/each}
 						<tr>
