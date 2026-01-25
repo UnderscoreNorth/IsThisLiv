@@ -40,6 +40,7 @@
 				'Bench Warmers',
 				'Always Subbed On',
 				'Sub on MOTM',
+				'Nonmedal MOTM',
 				'Benched Medals',
 				'Subbing GKs',
 				'Players by Cup Debut',

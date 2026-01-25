@@ -32,6 +32,7 @@ import { closedGroups } from "./misc/closedGroups";
 import { stadiums } from "./misc/stadiums";
 import { allMedalScoring } from "./misc/allMedalsScoring";
 import { facingCupWinner } from "./misc/facingCupWinner";
+import { nonMedalMOTM } from "./misc/nonMedalMotM";
 
 const router = express.Router();
 router.use("/cups/:cupID", async (req, res, next) => {
@@ -135,6 +136,10 @@ router.use("/misc-all%20medals%20scoring", async (req, res, next) => {
 });
 router.use("/Misc-Facing%20the%20Cup%20Winner", async (req, res, next) => {
   saveMiddleWare(req, res, facingCupWinner);
+});
+
+router.use("/Misc-Nonmedal%20Motm", async (req, res, next) => {
+  saveMiddleWare(req, res, nonMedalMOTM);
 });
 router.use("/*", async (req, res, next) => {
   saveMiddleWare(req, res, mainRecords);
