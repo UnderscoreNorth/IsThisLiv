@@ -137,15 +137,15 @@
 		}
 		for (let pos in $ffStore.groupsFormation) {
 			let num = $ffStore.groupsFormation[pos];
-			//if (num > 0 && roster.starting[pos as 'DEF' | 'MID' | 'FWD'] !== num)
-			//	errorsArr.push(`You need to have exactly ${num} ${pos}`);
+			if (num > 0 && roster.starting[pos as 'DEF' | 'MID' | 'FWD'] !== num)
+				errorsArr.push(`You need to have exactly ${num} ${pos}`);
 		}
 		for (const type in rosterLimits) {
 			for (let pos in rosterLimits[type]) {
 				let current = roster[type][pos] ?? 0;
 				let limits = rosterLimits[type][pos];
-				//if (current < limits[0])
-				//	errorsArr.push(`Need at least ${limits[0] - current} more ${type} ${pos}`);
+				if (current < limits[0])
+					errorsArr.push(`Need at least ${limits[0] - current} more ${type} ${pos}`);
 			}
 		}
 		if (DMFCMF == 0) errorsArr.push(`Need at least 1 starting DMF/CMF`);
@@ -157,15 +157,14 @@
 		if ($ffStore.vice == 0) errorsArr.push('Need a vice captain');
 		for (const required of $ffStore.required) {
 			if (!($ffStore.starting.has(required) || $ffStore.bench.has(required))) {
-				/*errorsArr.push(
+				errorsArr.push(
 					`Need to have /${data.players[required].team}/ - ${data.players[required].name} in your roster`
-				);*/
+				);
 			}
 		}
 		errors = errorsArr.join(', ');
 	}
 	function checkLimits(player: Player) {
-		return true;
 		if ($ffStore.starting.has(player.playerID) || $ffStore.bench.has(player.playerID)) return false;
 		const teamCount: Record<string, number> = {};
 		let roster = {
