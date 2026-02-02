@@ -56,8 +56,8 @@ export async function create(req: Request) {
   const { user } = req.body;
   let password = createPassword();
   let hash = encrypt(password);
-  await db.insert(User).values({ hash, access: 0, name: user });
-  return password;
+  await db.insert(User).values({ hash, access: 2, name: user });
+  return {password};
 }
 export async function resetPassword(req: Request) {
   const { user } = req.body;
