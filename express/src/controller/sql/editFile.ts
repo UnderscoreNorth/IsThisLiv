@@ -23,6 +23,7 @@ export async function uploadEditFile(req: Request, res: Response) {
   let cupID = req.body.cup;
   let save = req.body.save;
   const teams = await getCupTeams(cupID);
+  console.log({teams})
   /*if ((await getPlayers({ cupID })).length) {
     res.send({ "Cup has players already": [] });
     return;
@@ -32,6 +33,7 @@ export async function uploadEditFile(req: Request, res: Response) {
     if (row.trim() == "") continue;
     if (cols.length == 1) {
       let parsed = cols[0].replace(/\//g, "");
+      console.log({parsed})
       if (teams.includes(parsed)) {
         team = parsed;
       } else {
