@@ -23,10 +23,10 @@ export async function uploadEditFile(req: Request, res: Response) {
   let cupID = req.body.cup;
   let save = req.body.save;
   const teams = await getCupTeams(cupID);
-  if ((await getPlayers({ cupID })).length) {
+  /*if ((await getPlayers({ cupID })).length) {
     res.send({ "Cup has players already": [] });
     return;
-  }
+  }*/
   for (let row of content.split(/\r?\n/)) {
     const cols = row.split(/\t/);
     if (row.trim() == "") continue;
