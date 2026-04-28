@@ -12,7 +12,7 @@
 	import {onMount} from 'svelte';
 	import { api } from '$lib/helper';
 	let width: any;
-	let drawerHidden = true;
+	let drawerOpen = false;
 	let transitionParams = {
 		x: -320,
 		duration: 0,
@@ -83,13 +83,13 @@
 	backdrop={true}
 	transitiontype="fly"
 	{transitionParams}
-	bind:hidden={drawerHidden}
+	bind:open={drawerOpen}
 	id="sidebar1"
 >
 	<div id="mainDrawer">
 		{#key $User}
 			{#each Array.from(links) as link}
-				<a href={link[0]} on:click={() => (drawerHidden = true)}>{link[1]}</a>
+				<a href={link[0]} on:click={() => (drawerOpen = false)}>{link[1]}</a>
 			{/each}
 		{/key}
 	</div>
@@ -97,7 +97,7 @@
 <nav id="Nav">
 	{#if width <= 1000}
 		<!-- svelte-ignore a11y-click-events-have-key-events -->
-		<icon on:click={() => (drawerHidden = !drawerHidden)}>
+		<icon on:click={() => (drawerOpen = !drawerOpen)}>
 			<MdMenu />
 		</icon>
 		<span style="margin-left:0.5rem"
