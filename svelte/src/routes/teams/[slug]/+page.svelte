@@ -145,7 +145,23 @@
 						{@html data.statsHtml}
 					</div>
 					<div>
-						<h3 id="matches">Matches</h3>
+						<h3 id="matches">
+							Matches <icon
+								on:click={() => {
+									copyTimer = copyTimerMax;
+									navigator.clipboard.writeText(`{| class="wikitable" style='margin:0'
+|-
+!style="background:#1EE911;color:#2C41D8"| Date
+!style="background:#1EE911;color:#2C41D8"| Opponent
+!style="background:#1EE911;color:#2C41D8"| Competition
+!style="background:#1EE911;color:#2C41D8"| Result
+!style="background:#1EE911;color:#2C41D8"| Scorers
+${data.matchesHtml.map((i) => i.wiki).join('\n')}
+|}
+`);
+								}}><FaWikipediaW /></icon
+							>
+						</h3>
 						<table>
 							<tr>
 								<th>Cup</th>
