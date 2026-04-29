@@ -306,8 +306,7 @@ export async function teamDetails(req: Request) {
     row.result = match.result;
     row.scorers = scorers.join("<br>");
     row.num = `<td style='background:var(--bg-color);color:var(--fg-color)'>${match.num}</td>`;
-    row.wiki = `|
-|-bgcolor='${wikiColors[match.status]}'
+    row.wiki = `|-bgcolor='${wikiColors[match.status]}'
 | ${match.dateFull}
 | {{team away|${match.team}}}
 | align=center|[[${match.cupFull}|${match.cup} ${match.round}]]

@@ -147,6 +147,7 @@
 					<div>
 						<h3 id="matches">
 							Matches <icon
+								style="float:none;display:inline-block"
 								on:click={() => {
 									copyTimer = copyTimerMax;
 									navigator.clipboard.writeText(`{| class="wikitable" style='margin:0'
