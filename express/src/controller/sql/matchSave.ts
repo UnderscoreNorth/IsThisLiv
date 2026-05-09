@@ -197,7 +197,7 @@ export async function matchSave(req: Request) {
     .set({
       winningTeam: data.winner,
       round: data.round,
-      attendance: data.attendence,
+      attendance: typeof data.attendence == 'number' ? data.attendence : 0,
       official: data.off,
       valid: data.valid,
       stadium: data.stadium,

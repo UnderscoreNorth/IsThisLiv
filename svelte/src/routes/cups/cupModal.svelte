@@ -1,4 +1,4 @@
-<script lang='ts'>
+<script lang="ts">
 	import { User } from '../../lib/user';
 	import { goto } from '$app/navigation';
 	import { api } from '$lib/helper';
@@ -13,17 +13,33 @@
 		user: ''
 	};
 	let submitCup = async () => {
-		if ($User.user) {
+		if (
+			$User.user &&
+			cupData.name !== '' &&
+			cupData.season !== '' &&
+			parseInt(cupData.year) > 2010 &&
+			parseInt(cupData.year) <= 2030 &&
+			cupData.type !== '' &&
+			cupData.start != '' &&
+			cupData.finish !== '' &&
+			parseInt(cupData.version) > 2010 &&
+			parseInt(cupData.version) <= 2030
+		) {
 			cupData.user = $User.user;
-			goto(`/cups/${(await api('/sql/newCup',cupData)).cupURL}`);
+			goto(`/cups/${(await api('/sql/newCup', cupData)).cupURL}`);
 		}
 	};
 </script>
+
 <table>
-	<tr><td>Name</td><td><input bind:value={cupData.name} /></td></tr>
+	<tr
+		><td>Name</td><td
+			><input class={cupData.name?.length > 0 ? '' : 'error'} bind:value={cupData.name} /></td
+		></tr
+	>
 	<tr
 		><td>Season</td><td
-			><select bind:value={cupData.season}>
+			><select class={cupData.season != '' ? '' : 'error'} bind:value={cupData.season}>
 				<option>Winter</option>
 				<option>Spring</option>
 				<option>Summer</option>
@@ -31,10 +47,18 @@
 			</select></td
 		></tr
 	>
-	<tr><td>Year</td><td><input type="number" bind:value={cupData.year} /></td></tr>
+	<tr
+		><td>Year</td><td
+			><input
+				type="number"
+				class={parseInt(cupData.year) > 2010 && parseInt(cupData.year) <= 2030 ? '' : 'error'}
+				bind:value={cupData.year}
+			/></td
+		></tr
+	>
 	<tr
 		><td>Type</td><td
-			><select bind:value={cupData.type}>
+			><select class={cupData.type !== '' ? '' : 'error'} bind:value={cupData.type}>
 				<option value="1">Elite</option>
 				<option value="2">Babby</option>
 				<option value="2.5">Megababby</option>
@@ -44,11 +68,32 @@
 			</select></td
 		></tr
 	>
-	<tr><td>Start</td><td><input type="date" bind:value={cupData.start} /></td></tr>
-	<tr><td>Finish</td><td><input type="date" bind:value={cupData.finish} /></td></tr>
+	<tr
+		><td>Start</td><td
+			><input
+				type="date"
+				class={cupData.start != '' ? '' : 'error'}
+				bind:value={cupData.start}
+			/></td
+		></tr
+	>
+	<tr
+		><td>Finish</td><td
+			><input
+				type="date"
+				class={cupData.finish !== '' ? '' : 'error'}
+				bind:value={cupData.finish}
+			/></td
+		></tr
+	>
 	<tr
 		><td>PES Version</td><td
-			><input type="number" placeholder="20xx" bind:value={cupData.version} /></td
+			><input
+				type="number"
+				class={parseInt(cupData.version) > 2010 && parseInt(cupData.version) <= 2030 ? '' : 'error'}
+				placeholder="20xx"
+				bind:value={cupData.version}
+			/></td
 		></tr
 	>
 </table>
@@ -60,5 +105,8 @@
 	}
 	select {
 		width: 100%;
+	}
+	.error {
+		background: rgb(255, 135, 135);
 	}
 </style>
