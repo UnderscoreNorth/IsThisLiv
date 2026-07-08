@@ -6,7 +6,7 @@
 	import MdMenu from 'svelte-icons/md/MdMenu.svelte';
 	import { sidebarStore } from './sideBarStore';
     let width: any;
-	let drawerHidden = true;
+	let drawerOpen = false;
 	let transitionParams = {
 		x: -320,
 		duration: 0,
@@ -21,7 +21,7 @@
 	backdrop={true}
 	transitiontype="fly"
 	{transitionParams}
-	bind:hidden={drawerHidden}
+	bind:open={drawerOpen}
 	id="sidebar1"
 >
 	<div id="miscDrawer">
@@ -37,18 +37,18 @@
 								<a
 									style="padding-left:0.5rem"
 									href="{path}{header}-{subLink}"
-									on:click={() => (drawerHidden = true)}>{subLink}</a
+									on:click={() => (drawerOpen = false)}>{subLink}</a
 								>
 							{/if}
                         {/each}
                     {/each}
                 {:else}
-                    <a href="{path}{link}" on:click={() => (drawerHidden = true)}>{link}</a>
+                    <a href="{path}{link}" on:click={() => (drawerOpen = false)}>{link}</a>
                 {/if}
             {/each}
         {:else}
             {#each Array.from(links) as link}
-                <a href={path+link[0]} on:click={() => (drawerHidden = true)}>{link[1]}</a>
+                <a href={path+link[0]} on:click={() => (drawerOpen = false)}>{link[1]}</a>
             {/each}
         {/if}
 	</div>
@@ -57,7 +57,7 @@
 	{#if width <= 1000}
 		<div class="mobileRow c-1" style="display:flex">
 			<!-- svelte-ignore a11y-click-events-have-key-events -->
-			<icon on:click={() => (drawerHidden = !drawerHidden)}>
+			<icon on:click={() => (drawerOpen = !drawerOpen)}>
 				<MdMenu />
 			</icon>
 			<span style="margin-left:0.5rem"
@@ -78,7 +78,7 @@
 								<a
                                     style="padding-left:0.5rem"
                                     href="{path}{header}-{subLink}"
-                                    on:click={() => (drawerHidden = true)}
+                                    on:click={() => (drawerOpen = false)}
                                     ><div
                                         class={$page.url.pathname == `${path}${header}-${subLink}`
                                             ? 'selectedPage'
@@ -89,7 +89,7 @@
                             {/each}
                         {/each}
                     {:else}
-                        <a href="/records/{link}" on:click={() => (drawerHidden = true)}
+                        <a href="/records/{link}" on:click={() => (drawerOpen = false)}
                             ><div
                                 class={$page.url.pathname == path + link ? 'selectedPage' : 'unselectedPage'}
                             >
