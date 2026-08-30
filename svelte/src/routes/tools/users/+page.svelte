@@ -32,29 +32,31 @@
 	{/if}
 	{#await data then users}
 		<table>
-			<tr>
-				<td colspan="2"><input bind:value={newUser} /></td>
-				<td
-					><button
-						on:click={() => {
-							createUser();
-						}}>Create User</button
-					></td
-				>
-			</tr>
-			{#each users as user}
+			<tbody>
 				<tr>
-					<td>{user.name}</td>
-					<td>{user.access}</td>
+					<td colspan="2"><input bind:value={newUser} /></td>
 					<td
 						><button
 							on:click={() => {
-								resetPassword(user.name);
-							}}>Reset Password</button
+								createUser();
+							}}>Create User</button
 						></td
 					>
 				</tr>
-			{/each}
+				{#each users as user}
+					<tr>
+						<td>{user.name}</td>
+						<td>{user.access}</td>
+						<td
+							><button
+								on:click={() => {
+									resetPassword(user.name);
+								}}>Reset Password</button
+							></td
+						>
+					</tr>
+				{/each}
+			</tbody>
 		</table>
 	{/await}
 </container>

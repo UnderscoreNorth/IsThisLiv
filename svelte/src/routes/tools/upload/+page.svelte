@@ -13,8 +13,8 @@
 	<div id="content">
 		<form
 			use:enhance={(e) => {
-				loading =true;
-				result = {Loading:[]}
+				loading = true;
+				result = { Loading: [] };
 				return async (data) => {
 					loading = false;
 					result = data.result;
@@ -34,35 +34,45 @@
 			</select> <br />
 			<button disabled={loading} type="submit">Process</button>
 			{#if Object.keys(result).length}
-				<hr/>
-				<button disabled={loading} type='submit' name='save' value='save'>Save</button>
+				<hr />
+				<button disabled={loading} type="submit" name="save" value="save">Save</button>
 			{/if}
-		</form>		
-		<div id='results'>
-			{#each Object.entries(result) as [team,players]}
-			<table>
-				<tr><th colspan=4>/{team}/</th></tr>
-				{#each players as player}
-				<tr><td>{player.shirtNumber}</td><td>{player.name}</td><td>{player.regPos}</td><td>{player.medal}{player.captain ? ' (C)' : ''}</td></tr>
-				{/each}
-			</table>
+		</form>
+		<div id="results">
+			{#each Object.entries(result) as [team, players]}
+				<table>
+					<tbody>
+						<tr><th colspan="4">/{team}/</th></tr>
+						{#each players as player}
+							<tr
+								><td>{player.shirtNumber}</td><td>{player.name}</td><td>{player.regPos}</td><td
+									>{player.medal}{player.captain ? ' (C)' : ''}</td
+								></tr
+							>
+						{/each}
+					</tbody>
+				</table>
 			{/each}
 		</div>
 	</div>
 {/await}
+
 <style>
 	#content {
 		padding: 1rem;
 	}
-	#results{
-		display:flex;
+	#results {
+		display: flex;
 		flex-wrap: wrap;
 	}
-	table{
+	table {
 		flex-grow: 1;
 	}
-	th{
+	th {
 		text-align: center;
 	}
-	td{text-align: left;font-size:0.7rem;}
+	td {
+		text-align: left;
+		font-size: 0.7rem;
+	}
 </style>

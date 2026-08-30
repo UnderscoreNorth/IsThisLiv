@@ -1,4 +1,4 @@
-<script lang='ts'>
+<script lang="ts">
 	import { page } from '$app/stores';
 	import { api } from '$lib/helper';
 	import Modal from '$lib/modal.svelte';
@@ -7,14 +7,14 @@
 	let filter = 'All';
 	let sort = '';
 	const loadData = async (sort) => {
-		return await api('/managers',{sort});
+		return await api('/managers', { sort });
 	};
 	page.subscribe((r) => {
 		sort = r.params.slug;
 	});
 	let newRecord = false;
-	function edit(run){
-		if($User.access >0){
+	function edit(run) {
+		if ($User.access > 0) {
 			editData = JSON.parse(JSON.stringify(run));
 			console.log(editData);
 			showModal = true;
@@ -22,41 +22,61 @@
 	}
 	let editData = {};
 	let showModal = false;
-	function closeModal(){
+	function closeModal() {
 		editData = {};
 		showModal = false;
 		newRecord = false;
 	}
 	let processing = false;
-	async function process(action:'add'|'update'|'delete'){
+	async function process(action: 'add' | 'update' | 'delete') {
 		processing = true;
-		if(['add','update','delete'].includes(action)){
+		if (['add', 'update', 'delete'].includes(action)) {
 			editData.action = action;
-			await api('/sql/processManager/',editData);
+			await api('/sql/processManager/', editData);
 		}
 		location.reload();
 	}
-	
 </script>
 
 <svelte:head>
 	<title>Managers - IsThisLiv</title>
 </svelte:head>
 {#if showModal}
-<Modal title={'Manager Edit'} close={closeModal}>
-	<table>
-		<tr><th>Name</th><td><input disabled={!newRecord} bind:value={editData.manager}></td></tr>
-		<tr><th>Board</th><td><input disabled={!newRecord} bind:value={editData.board}></td></tr>
-		<tr><th>Start</th><td><input type='date' disabled={!newRecord} bind:value={editData.start}></td></tr>
-		<tr><th>End</th><td><input type='date' bind:value={editData.end}></td></tr>
-	</table>
-	{#if newRecord}
-		<button disabled={processing} on:click={()=>{process('add')}}>Add</button>
-	{:else}
-	<button disabled={processing} on:click={()=>{process('update')}}>Update</button>
-	<button disabled={processing} on:click={()=>{process('delete')}}>Delete</button>
-	{/if}
-</Modal>
+	<Modal title={'Manager Edit'} close={closeModal}>
+		<table>
+			<tbody>
+				<tr><th>Name</th><td><input disabled={!newRecord} bind:value={editData.manager} /></td></tr>
+				<tr><th>Board</th><td><input disabled={!newRecord} bind:value={editData.board} /></td></tr>
+				<tr
+					><th>Start</th><td
+						><input type="date" disabled={!newRecord} bind:value={editData.start} /></td
+					></tr
+				>
+				<tr><th>End</th><td><input type="date" bind:value={editData.end} /></td></tr>
+			</tbody>
+		</table>
+		{#if newRecord}
+			<button
+				disabled={processing}
+				on:click={() => {
+					process('add');
+				}}>Add</button
+			>
+		{:else}
+			<button
+				disabled={processing}
+				on:click={() => {
+					process('update');
+				}}>Update</button
+			>
+			<button
+				disabled={processing}
+				on:click={() => {
+					process('delete');
+				}}>Delete</button
+			>
+		{/if}
+	</Modal>
 {/if}
 <div id="managerContainer">
 	<div id="filters">
@@ -71,7 +91,12 @@
 		<input type="radio" bind:group={filter} name="filter" value="Active" /> Active |
 		<input type="radio" bind:group={filter} name="filter" value="Inactive" /> Inactive
 		{#if $User.access > 1}
-			<button on:click={()=>{showModal=true;newRecord=true}}>New</button>
+			<button
+				on:click={() => {
+					showModal = true;
+					newRecord = true;
+				}}>New</button
+			>
 		{/if}
 	</div>
 	{#await loadData(sort)}
@@ -108,10 +133,16 @@
 								{#each Array(data.max) as _, j}
 									{#if row.runs[j]}
 										<td style="color:black;text-align:center;background:{row.runs[j].colour}"
-											>/{row.runs[j].board}/<TeamIcon team={row.runs[j].board}/></td
+											>/{row.runs[j].board}/<TeamIcon team={row.runs[j].board} /></td
 										>
 										<td style="color:black;background:{row.runs[j].colour}">{row.runs[j].start}</td>
-										<td on:click={()=>{edit(Object.assign(row.runs[j],{manager:row.manager}))}} class={$User.access > 0 ? 'hover' : ''} style="color:black;background:{row.runs[j].colour}">{row.runs[j].end}</td>
+										<td
+											on:click={() => {
+												edit(Object.assign(row.runs[j], { manager: row.manager }));
+											}}
+											class={$User.access > 0 ? 'hover' : ''}
+											style="color:black;background:{row.runs[j].colour}">{row.runs[j].end}</td
+										>
 										<th style="color:black;background:{row.runs[j].colour}">{row.runs[j].days}</th>
 									{:else}
 										<td colspan="4" />
@@ -161,8 +192,8 @@
 		border-bottom: 1px solid rgba(100, 100, 100, 0.5);
 		padding: 2px 5px;
 	}
-	.hover:hover{
+	.hover:hover {
 		cursor: pointer;
-		color:white!important;
+		color: white !important;
 	}
 </style>

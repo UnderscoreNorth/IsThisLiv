@@ -164,34 +164,36 @@ ${data.matchesHtml.map((i) => i.wiki).join('\n')}
 							>
 						</h3>
 						<table>
-							<tr>
-								<th>Cup</th>
-								<th>Round</th>
-								<th>Date</th>
-								<th>Team</th>
-								<th>Result</th>
-								<th>Scorers</th>
-							</tr>
-							{#each data.matchesHtml as row}
-								<tr class={row.status}>
-									{@html row.cup}
-									<td>{row.round}</td>
-									<td>{row.date}</td>
-									<td>{@html row.team}</td>
-									<td>{row.result}</td>
-									<td>{@html row.scorers}</td>
-									<td>
-										<icon on:click={() => (matchID = row.matchID)}><MdAssessment /></icon>
-										<icon
-											on:click={() => {
-												copyTimer = copyTimerMax;
-												navigator.clipboard.writeText(row.wiki);
-											}}><FaWikipediaW /></icon
-										>
-									</td>
-									{@html row.num}
+							<tbody>
+								<tr>
+									<th>Cup</th>
+									<th>Round</th>
+									<th>Date</th>
+									<th>Team</th>
+									<th>Result</th>
+									<th>Scorers</th>
 								</tr>
-							{/each}
+								{#each data.matchesHtml as row}
+									<tr class={row.status}>
+										{@html row.cup}
+										<td>{row.round}</td>
+										<td>{row.date}</td>
+										<td>{@html row.team}</td>
+										<td>{row.result}</td>
+										<td>{@html row.scorers}</td>
+										<td>
+											<icon on:click={() => (matchID = row.matchID)}><MdAssessment /></icon>
+											<icon
+												on:click={() => {
+													copyTimer = copyTimerMax;
+													navigator.clipboard.writeText(row.wiki);
+												}}><FaWikipediaW /></icon
+											>
+										</td>
+										{@html row.num}
+									</tr>
+								{/each}
+							</tbody>
 						</table>
 					</div>
 					<div>
@@ -203,41 +205,44 @@ ${data.matchesHtml.map((i) => i.wiki).join('\n')}
 					<h3 id="rostertimeline">Roster Timeline</h3>
 					<div id="rosterContainer">
 						<table id="tbl_roster">
-							{#each data.roster.header as headerRow, i}
-								<tr style="position:sticky;top:calc({i * 1.2}rem;z-index:1">
-									{#each headerRow as header}
-										<th
-											class={header.sort ? 'pointer' : ''}
-											colspan={header.colSpan || 1}
-											on:click={() => {
-												if (header.sort) sortTable(header.sort, header.dir);
-											}}
+							<tbody>
+								{#each data.roster.header as headerRow, i}
+									<tr style="position:sticky;top:calc({i * 1.2}rem;z-index:1">
+										{#each headerRow as header}
+											<th
+												class={header.sort ? 'pointer' : ''}
+												colspan={header.colSpan || 1}
+												on:click={() => {
+													if (header.sort) sortTable(header.sort, header.dir);
+												}}
+											>
+												{header.text}
+											</th>
+										{/each}
+									</tr>
+								{/each}
+								{#each data.roster.data as player}
+									<tr class="playerRow">
+										<td class="rosterPlayerNameCell" title={player.truename}>{@html player.name}</td
 										>
-											{header.text}
-										</th>
-									{/each}
-								</tr>
-							{/each}
-							{#each data.roster.data as player}
-								<tr class="playerRow">
-									<td class="rosterPlayerNameCell" title={player.truename}>{@html player.name}</td>
-									<td>{player.apps}</td>
-									<td>{player.cups}</td>
-									<td>{player.goals}</td>
-									<td>{player.assists}</td>
-									<td>{player.saves}</td>
-									<td>{player.rating}</td>
-									{#each data.roster.cups as cup}
-										<td
-											class={'rosterCell ' +
-												('t' + Math.floor(player[cup.year + cup.season]) || 'no') +
-												(player[cup.year + cup.season] % 1 > 0 ? ' cap' : '')}
-											>{player[cup.year + cup.season] ? '_' : ''}</td
-										>
-									{/each}
-								</tr>
-							{/each}
-							{@html data.roster.footer}
+										<td>{player.apps}</td>
+										<td>{player.cups}</td>
+										<td>{player.goals}</td>
+										<td>{player.assists}</td>
+										<td>{player.saves}</td>
+										<td>{player.rating}</td>
+										{#each data.roster.cups as cup}
+											<td
+												class={'rosterCell ' +
+													('t' + Math.floor(player[cup.year + cup.season]) || 'no') +
+													(player[cup.year + cup.season] % 1 > 0 ? ' cap' : '')}
+												>{player[cup.year + cup.season] ? '_' : ''}</td
+											>
+										{/each}
+									</tr>
+								{/each}
+								{@html data.roster.footer}
+							</tbody>
 						</table>
 					</div>
 				</div>

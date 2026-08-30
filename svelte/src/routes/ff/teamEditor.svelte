@@ -285,16 +285,18 @@
 							>
 							<hr />
 							<table>
-								<tr><th>Board</th><th>Pos</th><th>Medal</th><th>Player</th></tr>
-								{#each sortTable($ffStore[type]) as playerID}
-									<PlayerRow
-										player={data.players[playerID]}
-										classes={'click'}
-										onClick={() => {
-											removePlayer(type, playerID);
-										}}
-									/>
-								{/each}
+								<tbody>
+									<tr><th>Board</th><th>Pos</th><th>Medal</th><th>Player</th></tr>
+									{#each sortTable($ffStore[type]) as playerID}
+										<PlayerRow
+											player={data.players[playerID]}
+											classes={'click'}
+											onClick={() => {
+												removePlayer(type, playerID);
+											}}
+										/>
+									{/each}
+								</tbody>
 							</table>
 						</container>
 					{/each}
