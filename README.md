@@ -4,7 +4,7 @@ Front and backend using Svelte, Express, and MySql
 
 ## Installing front end
 
-Create svelte/src/config.json
+Create svelte/src/libs/config.json
 
 ```json
 {
