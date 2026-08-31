@@ -1,6 +1,6 @@
 <script>
 	import { enhance } from '$app/forms';
-	import config from '$lib/config.json';
+	import config from '$lib/config';
 	let api = config.api;
 	export let data;
 	let result = {};

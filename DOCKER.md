@@ -23,21 +23,26 @@ This project is fully Dockerized for easy development and deployment.
 
 ## How It Works
 
-### Environment Variables → Express Config
+### Environment Variables → Application Config
 
-The Docker setup **automatically injects** database credentials into your Express app via environment variables. You don't need to manually edit `config.json`!
+The Docker setup **automatically injects** configuration into both Express and Svelte via environment variables. You don't need to manually edit any `config.json` files!
 
 **How it works:**
 1. Docker Compose reads variables from `.env`
-2. Passes them as environment variables to the Express container
-3. Express reads from environment variables (via [src/config.ts](express/src/config.ts))
-4. Falls back to `config.json` if running outside Docker
+2. Passes them as environment variables to the containers
+3. **Express** reads from environment variables (via [src/config.ts](express/src/config.ts))
+4. **Svelte** reads from Vite environment variables prefixed with `VITE_` (via [src/lib/config.ts](svelte/src/lib/config.ts))
+5. Both fall back to their respective `config.json` files if running outside Docker
 
 ### Configuration Priority
 
 ```
 Environment Variables (Docker) > config.json (Local Development)
 ```
+
+### Frontend Configuration Note
+
+Svelte/Vite requires the `VITE_` prefix for environment variables to be exposed to the browser. This is a security feature to prevent accidentally exposing server secrets to the client.
 
 ## Development Workflow
 
@@ -107,6 +112,10 @@ SVELTE_PORT=5173
 
 # Security
 SALT=your_secret_salt_here_change_this_in_production
+
+# Frontend Configuration (VITE_ prefix required)
+VITE_API_URL=http://localhost:3000/api
+VITE_BOORU_URL=https://isthisliv.com/booru/
 ```
 
 ## Troubleshooting

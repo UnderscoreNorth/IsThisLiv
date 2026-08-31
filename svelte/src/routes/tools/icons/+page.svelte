@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
-	import config from '$lib/config.json';
+	import config from '$lib/config';
 	import Icons from './icons.svelte';
 	let api = config.api;
 	let loading = false;

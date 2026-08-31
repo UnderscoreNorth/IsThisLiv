@@ -1,4 +1,4 @@
-import CONFIG from '$lib/config.json'
+import CONFIG from '$lib/config'
 export function cupShort(cupName:string) {
   let cupWords = cupName.split(" ");
   let shortName = "";
