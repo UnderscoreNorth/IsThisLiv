@@ -1,6 +1,6 @@
 import { Request } from "express";
 import crypto from "crypto-js";
-import CONFIG from "../../../../config.json";
+import config from "../../../config";
 import { db } from "../../../db";
 import { User } from "../../../db/schema";
 import { eq } from "drizzle-orm";
@@ -71,7 +71,7 @@ export async function getUsers() {
 }
 export async function verify(token, user: string, type: "access" | "refresh") {
   let status = true;
-  jwt.verify(token, CONFIG.salt, function (err, decoded) {
+  jwt.verify(token, config.salt, function (err, decoded) {
     if (err) {
       status = false;
     } else {
@@ -103,7 +103,7 @@ function signToken(payload: {
     payload.expires = expiryDate.toLocaleString("en-US", {
       timeZone: "America/Toronto",
     });
-    let token = jwt.sign({ payload }, CONFIG.salt, {
+    let token = jwt.sign({ payload }, config.salt, {
       expiresIn: expiry,
     });
 
@@ -124,15 +124,15 @@ function signToken(payload: {
   }
 }
 export function createPassword() {
-  return crypto.AES.encrypt(Math.random().toString(), CONFIG.salt)
+  return crypto.AES.encrypt(Math.random().toString(), config.salt)
     .toString()
     .slice(-12);
 }
 export function encrypt(text: string) {
-  return crypto.AES.encrypt(text, CONFIG.salt).toString();
+  return crypto.AES.encrypt(text, config.salt).toString();
 }
 export function checkPassword(text: string, hash: string) {
   return (
-    text == crypto.AES.decrypt(hash, CONFIG.salt).toString(crypto.enc.Utf8)
+    text == crypto.AES.decrypt(hash, config.salt).toString(crypto.enc.Utf8)
   );
 }

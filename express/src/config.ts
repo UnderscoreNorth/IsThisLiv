@@ -10,7 +10,6 @@ interface Config {
   salt: string;
 }
 
-// Load config from environment variables with fallback to config.json
 const config: Config = {
   sql: {
     host: process.env.DB_HOST,
