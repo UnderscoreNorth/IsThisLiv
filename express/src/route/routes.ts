@@ -79,7 +79,7 @@ async function loadCache(req: Request, res: Response, next: NextFunction) {
   let stats = await fs.stat(res.locals.staticUrl).catch((err) => {
     return { mtime: new Date("01/01/2000") };
   });
-  if (stats.mtime.getTime() == 946702800000) {
+  if (stats.mtime.getTime() == new Date("01/01/2000").getTime()) {
     next();
   } else {
     res.send(await fs.readFile(res.locals.staticUrl));
