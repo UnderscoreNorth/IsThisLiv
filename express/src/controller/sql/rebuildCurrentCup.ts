@@ -1,9 +1,7 @@
 import { getCups, getCupTeams } from "../../db/commonFn";
 import fs from "fs/promises";
-import { port } from "../../../config.json";
+import config from "../../config";
 import { calcAllTeams } from "../records/records";
-import { db } from "../../db";
-import { Team } from "../../db/schema";
 
 export async function rebuildCurrentCup() {
   const cup = (await getCups({ excludeFriendlies: false, asc: false }))[0];
@@ -32,7 +30,7 @@ export async function rebuildCurrentCup() {
 
 async function rebuild(str: string) {
   await fs.unlink(str).catch(() => {});
-  await fetch(`http://localhost:${port}${cacheNameToRoute(str)}`).catch(
+  await fetch(`http://localhost:${config.port}${cacheNameToRoute(str)}`).catch(
     (err) => {
       console.log(err);
     }
