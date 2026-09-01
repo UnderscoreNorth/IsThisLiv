@@ -42,9 +42,6 @@ services:
     volumes:
       # Mount source code for hot-reload in dev mode
       - ./express/src:/app/src
-      - ./express/config.json:/app/config.json
-      - ./express/cache:/app/cache
-      - ./express/uploads:/app/uploads
       # Prevent overwriting node_modules
       - /app/node_modules
     networks:
