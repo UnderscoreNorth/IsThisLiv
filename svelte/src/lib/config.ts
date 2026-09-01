@@ -17,8 +17,9 @@ try {
 
 // Load config from environment variables with fallback to config.json
 const config: Config = {
-  api: import.meta.env.VITE_API_URL || configFile.api || 'http://localhost:3000/api',
-  booru: import.meta.env.VITE_BOORU_URL || configFile.booru || 'https://isthisliv.com/booru/'
+  api: import.meta.env.VITE_API_URL || configFile.api,
+  booru: import.meta.env.VITE_BOORU_URL || configFile.booru
 };
+alert(config.api);
 
 export default config;
